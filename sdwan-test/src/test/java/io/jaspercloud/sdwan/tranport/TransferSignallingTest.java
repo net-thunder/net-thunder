@@ -41,8 +41,8 @@ public class TransferSignallingTest {
         new Thread(() -> {
             while (true) {
                 SDWanProtos.IpPacket ipPacket = SDWanProtos.IpPacket.newBuilder()
-                        .setSrcIP("10.1.0.13")
-                        .setDstIP("10.1.0.14")
+                        .setSrcIP("10.5.0.13")
+                        .setDstIP("10.5.0.14")
                         .setData(ByteString.copyFrom("test1".getBytes()))
                         .build();
                 sdWanNode1.sendIpPacket(ipPacket);
@@ -56,8 +56,8 @@ public class TransferSignallingTest {
         new Thread(() -> {
             while (true) {
                 SDWanProtos.IpPacket ipPacket = SDWanProtos.IpPacket.newBuilder()
-                        .setSrcIP("10.1.0.14")
-                        .setDstIP("10.1.0.13")
+                        .setSrcIP("10.5.0.14")
+                        .setDstIP("10.5.0.13")
                         .setData(ByteString.copyFrom("test2".getBytes()))
                         .build();
                 sdWanNode2.sendIpPacket(ipPacket);

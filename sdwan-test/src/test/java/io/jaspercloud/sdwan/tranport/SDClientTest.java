@@ -22,7 +22,7 @@ public class SDClientTest {
         SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
                 .port(1800)
                 .heartTimeout(30 * 1000)
-                .vipCidr("10.1.0.0/24")
+                .vipCidr("10.5.0.0/24")
                 .build(), () -> new ChannelInboundHandlerAdapter());
         sdWanServer.afterPropertiesSet();
         SdWanClient sdWanClient = new SdWanClient(SdWanClientConfig.builder()
@@ -51,13 +51,13 @@ public class SDClientTest {
     public void bindFixedVip() throws Exception {
         Map<String, String> fixedVipMap = new HashMap<String, String>() {
             {
-                put("d1:d2:d3:d4:d5:d6", "10.1.0.35");
+                put("d1:d2:d3:d4:d5:d6", "10.5.0.35");
             }
         };
         SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
                 .port(1800)
                 .heartTimeout(30 * 1000)
-                .vipCidr("10.1.0.0/24")
+                .vipCidr("10.5.0.0/24")
                 .fixedVipMap(fixedVipMap)
                 .build(), () -> new ChannelInboundHandlerAdapter());
         sdWanServer.afterPropertiesSet();
@@ -88,7 +88,7 @@ public class SDClientTest {
         SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
                 .port(1800)
                 .heartTimeout(30 * 1000)
-                .vipCidr("10.1.0.0/24")
+                .vipCidr("10.5.0.0/24")
                 .build(), () -> new SimpleChannelInboundHandler<SDWanProtos.Message>() {
             @Override
             public void channelActive(ChannelHandlerContext ctx) throws Exception {
@@ -117,7 +117,7 @@ public class SDClientTest {
                     SDWanProtos.RouteList routeList = SDWanProtos.RouteList.newBuilder()
                             .addRoute(SDWanProtos.Route.newBuilder()
                                     .setDestination("192.168.1.0/24")
-                                    .addAllNexthop(Arrays.asList("10.1.0.254"))
+                                    .addAllNexthop(Arrays.asList("10.5.0.254"))
                                     .build())
                             .build();
                     SdWanServer.push(ctx.channel(), SDWanProtos.MessageTypeCode.RouteListType, routeList);

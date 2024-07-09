@@ -21,19 +21,19 @@ public class TransferRouteTest {
     public void test() throws Exception {
         Map<String, String> fixedVipMap = new HashMap<String, String>() {
             {
-                put("x1:x:x:x:x:x", "10.1.0.1");
-                put("x2:x:x:x:x:x", "10.1.0.2");
+                put("x1:x:x:x:x:x", "10.5.0.1");
+                put("x2:x:x:x:x:x", "10.5.0.2");
             }
         };
         List<SdWanServerConfig.Route> routeList = new ArrayList<>();
         routeList.add(SdWanServerConfig.Route.builder()
                 .destination("172.168.1.0/24")
-                .nexthop(Arrays.asList("10.1.0.2"))
+                .nexthop(Arrays.asList("10.5.0.2"))
                 .build());
         SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
                 .port(1800)
                 .heartTimeout(30 * 1000)
-                .vipCidr("10.1.0.0/24")
+                .vipCidr("10.5.0.0/24")
                 .fixedVipMap(fixedVipMap)
                 .routeList(routeList)
                 .build(), () -> new ChannelInboundHandlerAdapter());
@@ -83,7 +83,7 @@ public class TransferRouteTest {
                 .build());
         sdWanNode1.sendIpPacket(SDWanProtos.IpPacket.newBuilder()
                 .setSrcIP("192.168.1.2")
-                .setDstIP("10.1.0.2")
+                .setDstIP("10.5.0.2")
                 .setData(ByteString.copyFrom("hello2".getBytes()))
                 .build());
         CountDownLatch countDownLatch = new CountDownLatch(1);

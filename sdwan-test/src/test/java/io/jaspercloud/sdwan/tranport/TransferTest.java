@@ -24,15 +24,15 @@ public class TransferTest {
         String address = InetAddress.getLocalHost().getHostAddress();
         Map<String, String> fixedVipMap = new HashMap<String, String>() {
             {
-                put("x1:x:x:x:x:x", "10.1.0.1");
-                put("x2:x:x:x:x:x", "10.1.0.2");
+                put("x1:x:x:x:x:x", "10.5.0.1");
+                put("x2:x:x:x:x:x", "10.5.0.2");
             }
         };
         List<SdWanServerConfig.Route> routeList = new ArrayList<>();
         SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
                 .port(1800)
                 .heartTimeout(30 * 1000)
-                .vipCidr("10.1.0.0/24")
+                .vipCidr("10.5.0.0/24")
                 .fixedVipMap(fixedVipMap)
                 .routeList(routeList)
                 .build(), () -> new ChannelInboundHandlerAdapter());
@@ -77,8 +77,8 @@ public class TransferTest {
         sdWanNode2.afterPropertiesSet();
         while (true) {
             sdWanNode1.sendIpPacket(SDWanProtos.IpPacket.newBuilder()
-                    .setSrcIP("10.1.0.1")
-                    .setDstIP("10.1.0.2")
+                    .setSrcIP("10.5.0.1")
+                    .setDstIP("10.5.0.2")
                     .setData(ByteString.copyFrom("hello".getBytes()))
                     .build());
             Thread.sleep(1000);

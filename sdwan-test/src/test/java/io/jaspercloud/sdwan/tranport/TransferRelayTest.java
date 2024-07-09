@@ -27,15 +27,15 @@ public class TransferRelayTest {
     public void relayTrue() throws Exception {
         Map<String, String> fixedVipMap = new HashMap<String, String>() {
             {
-                put("x1:x:x:x:x:x", "10.1.0.1");
-                put("x2:x:x:x:x:x", "10.1.0.2");
+                put("x1:x:x:x:x:x", "10.5.0.1");
+                put("x2:x:x:x:x:x", "10.5.0.2");
             }
         };
         List<SdWanServerConfig.Route> routeList = new ArrayList<>();
         SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
                 .port(1800)
                 .heartTimeout(30 * 1000)
-                .vipCidr("10.1.0.0/24")
+                .vipCidr("10.5.0.0/24")
                 .fixedVipMap(fixedVipMap)
                 .routeList(routeList)
                 .build(), () -> new ChannelInboundHandlerAdapter());
@@ -97,7 +97,7 @@ public class TransferRelayTest {
         while (true) {
             sdWanNode1.sendIpPacket(SDWanProtos.IpPacket.newBuilder()
                     .setSrcIP("192.168.1.2")
-                    .setDstIP("10.1.0.2")
+                    .setDstIP("10.5.0.2")
                     .setData(ByteString.copyFrom(("hello" + i++).getBytes()))
                     .build());
             Thread.sleep(3000);
@@ -108,15 +108,15 @@ public class TransferRelayTest {
     public void relayFalse() throws Exception {
         Map<String, String> fixedVipMap = new HashMap<String, String>() {
             {
-                put("x1:x:x:x:x:x", "10.1.0.1");
-                put("x2:x:x:x:x:x", "10.1.0.2");
+                put("x1:x:x:x:x:x", "10.5.0.1");
+                put("x2:x:x:x:x:x", "10.5.0.2");
             }
         };
         List<SdWanServerConfig.Route> routeList = new ArrayList<>();
         SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
                 .port(1800)
                 .heartTimeout(30 * 1000)
-                .vipCidr("10.1.0.0/24")
+                .vipCidr("10.5.0.0/24")
                 .fixedVipMap(fixedVipMap)
                 .routeList(routeList)
                 .build(), () -> new ChannelInboundHandlerAdapter());
@@ -166,7 +166,7 @@ public class TransferRelayTest {
         while (true) {
             sdWanNode1.sendIpPacket(SDWanProtos.IpPacket.newBuilder()
                     .setSrcIP("192.168.1.2")
-                    .setDstIP("10.1.0.2")
+                    .setDstIP("10.5.0.2")
                     .setData(ByteString.copyFrom(("hello" + i++).getBytes()))
                     .build());
             Thread.sleep(3000);
@@ -177,15 +177,15 @@ public class TransferRelayTest {
     public void relayRandom() throws Exception {
         Map<String, String> fixedVipMap = new HashMap<String, String>() {
             {
-                put("x1:x:x:x:x:x", "10.1.0.1");
-                put("x2:x:x:x:x:x", "10.1.0.2");
+                put("x1:x:x:x:x:x", "10.5.0.1");
+                put("x2:x:x:x:x:x", "10.5.0.2");
             }
         };
         List<SdWanServerConfig.Route> routeList = new ArrayList<>();
         SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
                 .port(1800)
                 .heartTimeout(30 * 1000)
-                .vipCidr("10.1.0.0/24")
+                .vipCidr("10.5.0.0/24")
                 .fixedVipMap(fixedVipMap)
                 .routeList(routeList)
                 .build(), () -> new ChannelInboundHandlerAdapter());
@@ -239,7 +239,7 @@ public class TransferRelayTest {
         while (true) {
             sdWanNode1.sendIpPacket(SDWanProtos.IpPacket.newBuilder()
                     .setSrcIP("192.168.1.2")
-                    .setDstIP("10.1.0.2")
+                    .setDstIP("10.5.0.2")
                     .setData(ByteString.copyFrom(("hello" + i++).getBytes()))
                     .build());
             Thread.sleep(3000);
