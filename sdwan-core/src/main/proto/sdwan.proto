@@ -1,0 +1,107 @@
+syntax = "proto2";
+option java_package = "io.jaspercloud.sdwan.core.proto";
+option java_outer_classname = "SDWanProtos";
+
+enum MessageCode {
+  Success = 0;
+  Failed = 1;
+  SysError = 2;
+  NotEnough = 3;
+  VipBound = 4;
+  NotFound = 5;
+}
+
+enum MessageMode {
+  ReqResp = 1;
+  Push = 2;
+}
+
+enum MessageTypeCode {
+  //req/resp
+  RegistReqType = 101;
+  RegistRespType = 102;
+  P2pOfferType = 103;
+  P2pAnswerType = 104;
+  //push
+  NodeInfoListType = 201;
+  RouteListType = 202;
+  NodeOnlineType = 203;
+  NodeOfflineType = 204;
+  //
+  HeartType = 301;
+}
+
+enum MappingTypeCode {
+  FullCone = 1;
+  RestrictedCone = 2;
+  PortRestrictedCone = 3;
+  Symmetric = 4;
+}
+
+message Message {
+  required string reqId = 1;
+  required MessageMode mode = 2;
+  required MessageTypeCode type = 3;
+  optional bytes data = 4;
+}
+
+enum NodeTypeCode {
+  SimpleType = 1;
+  MeshType = 2;
+}
+
+message SocketAddress {
+  required string ip = 1;
+  required int32 port = 2;
+}
+
+message RegistReq {
+  required NodeTypeCode nodeType = 1;
+  required string macAddress = 2;
+  repeated string addressUri = 3;
+}
+
+message RegistResp {
+  required MessageCode code = 1;
+  optional string vip = 2;
+  optional int32 maskBits = 3;
+  optional RouteList routeList = 4;
+}
+
+message NodeInfo {
+  required string vip = 1;
+  repeated string addressUri = 2;
+}
+
+message NodeInfoList {
+  repeated NodeInfo nodeInfo = 1;
+}
+
+message Route {
+  required string destination = 1;
+  repeated string nexthop = 2 ;
+}
+
+message RouteList {
+  repeated Route route = 1;
+}
+
+message IpPacket {
+  required string srcIP = 1;
+  required string dstIP = 2;
+  required bytes data = 3;
+}
+
+message P2pOffer {
+  required string srcVIP = 1;
+  required string dstVIP = 2;
+  required SocketAddress offerAddress = 3;
+  required SocketAddress answerAddress = 4;
+}
+
+message P2pAnswer {
+  required MessageCode code = 1;
+  required string srcVIP = 2;
+  required string dstVIP = 3;
+}
+
