@@ -127,12 +127,13 @@ public class SdWanNode implements InitializingBean, Runnable {
             protected void channelRead0(ChannelHandlerContext ctx, StunPacket msg) throws Exception {
                 InetSocketAddress sender = msg.sender();
                 StunMessage stunMessage = msg.content();
+                StringAttr transferTypeAttr = stunMessage.getAttr(AttrType.TransferType);
                 AddressAttr addressAttr = stunMessage.getAttr(AttrType.SourceAddress);
                 BytesAttr dataAttr = stunMessage.getAttr(AttrType.Data);
                 byte[] data = dataAttr.getData();
                 if (MessageType.Transfer.equals(stunMessage.getMessageType())) {
-                    log.info("transfer src={}, sender={}, data={}",
-                            SocketAddressUtil.toAddress(addressAttr.getAddress()), SocketAddressUtil.toAddress(sender), new String(data));
+                    log.info("transfer type={}, src={}, sender={}, data={}",
+                            transferTypeAttr.getData(), SocketAddressUtil.toAddress(addressAttr.getAddress()), SocketAddressUtil.toAddress(sender), new String(data));
                 }
             }
         });

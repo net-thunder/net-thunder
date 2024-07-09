@@ -83,6 +83,7 @@ public class P2pClient implements TransportLifecycle, Runnable {
 
     public void transfer(InetSocketAddress address, byte[] bytes) {
         StunMessage message = new StunMessage(MessageType.Transfer);
+        message.setAttr(AttrType.TransferType, new StringAttr("p2p"));
         message.setAttr(AttrType.SourceAddress, new AddressAttr(ProtoFamily.IPv4, address.getHostString(), address.getPort()));
         message.setAttr(AttrType.Data, new BytesAttr(bytes));
         StunPacket request = new StunPacket(message, address);

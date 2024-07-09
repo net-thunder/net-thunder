@@ -63,6 +63,7 @@ public class RelayClient implements TransportLifecycle, Runnable {
 
     public void transfer(String token, byte[] bytes) {
         StunMessage message = new StunMessage(MessageType.Transfer);
+        message.setAttr(AttrType.TransferType, new StringAttr("relay"));
         message.setAttr(AttrType.SourceAddress, new AddressAttr(ProtoFamily.IPv4, relayAddress.getHostString(), relayAddress.getPort()));
         message.setAttr(AttrType.RelayToken, new StringAttr(token));
         message.setAttr(AttrType.Data, new BytesAttr(bytes));

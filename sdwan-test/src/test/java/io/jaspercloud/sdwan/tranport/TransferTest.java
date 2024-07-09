@@ -50,7 +50,7 @@ public class TransferTest {
         SdWanNode sdWanNode1 = new SdWanNode(SdWanNodeConfig.builder()
                 .controllerServer(address + ":1800")
                 .relayServer(address + ":2478")
-                .stunServer("stun.miwifi.com:3478")
+                .stunServer("127.0.0.1:3478")
                 .p2pPort(1001)
                 .heartTime(15 * 1000)
                 .p2pHeartTime(10 * 1000)
@@ -64,7 +64,7 @@ public class TransferTest {
         SdWanNode sdWanNode2 = new SdWanNode(SdWanNodeConfig.builder()
                 .controllerServer(address + ":1800")
                 .relayServer(address + ":2478")
-                .stunServer("stun.miwifi.com:3478")
+                .stunServer("127.0.0.1:3478")
                 .p2pPort(1002)
                 .heartTime(15 * 1000)
                 .p2pHeartTime(10 * 1000)
@@ -81,7 +81,7 @@ public class TransferTest {
                     .setDstIP("10.1.0.2")
                     .setData(ByteString.copyFrom("hello".getBytes()))
                     .build());
-            Thread.sleep(3000);
+            Thread.sleep(1000);
         }
     }
 }
