@@ -23,6 +23,10 @@
             <groupId>io.jaspercloud</groupId>
             <artifactId>sdwan-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.jaspercloud</groupId>
+            <artifactId>sdwan-tun</artifactId>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>

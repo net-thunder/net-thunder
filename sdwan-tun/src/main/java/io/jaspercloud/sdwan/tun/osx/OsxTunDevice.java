@@ -2,8 +2,8 @@ package io.jaspercloud.sdwan.tun.osx;
 
 import com.sun.jna.Native;
 import com.sun.jna.ptr.IntByReference;
-import io.jaspercloud.sdwan.Cidr;
 import io.jaspercloud.sdwan.exception.ProcessException;
+import io.jaspercloud.sdwan.support.Cidr;
 import io.jaspercloud.sdwan.tun.CheckInvoke;
 import io.jaspercloud.sdwan.tun.ProcessUtil;
 import io.jaspercloud.sdwan.tun.TunDevice;

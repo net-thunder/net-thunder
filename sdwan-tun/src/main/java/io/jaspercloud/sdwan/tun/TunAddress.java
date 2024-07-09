@@ -5,36 +5,24 @@ import java.net.SocketAddress;
 public class TunAddress extends SocketAddress {
 
     private String tunName;
-    private String ethName;
-    private String vip;
+    private String ip;
     private int maskBits;
 
     public String getTunName() {
         return tunName;
     }
 
-    public String getEthName() {
-        return ethName;
+    public String getIp() {
+        return ip;
     }
 
     public int getMaskBits() {
         return maskBits;
     }
 
-    public String getVip() {
-        return vip;
-    }
-
-    public void setVip(String vip) {
-        this.vip = vip;
-    }
-
-    public void setMaskBits(int maskBits) {
-        this.maskBits = maskBits;
-    }
-
-    public TunAddress(String tunName, String ethName) {
+    public TunAddress(String tunName, String ip, int maskBits) {
         this.tunName = tunName;
-        this.ethName = ethName;
+        this.ip = ip;
+        this.maskBits = maskBits;
     }
 }

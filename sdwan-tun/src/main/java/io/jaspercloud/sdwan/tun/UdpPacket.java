@@ -1,7 +1,7 @@
 package io.jaspercloud.sdwan.tun;
 
-import io.jaspercloud.sdwan.ByteBufUtil;
-import io.jaspercloud.sdwan.IPUtil;
+import io.jaspercloud.sdwan.util.ByteBufUtil;
+import io.jaspercloud.sdwan.util.IPUtil;
 import io.netty.buffer.ByteBuf;
 import org.springframework.util.Assert;
 

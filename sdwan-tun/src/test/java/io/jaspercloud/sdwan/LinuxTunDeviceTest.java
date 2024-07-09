@@ -10,7 +10,7 @@ import java.util.UUID;
 public class LinuxTunDeviceTest {
 
     public static void main(String[] args) throws Exception {
-        LinuxTunDevice tunDevice = new LinuxTunDevice("eth0", "tun", "sdwan", UUID.randomUUID().toString());
+        LinuxTunDevice tunDevice = new LinuxTunDevice("tun", "sdwan", UUID.randomUUID().toString());
         tunDevice.open();
         tunDevice.setIP("192.168.1.1", 24);
         tunDevice.setMTU(1500);

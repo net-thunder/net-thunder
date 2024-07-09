@@ -6,13 +6,7 @@ import io.jaspercloud.sdwan.tun.TunChannel;
 import io.jaspercloud.sdwan.tun.TunChannelConfig;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.DefaultEventLoopGroup;
+import io.netty.channel.*;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -37,9 +31,8 @@ public class TunChannelTest {
                         });
                     }
                 });
-        ChannelFuture future = bootstrap.bind(new TunAddress("tun", "eth0"));
+        ChannelFuture future = bootstrap.bind(new TunAddress("tun", "192.168.1.1", 24));
         TunChannel channel = (TunChannel) future.syncUninterruptibly().channel();
-        channel.setAddress("192.168.1.1", 24);
         CountDownLatch countDownLatch = new CountDownLatch(1);
         countDownLatch.await();
     }

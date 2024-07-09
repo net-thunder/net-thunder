@@ -1,7 +1,7 @@
 package io.jaspercloud.sdwan;
 
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
-import io.jaspercloud.sdwan.ice.AddressType;
+import io.jaspercloud.sdwan.util.AddressType;
 import io.jaspercloud.sdwan.stun.MappingAddress;
 import io.jaspercloud.sdwan.tranport.P2pClient;
 import io.jaspercloud.sdwan.tranport.RelayClient;

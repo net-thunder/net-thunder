@@ -1,10 +1,10 @@
 package io.jaspercloud.sdwan.tun;
 
-import io.jaspercloud.sdwan.NetworkInterfaceInfo;
-import io.jaspercloud.sdwan.NetworkInterfaceUtil;
 import io.jaspercloud.sdwan.tun.linux.LinuxTunDevice;
 import io.jaspercloud.sdwan.tun.osx.OsxTunDevice;
 import io.jaspercloud.sdwan.tun.windows.WinTunDevice;
+import io.jaspercloud.sdwan.util.NetworkInterfaceInfo;
+import io.jaspercloud.sdwan.util.NetworkInterfaceUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.util.internal.PlatformDependent;
@@ -52,11 +52,29 @@ public class TunChannel extends AbstractChannel {
         return tunAddress;
     }
 
-    public void setAddress(String ip, int maskBits) throws Exception {
-        tunDevice.setIP(ip, maskBits);
+    @Override
+    protected void doBind(SocketAddress localAddress) throws Exception {
+        tunAddress = (TunAddress) localAddress;
+        String tunName = tunAddress.getTunName();
+        String type = "jaspercloud";
+        String guid = UUID.randomUUID().toString();
+        if (PlatformDependent.isOsx()) {
+            tunDevice = new OsxTunDevice(tunName, type, guid);
+        } else if (PlatformDependent.isWindows()) {
+            tunDevice = new WinTunDevice(tunName, type, guid);
+        } else {
+            tunDevice = new LinuxTunDevice(tunName, type, guid);
+        }
+        tunDevice.open();
+        Integer mtu = config().getOption(TunChannelConfig.MTU);
+        tunDevice.setMTU(mtu);
+        applyLocalAddress();
+    }
+
+    public void applyLocalAddress() throws Exception {
+        String ip = tunAddress.getIp();
+        tunDevice.setIP(ip, tunAddress.getMaskBits());
         waitAddress(ip, 30 * 1000);
-        tunAddress.setVip(ip);
-        tunAddress.setMaskBits(maskBits);
     }
 
     private void waitAddress(String vip, int timeout) throws Exception {
@@ -73,24 +91,6 @@ public class TunChannel extends AbstractChannel {
             }
             Thread.sleep(100);
         }
-    }
-
-    @Override
-    protected void doBind(SocketAddress localAddress) throws Exception {
-        tunAddress = (TunAddress) localAddress;
-        String tunName = tunAddress.getTunName();
-        String type = "jaspercloud";
-        String guid = UUID.randomUUID().toString();
-        if (PlatformDependent.isOsx()) {
-            tunDevice = new OsxTunDevice(tunName, type, guid);
-        } else if (PlatformDependent.isWindows()) {
-            tunDevice = new WinTunDevice(tunName, type, guid);
-        } else {
-            tunDevice = new LinuxTunDevice(tunName, tunAddress.getEthName(), type, guid);
-        }
-        tunDevice.open();
-        Integer mtu = config().getOption(TunChannelConfig.MTU);
-        tunDevice.setMTU(mtu);
     }
 
     @Override

@@ -1,4 +1,4 @@
-package io.jaspercloud.sdwan.ice;
+package io.jaspercloud.sdwan.util;
 
 public interface AddressType {
 
