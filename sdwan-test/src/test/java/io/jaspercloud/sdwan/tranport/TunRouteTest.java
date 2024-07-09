@@ -1,23 +1,20 @@
 package io.jaspercloud.sdwan.tranport;
 
-import com.google.protobuf.ByteString;
 import io.jaspercloud.sdwan.SdWanNodeConfig;
-import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.tranport.support.TestSdWanNode;
+import io.jaspercloud.sdwan.tranport.support.TestTunSdWanNode;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.junit.jupiter.api.Test;
 
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * @author jasper
- * @create 2024/7/2
+ * @create 2024/7/9
  */
-public class TransferTest {
+public class TunRouteTest {
 
     @Test
     public void test() throws Exception {
@@ -29,6 +26,10 @@ public class TransferTest {
             }
         };
         List<SdWanServerConfig.Route> routeList = new ArrayList<>();
+        routeList.add(SdWanServerConfig.Route.builder()
+                .destination("172.168.1.0/24")
+                .nexthop(Arrays.asList("10.5.0.2"))
+                .build());
         SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
                 .port(1800)
                 .heartTimeout(30 * 1000)
@@ -47,7 +48,7 @@ public class TransferTest {
                 .bindPort(3478)
                 .build(), () -> new ChannelInboundHandlerAdapter());
         stunServer.afterPropertiesSet();
-        TestSdWanNode sdWanNode1 = new TestSdWanNode(SdWanNodeConfig.builder()
+        TestTunSdWanNode sdWanNode1 = new TestTunSdWanNode(SdWanNodeConfig.builder()
                 .controllerServer(address + ":1800")
                 .relayServer(address + ":2478")
                 .stunServer("127.0.0.1:3478")
@@ -75,13 +76,7 @@ public class TransferTest {
             }
         };
         sdWanNode2.afterPropertiesSet();
-        while (true) {
-            sdWanNode1.sendIpPacket(SDWanProtos.IpPacket.newBuilder()
-                    .setSrcIP("10.5.0.1")
-                    .setDstIP("10.5.0.2")
-                    .setData(ByteString.copyFrom("hello".getBytes()))
-                    .build());
-            Thread.sleep(1000);
-        }
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        countDownLatch.await();
     }
 }

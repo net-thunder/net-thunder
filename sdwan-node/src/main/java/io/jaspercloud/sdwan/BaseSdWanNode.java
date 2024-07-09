@@ -2,17 +2,16 @@ package io.jaspercloud.sdwan;
 
 import com.google.protobuf.ProtocolStringList;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
-import io.jaspercloud.sdwan.util.AddressType;
-import io.jaspercloud.sdwan.stun.*;
+import io.jaspercloud.sdwan.stun.MappingAddress;
 import io.jaspercloud.sdwan.support.AsyncTask;
 import io.jaspercloud.sdwan.support.Cidr;
 import io.jaspercloud.sdwan.tranport.SdWanClient;
 import io.jaspercloud.sdwan.tranport.SdWanClientConfig;
+import io.jaspercloud.sdwan.util.AddressType;
 import io.jaspercloud.sdwan.util.NetworkInterfaceInfo;
 import io.jaspercloud.sdwan.util.NetworkInterfaceUtil;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -26,6 +25,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -33,14 +33,16 @@ import java.util.stream.Collectors;
  * @create 2024/7/2
  */
 @Slf4j
-public class SdWanNode implements InitializingBean, Runnable {
+public class BaseSdWanNode implements InitializingBean, Runnable {
 
     private SdWanNodeConfig config;
+    private Supplier<ChannelHandler> handler;
 
     private IceClient iceClient;
     private SdWanClient sdWanClient;
     private MappingAddress mappingAddress;
     private String localVip;
+    private int maskBits;
     private String vipCidr;
     private List<SDWanProtos.Route> routeList;
     private ReentrantLock lock = new ReentrantLock();
@@ -55,6 +57,18 @@ public class SdWanNode implements InitializingBean, Runnable {
         return localVip;
     }
 
+    public int getMaskBits() {
+        return maskBits;
+    }
+
+    public String getVipCidr() {
+        return vipCidr;
+    }
+
+    public List<SDWanProtos.Route> getRouteList() {
+        return routeList;
+    }
+
     public SdWanClient getSdWanClient() {
         return sdWanClient;
     }
@@ -63,8 +77,9 @@ public class SdWanNode implements InitializingBean, Runnable {
         return iceClient;
     }
 
-    public SdWanNode(SdWanNodeConfig config) {
+    public BaseSdWanNode(SdWanNodeConfig config, Supplier<ChannelHandler> handler) {
         this.config = config;
+        this.handler = handler;
     }
 
     @Override
@@ -117,24 +132,18 @@ public class SdWanNode implements InitializingBean, Runnable {
                         }
                     }
                 });
-        iceClient = new IceClient(config, this, () -> new SimpleChannelInboundHandler<StunPacket>() {
+        iceClient = new IceClient(config, this, () -> new ChannelInitializer<Channel>() {
             @Override
-            public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-                signalAll();
-            }
-
-            @Override
-            protected void channelRead0(ChannelHandlerContext ctx, StunPacket msg) throws Exception {
-                InetSocketAddress sender = msg.sender();
-                StunMessage stunMessage = msg.content();
-                StringAttr transferTypeAttr = stunMessage.getAttr(AttrType.TransferType);
-                AddressAttr addressAttr = stunMessage.getAttr(AttrType.SourceAddress);
-                BytesAttr dataAttr = stunMessage.getAttr(AttrType.Data);
-                byte[] data = dataAttr.getData();
-                if (MessageType.Transfer.equals(stunMessage.getMessageType())) {
-                    log.info("transfer type={}, src={}, sender={}, data={}",
-                            transferTypeAttr.getData(), SocketAddressUtil.toAddress(addressAttr.getAddress()), SocketAddressUtil.toAddress(sender), new String(data));
-                }
+            protected void initChannel(Channel ch) throws Exception {
+                ChannelPipeline pipeline = ch.pipeline();
+                pipeline.addLast(new ChannelInboundHandlerAdapter() {
+                    @Override
+                    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+                        signalAll();
+                        ctx.fireChannelInactive();
+                    }
+                });
+                pipeline.addLast(handler.get());
             }
         });
         init();
@@ -142,7 +151,7 @@ public class SdWanNode implements InitializingBean, Runnable {
     }
 
     public void sendIpPacket(SDWanProtos.IpPacket ipPacket) {
-        sendTo(ipPacket.getDstIP(), ipPacket.getData().toByteArray());
+        sendTo(ipPacket.getDstIP(), ipPacket.toByteArray());
     }
 
     private void sendTo(String dstIp, byte[] bytes) {
@@ -175,7 +184,7 @@ public class SdWanNode implements InitializingBean, Runnable {
         return null;
     }
 
-    private void init() throws Exception {
+    protected void init() throws Exception {
         iceClient.start();
         sdWanClient.start();
         SDWanProtos.RegistReq.Builder builder = SDWanProtos.RegistReq.newBuilder()
@@ -207,7 +216,8 @@ public class SdWanNode implements InitializingBean, Runnable {
         builder.addAddressUri(relay);
         SDWanProtos.RegistResp regResp = sdWanClient.regist(builder.build(), 3000).get();
         localVip = regResp.getVip();
-        vipCidr = Cidr.parseCidr(regResp.getVip(), regResp.getMaskBits());
+        maskBits = regResp.getMaskBits();
+        vipCidr = Cidr.parseCidr(regResp.getVip(), maskBits);
         routeList = regResp.getRouteList().getRouteList();
         log.info("localVip={}", localVip);
     }

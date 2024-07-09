@@ -1,9 +1,9 @@
 package io.jaspercloud.sdwan.tranport;
 
 import com.google.protobuf.ByteString;
-import io.jaspercloud.sdwan.SdWanNode;
 import io.jaspercloud.sdwan.SdWanNodeConfig;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
+import io.jaspercloud.sdwan.tranport.support.TestSdWanNode;
 import org.junit.jupiter.api.Test;
 
 import java.net.InetAddress;
@@ -18,7 +18,7 @@ public class TransferSignallingTest {
     @Test
     public void test() throws Exception {
         String localAddress = InetAddress.getLocalHost().getHostAddress();
-        SdWanNode sdWanNode1 = new SdWanNode(SdWanNodeConfig.builder()
+        TestSdWanNode sdWanNode1 = new TestSdWanNode(SdWanNodeConfig.builder()
                 .controllerServer("127.0.0.1:1800")
                 .relayServer("127.0.0.1:2478")
                 .stunServer("127.0.0.1:3478")
@@ -28,7 +28,7 @@ public class TransferSignallingTest {
                 .p2pHeartTime(10 * 1000)
                 .build());
         sdWanNode1.afterPropertiesSet();
-        SdWanNode sdWanNode2 = new SdWanNode(SdWanNodeConfig.builder()
+        TestSdWanNode sdWanNode2 = new TestSdWanNode(SdWanNodeConfig.builder()
                 .controllerServer("127.0.0.1:1800")
                 .relayServer("127.0.0.1:2478")
                 .stunServer("127.0.0.1:3478")

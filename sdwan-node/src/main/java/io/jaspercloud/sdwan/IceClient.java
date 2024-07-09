@@ -1,11 +1,11 @@
 package io.jaspercloud.sdwan;
 
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
-import io.jaspercloud.sdwan.util.AddressType;
 import io.jaspercloud.sdwan.stun.MappingAddress;
 import io.jaspercloud.sdwan.tranport.P2pClient;
 import io.jaspercloud.sdwan.tranport.RelayClient;
 import io.jaspercloud.sdwan.tranport.TransportLifecycle;
+import io.jaspercloud.sdwan.util.AddressType;
 import io.netty.channel.ChannelHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomUtils;
@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 public class IceClient implements TransportLifecycle {
 
     private SdWanNodeConfig config;
-    private SdWanNode sdWanNode;
+    private BaseSdWanNode sdWanNode;
     private Supplier<ChannelHandler> handler;
 
     private P2pClient p2pClient;
@@ -39,7 +39,7 @@ public class IceClient implements TransportLifecycle {
         return p2pTransportManager;
     }
 
-    public IceClient(SdWanNodeConfig config, SdWanNode sdWanNode, Supplier<ChannelHandler> handler) {
+    public IceClient(SdWanNodeConfig config, BaseSdWanNode sdWanNode, Supplier<ChannelHandler> handler) {
         this.config = config;
         this.sdWanNode = sdWanNode;
         this.handler = handler;
