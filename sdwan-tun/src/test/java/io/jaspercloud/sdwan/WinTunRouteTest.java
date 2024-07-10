@@ -9,7 +9,7 @@ import io.jaspercloud.sdwan.tun.TunChannel;
 import io.jaspercloud.sdwan.tun.TunChannelConfig;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.*;
 
 import java.util.Arrays;
@@ -23,7 +23,7 @@ public class WinTunRouteTest {
                 .group(eventLoopGroup)
                 .channel(TunChannel.class)
                 .option(TunChannelConfig.MTU, 1500)
-                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+                .option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
                 .handler(new ChannelInitializer<Channel>() {
                     @Override
                     protected void initChannel(Channel ch) {

@@ -15,7 +15,7 @@ import io.jaspercloud.sdwan.util.ByteBufUtil;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.*;
 import lombok.extern.slf4j.Slf4j;
 
@@ -55,7 +55,7 @@ public class TestTunSdWanNode extends BaseSdWanNode {
                 .group(eventLoopGroup)
                 .channel(TunChannel.class)
                 .option(TunChannelConfig.MTU, 1500)
-                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+                .option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
                 .handler(new ChannelInitializer<Channel>() {
                     @Override
                     protected void initChannel(Channel ch) {
@@ -64,8 +64,6 @@ public class TestTunSdWanNode extends BaseSdWanNode {
                             @Override
                             protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
                                 Ipv4Packet ipv4Packet = Ipv4Packet.decodeMark(msg);
-                                System.out.println(String.format("%s -> %s: protocol=%s",
-                                        ipv4Packet.getSrcIP(), ipv4Packet.getDstIP(), ipv4Packet.getProtocol()));
                                 sdWanNode.sendIpPacket(SDWanProtos.IpPacket.newBuilder()
                                         .setSrcIP(ipv4Packet.getSrcIP())
                                         .setDstIP(ipv4Packet.getDstIP())

@@ -5,7 +5,7 @@ import io.jaspercloud.sdwan.stun.*;
 import io.jaspercloud.sdwan.support.AsyncTask;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
@@ -154,7 +154,7 @@ public class P2pClient implements TransportLifecycle, Runnable {
         Bootstrap bootstrap = new Bootstrap()
                 .group(bossGroup)
                 .channel(NioDatagramChannel.class)
-                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+                .option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
                 .handler(new ChannelInitializer<Channel>() {
                     @Override
                     protected void initChannel(Channel ch) throws Exception {

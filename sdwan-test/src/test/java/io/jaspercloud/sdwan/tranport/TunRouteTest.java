@@ -18,6 +18,7 @@ public class TunRouteTest {
 
     @Test
     public void test() throws Exception {
+        System.setProperty("io.netty.leakDetection.level", "PARANOID");
         String address = InetAddress.getLocalHost().getHostAddress();
         Map<String, String> fixedVipMap = new HashMap<String, String>() {
             {

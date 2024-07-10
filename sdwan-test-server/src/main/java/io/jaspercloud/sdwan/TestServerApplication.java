@@ -23,8 +23,7 @@ import org.springframework.context.annotation.Configuration;
 public class TestServerApplication {
 
     public static void main(String[] args) throws Exception {
-        System.setProperty("io.netty.leakDetection.level", "ADVANCED");
-        System.setProperty("io.netty.leakDetection.samplingInterval", "1");
+        System.setProperty("io.netty.leakDetection.level", "PARANOID");
         ConfigurableApplicationContext context = new SpringApplicationBuilder(TestServerApplication.class)
                 .web(WebApplicationType.NONE)
                 .run(args);
