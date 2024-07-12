@@ -21,8 +21,8 @@ public class TunTransferTest {
         String address = InetAddress.getLocalHost().getHostAddress();
         Map<String, String> fixedVipMap = new HashMap<String, String>() {
             {
-                put("x1:x:x:x:x:x", "10.5.0.1");
-                put("x2:x:x:x:x:x", "10.5.0.2");
+                put("x1:x:x:x:x:x", "10.5.0.11");
+                put("x2:x:x:x:x:x", "10.5.0.12");
             }
         };
         List<SdWanServerConfig.Route> routeList = new ArrayList<>();
