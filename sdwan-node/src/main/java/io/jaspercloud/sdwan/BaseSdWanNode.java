@@ -219,7 +219,6 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
         maskBits = regResp.getMaskBits();
         vipCidr = Cidr.parseCidr(regResp.getVip(), maskBits);
         routeList = regResp.getRouteList().getRouteList();
-        log.info("localVip={}", localVip);
     }
 
     protected MappingAddress processMappingAddress(MappingAddress mappingAddress) {

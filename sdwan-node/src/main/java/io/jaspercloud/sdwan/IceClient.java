@@ -79,9 +79,11 @@ public class IceClient implements TransportLifecycle {
         //p2p
         List<UriComponents> p2pList = uriList.stream().filter(e -> !AddressType.RELAY.equals(e.getScheme())).collect(Collectors.toList());
         p2pList.forEach(uri -> {
-            ping(nodeInfo.getVip(), new InetSocketAddress(uri.getHost(), uri.getPort()), 3000)
+            InetSocketAddress pingAddr = new InetSocketAddress(uri.getHost(), uri.getPort());
+            log.debug("ping: {}", pingAddr);
+            ping(nodeInfo.getVip(), pingAddr, 3000)
                     .thenAccept(address -> {
-                        log.info("ping success: {}", uri.toString());
+                        log.debug("ping success: {}", uri.toString());
                     });
             SDWanProtos.P2pOffer p2pOfferReq = SDWanProtos.P2pOffer.newBuilder()
                     .setSrcVIP(sdWanNode.getLocalVip())
@@ -99,8 +101,8 @@ public class IceClient implements TransportLifecycle {
                     .whenComplete((resp, ex) -> {
                         SDWanProtos.MessageCode code = resp.getCode();
                         if (SDWanProtos.MessageCode.Success.equals(code)) {
-                            Set<InetSocketAddress> set = p2pTransportManager.getP2pAddressSet(nodeInfo.getVip());
-                            InetSocketAddress p2pAddress = selectAddress(set);
+                            Set<InetSocketAddress> addrSet = p2pTransportManager.getP2pAddressSet(nodeInfo.getVip());
+                            InetSocketAddress p2pAddress = selectAddress(addrSet);
                             p2pClient.transfer(p2pAddress, bytes);
                         } else {
                             relayClient.transfer(token, bytes);

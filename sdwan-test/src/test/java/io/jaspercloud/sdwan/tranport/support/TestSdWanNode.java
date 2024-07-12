@@ -25,13 +25,12 @@ public class TestSdWanNode extends BaseSdWanNode {
                 InetSocketAddress sender = msg.sender();
                 StunMessage stunMessage = msg.content();
                 StringAttr transferTypeAttr = stunMessage.getAttr(AttrType.TransferType);
-                AddressAttr addressAttr = stunMessage.getAttr(AttrType.SourceAddress);
                 BytesAttr dataAttr = stunMessage.getAttr(AttrType.Data);
                 byte[] data = dataAttr.getData();
                 if (MessageType.Transfer.equals(stunMessage.getMessageType())) {
                     SDWanProtos.IpPacket ipPacket = SDWanProtos.IpPacket.parseFrom(data);
-                    log.info("recv transfer type={}, sender={},  src={}, dst={}",
-                            transferTypeAttr.getData(), SocketAddressUtil.toAddress(addressAttr.getAddress()),
+                    log.debug("recv transfer type={}, sender={},  src={}, dst={}",
+                            transferTypeAttr.getData(), SocketAddressUtil.toAddress(sender),
                             ipPacket.getSrcIP(), ipPacket.getDstIP());
                 }
             }

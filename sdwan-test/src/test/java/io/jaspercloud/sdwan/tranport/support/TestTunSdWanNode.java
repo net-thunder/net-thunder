@@ -74,6 +74,7 @@ public class TestTunSdWanNode extends BaseSdWanNode {
                     }
                 });
         ChannelFuture future = bootstrap.bind(new TunAddress("net-thunder", getLocalVip(), getMaskBits()));
+        log.info("tun address={}", getLocalVip());
         TunChannel tunChannel = (TunChannel) future.syncUninterruptibly().channel();
         RouteManager routeManager = new WindowsRouteManager();
         for (SDWanProtos.Route route : getRouteList()) {
