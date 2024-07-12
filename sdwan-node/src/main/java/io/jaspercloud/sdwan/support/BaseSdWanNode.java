@@ -142,6 +142,7 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
             }
         });
         init();
+        log.info("SdWanNode started");
         new Thread(this, "loop").start();
     }
 
@@ -182,7 +183,7 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
     protected void init() throws Exception {
         iceClient.start();
         sdWanClient.start();
-        log.info("sdwan node started");
+        log.info("sdwan node init");
         SDWanProtos.RegistReq.Builder builder = SDWanProtos.RegistReq.newBuilder()
                 .setNodeType(SDWanProtos.NodeTypeCode.SimpleType)
                 .setMacAddress(processMacAddress(NetworkInterfaceUtil.getHardwareAddress()));
@@ -219,6 +220,7 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
         maskBits = regResp.getMaskBits();
         vipCidr = Cidr.parseCidr(regResp.getVip(), maskBits);
         routeList = regResp.getRouteList().getRouteList();
+        log.info("sdwan node started");
     }
 
     protected ChannelHandler getTunHandler() {

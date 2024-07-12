@@ -56,7 +56,7 @@ public class TunTransport implements TransportLifecycle {
         try {
             TunAddress tunAddress = new TunAddress(config.getTunName(), config.getIp(), config.getMaskBits());
             localChannel = (TunChannel) bootstrap.bind(tunAddress).syncUninterruptibly().channel();
-            log.info("tun start address={}", config.getIp());
+            log.info("tunTransport started address={}", config.getIp());
             localChannel.closeFuture().addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture future) throws Exception {

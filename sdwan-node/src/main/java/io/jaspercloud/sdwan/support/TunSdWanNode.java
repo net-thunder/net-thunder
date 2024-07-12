@@ -86,6 +86,5 @@ public class TunSdWanNode extends BaseSdWanNode {
         for (SDWanProtos.Route route : getRouteList()) {
             routeManager.addRoute(tunChannel, route);
         }
-        log.info("TunSdWanNode started");
     }
 }
