@@ -258,16 +258,22 @@ public class SdWanServer implements InitializingBean, DisposableBean, Runnable {
                         pipeline.addLast("sdwanServer:process", handler.get());
                     }
                 });
-        localChannel = serverBootstrap.bind(config.getPort()).syncUninterruptibly().channel();
-        log.info("sdwan server started: port={}", config.getPort());
-        bossGroup.scheduleAtFixedRate(this, 0, 2 * config.getHeartTimeout(), TimeUnit.MILLISECONDS);
-        localChannel.closeFuture().addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture future) throws Exception {
-                bossGroup.shutdownGracefully();
-                workerGroup.shutdownGracefully();
-            }
-        });
+        try {
+            localChannel = serverBootstrap.bind(config.getPort()).syncUninterruptibly().channel();
+            log.info("sdwan server started: port={}", config.getPort());
+            bossGroup.scheduleAtFixedRate(this, 0, 2 * config.getHeartTimeout(), TimeUnit.MILLISECONDS);
+            localChannel.closeFuture().addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture future) throws Exception {
+                    bossGroup.shutdownGracefully();
+                    workerGroup.shutdownGracefully();
+                }
+            });
+        } catch (Exception e) {
+            bossGroup.shutdownGracefully();
+            workerGroup.shutdownGracefully();
+            throw e;
+        }
     }
 
     @Override

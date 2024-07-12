@@ -110,15 +110,20 @@ public class RelayClient implements TransportLifecycle, Runnable {
                     }
                 });
         InetSocketAddress localAddress = new InetSocketAddress("0.0.0.0", port);
-        localChannel = bootstrap.bind(localAddress).syncUninterruptibly().channel();
-        curToken = regist(3000).get();
-        bossGroup.scheduleAtFixedRate(this, 0, heartTime, TimeUnit.MILLISECONDS);
-        localChannel.closeFuture().addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture future) throws Exception {
-                bossGroup.shutdownGracefully();
-            }
-        });
+        try {
+            localChannel = bootstrap.bind(localAddress).syncUninterruptibly().channel();
+            curToken = regist(3000).get();
+            bossGroup.scheduleAtFixedRate(this, 0, heartTime, TimeUnit.MILLISECONDS);
+            localChannel.closeFuture().addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture future) throws Exception {
+                    bossGroup.shutdownGracefully();
+                }
+            });
+        } catch (Exception e) {
+            bossGroup.shutdownGracefully();
+            throw e;
+        }
     }
 
     @Override

@@ -15,6 +15,7 @@ import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.InetSocketAddress;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -143,15 +144,21 @@ public class SdWanClient implements TransportLifecycle, Runnable {
                         pipeline.addLast("sdwanClient:process", handler.get());
                     }
                 });
-        localChannel = bootstrap.connect(SocketAddressUtil.parse(config.getControllerServer())).syncUninterruptibly().channel();
-        log.info("sdwan client started");
-        bossGroup.scheduleAtFixedRate(this, 0, config.getHeartTime(), TimeUnit.MILLISECONDS);
-        localChannel.closeFuture().addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture future) throws Exception {
-                bossGroup.shutdownGracefully();
-            }
-        });
+        InetSocketAddress socketAddress = SocketAddressUtil.parse(config.getControllerServer());
+        try {
+            localChannel = bootstrap.connect(socketAddress).syncUninterruptibly().channel();
+            log.info("sdwan client started");
+            bossGroup.scheduleAtFixedRate(this, 0, config.getHeartTime(), TimeUnit.MILLISECONDS);
+            localChannel.closeFuture().addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture future) throws Exception {
+                    bossGroup.shutdownGracefully();
+                }
+            });
+        } catch (Exception e) {
+            bossGroup.shutdownGracefully();
+            throw e;
+        }
     }
 
     @Override

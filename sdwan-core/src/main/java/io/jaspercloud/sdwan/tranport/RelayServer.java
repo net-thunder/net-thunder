@@ -103,15 +103,20 @@ public class RelayServer implements InitializingBean, DisposableBean, Runnable {
                     }
                 });
         InetSocketAddress localAddress = new InetSocketAddress("0.0.0.0", config.getBindPort());
-        localChannel = bootstrap.bind(localAddress).syncUninterruptibly().channel();
-        log.info("relay server started: port={}", config.getBindPort());
-        bossGroup.scheduleAtFixedRate(this, 0, 2 * config.getHeartTimeout(), TimeUnit.MILLISECONDS);
-        localChannel.closeFuture().addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture future) throws Exception {
-                bossGroup.shutdownGracefully();
-            }
-        });
+        try {
+            localChannel = bootstrap.bind(localAddress).syncUninterruptibly().channel();
+            log.info("relay server started: port={}", config.getBindPort());
+            bossGroup.scheduleAtFixedRate(this, 0, 2 * config.getHeartTimeout(), TimeUnit.MILLISECONDS);
+            localChannel.closeFuture().addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture future) throws Exception {
+                    bossGroup.shutdownGracefully();
+                }
+            });
+        } catch (Exception e) {
+            bossGroup.shutdownGracefully();
+            throw e;
+        }
     }
 
     @Override
