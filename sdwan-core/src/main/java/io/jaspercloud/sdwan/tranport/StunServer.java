@@ -78,7 +78,7 @@ public class StunServer implements InitializingBean, DisposableBean {
                     }
                 });
         InetSocketAddress localAddress = new InetSocketAddress(config.getBindPort());
-        localChannel = bootstrap.bind(localAddress).sync().channel();
+        localChannel = bootstrap.bind(localAddress).syncUninterruptibly().channel();
         log.info("stun server started: port={}", config.getBindPort());
         localChannel.closeFuture().addListener(new ChannelFutureListener() {
             @Override

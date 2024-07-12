@@ -7,6 +7,7 @@ import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.route.RouteManager;
 import io.jaspercloud.sdwan.route.WindowsRouteManager;
 import io.jaspercloud.sdwan.stun.*;
+import io.jaspercloud.sdwan.tranport.NioEventLoopFactory;
 import io.jaspercloud.sdwan.tun.Ipv4Packet;
 import io.jaspercloud.sdwan.tun.TunAddress;
 import io.jaspercloud.sdwan.tun.TunChannel;
@@ -50,7 +51,7 @@ public class TestTunSdWanNode extends BaseSdWanNode {
     protected void init() throws Exception {
         super.init();
         BaseSdWanNode sdWanNode = this;
-        DefaultEventLoopGroup eventLoopGroup = new DefaultEventLoopGroup();
+        EventLoopGroup eventLoopGroup = NioEventLoopFactory.createEventLoopGroup();
         Bootstrap bootstrap = new Bootstrap()
                 .group(eventLoopGroup)
                 .channel(TunChannel.class)
@@ -75,6 +76,12 @@ public class TestTunSdWanNode extends BaseSdWanNode {
                 });
         ChannelFuture future = bootstrap.bind(new TunAddress("net-thunder", getLocalVip(), getMaskBits()));
         log.info("tun address={}", getLocalVip());
+        future.channel().closeFuture().addListener(new ChannelFutureListener() {
+            @Override
+            public void operationComplete(ChannelFuture future) throws Exception {
+                eventLoopGroup.shutdownGracefully();
+            }
+        });
         TunChannel tunChannel = (TunChannel) future.syncUninterruptibly().channel();
         RouteManager routeManager = new WindowsRouteManager();
         for (SDWanProtos.Route route : getRouteList()) {

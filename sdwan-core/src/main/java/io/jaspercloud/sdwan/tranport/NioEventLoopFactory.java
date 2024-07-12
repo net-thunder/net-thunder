@@ -1,5 +1,7 @@
 package io.jaspercloud.sdwan.tranport;
 
+import io.netty.channel.DefaultEventLoopGroup;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
@@ -18,4 +20,12 @@ public class NioEventLoopFactory {
                 new DefaultThreadFactory("nioWorkerLoop")
         );
     }
+
+    public static EventLoopGroup createEventLoopGroup() {
+        return new DefaultEventLoopGroup(
+                Runtime.getRuntime().availableProcessors(),
+                new DefaultThreadFactory("nioBossLoop")
+        );
+    }
+
 }
