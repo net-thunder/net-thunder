@@ -7,17 +7,15 @@ import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.route.RouteManager;
 import io.jaspercloud.sdwan.route.WindowsRouteManager;
 import io.jaspercloud.sdwan.stun.*;
-import io.jaspercloud.sdwan.tranport.NioEventLoopFactory;
+import io.jaspercloud.sdwan.tranport.TunTransport;
+import io.jaspercloud.sdwan.tranport.TunTransportConfig;
 import io.jaspercloud.sdwan.tun.Ipv4Packet;
-import io.jaspercloud.sdwan.tun.TunAddress;
 import io.jaspercloud.sdwan.tun.TunChannel;
-import io.jaspercloud.sdwan.tun.TunChannelConfig;
 import io.jaspercloud.sdwan.util.ByteBufUtil;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;
-import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.UnpooledByteBufAllocator;
-import io.netty.channel.*;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
@@ -28,6 +26,8 @@ import java.net.InetSocketAddress;
  */
 @Slf4j
 public class TestTunSdWanNode extends BaseSdWanNode {
+
+    private TunTransportConfig config;
 
     public TestTunSdWanNode(SdWanNodeConfig config) {
         super(config, () -> new SimpleChannelInboundHandler<StunPacket>() {
@@ -45,44 +45,33 @@ public class TestTunSdWanNode extends BaseSdWanNode {
                 }
             }
         });
+        this.config = TunTransportConfig.builder()
+                .tunName(config.getTunName())
+                .ip(config.getIp())
+                .maskBits(config.getMaskBits())
+                .mtu(config.getMtu())
+                .build();
     }
 
     @Override
     protected void init() throws Exception {
         super.init();
         BaseSdWanNode sdWanNode = this;
-        EventLoopGroup eventLoopGroup = NioEventLoopFactory.createEventLoopGroup();
-        Bootstrap bootstrap = new Bootstrap()
-                .group(eventLoopGroup)
-                .channel(TunChannel.class)
-                .option(TunChannelConfig.MTU, 1500)
-                .option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
-                .handler(new ChannelInitializer<Channel>() {
-                    @Override
-                    protected void initChannel(Channel ch) {
-                        ChannelPipeline pipeline = ch.pipeline();
-                        pipeline.addLast("TunEngine:readTun", new SimpleChannelInboundHandler<ByteBuf>() {
-                            @Override
-                            protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
-                                Ipv4Packet ipv4Packet = Ipv4Packet.decodeMark(msg);
-                                sdWanNode.sendIpPacket(SDWanProtos.IpPacket.newBuilder()
-                                        .setSrcIP(ipv4Packet.getSrcIP())
-                                        .setDstIP(ipv4Packet.getDstIP())
-                                        .setData(ByteString.copyFrom(ByteBufUtil.toBytes(msg)))
-                                        .build());
-                            }
-                        });
-                    }
-                });
-        ChannelFuture future = bootstrap.bind(new TunAddress("net-thunder", getLocalVip(), getMaskBits()));
-        log.info("tun address={}", getLocalVip());
-        future.channel().closeFuture().addListener(new ChannelFutureListener() {
+        config.setIp(getLocalVip());
+        config.setMaskBits(getMaskBits());
+        TunTransport tunTransport = new TunTransport(config, () -> new SimpleChannelInboundHandler<ByteBuf>() {
             @Override
-            public void operationComplete(ChannelFuture future) throws Exception {
-                eventLoopGroup.shutdownGracefully();
+            protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
+                Ipv4Packet ipv4Packet = Ipv4Packet.decodeMark(msg);
+                sdWanNode.sendIpPacket(SDWanProtos.IpPacket.newBuilder()
+                        .setSrcIP(ipv4Packet.getSrcIP())
+                        .setDstIP(ipv4Packet.getDstIP())
+                        .setData(ByteString.copyFrom(ByteBufUtil.toBytes(msg)))
+                        .build());
             }
         });
-        TunChannel tunChannel = (TunChannel) future.syncUninterruptibly().channel();
+        tunTransport.start();
+        TunChannel tunChannel = tunTransport.getChannel();
         RouteManager routeManager = new WindowsRouteManager();
         for (SDWanProtos.Route route : getRouteList()) {
             routeManager.addRoute(tunChannel, route);

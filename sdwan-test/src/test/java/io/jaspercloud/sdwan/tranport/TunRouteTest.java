@@ -56,6 +56,8 @@ public class TunRouteTest {
                 .p2pPort(1001)
                 .heartTime(15 * 1000)
                 .p2pHeartTime(10 * 1000)
+                .tunName("tun")
+                .mtu(1440)
                 .build()) {
             @Override
             protected String processMacAddress(String hardwareAddress) {

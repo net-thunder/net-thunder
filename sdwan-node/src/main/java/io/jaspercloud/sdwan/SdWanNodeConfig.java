@@ -23,4 +23,9 @@ public class SdWanNodeConfig {
     private String localAddress;
     private int p2pPort;
     private long p2pHeartTime;
+
+    private String tunName;
+    private String ip;
+    private int maskBits;
+    private int mtu;
 }
