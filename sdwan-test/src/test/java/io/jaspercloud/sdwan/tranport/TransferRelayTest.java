@@ -66,7 +66,7 @@ public class TransferRelayTest {
             }
 
             @Override
-            protected NatAddress processMappingAddress(NatAddress mappingAddress) {
+            protected NatAddress processNatAddress(NatAddress mappingAddress) {
                 mappingAddress.setMappingAddress(new InetSocketAddress("192.168.1.0", 1000));
                 return mappingAddress;
             }
@@ -87,7 +87,7 @@ public class TransferRelayTest {
             }
 
             @Override
-            protected NatAddress processMappingAddress(NatAddress mappingAddress) {
+            protected NatAddress processNatAddress(NatAddress mappingAddress) {
                 mappingAddress.setMappingAddress(new InetSocketAddress("192.168.1.0", 1000));
                 return mappingAddress;
             }
