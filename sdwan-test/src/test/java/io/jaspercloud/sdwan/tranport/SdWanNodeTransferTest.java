@@ -16,7 +16,7 @@ import java.util.concurrent.CountDownLatch;
  * @author jasper
  * @create 2024/7/9
  */
-public class TunTransferTest {
+public class SdWanNodeTransferTest {
 
     @Test
     public void test() throws Exception {
