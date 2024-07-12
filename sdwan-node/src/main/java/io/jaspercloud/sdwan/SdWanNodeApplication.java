@@ -17,11 +17,11 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties(SdWanNodeConfig.class)
 @Configuration
 @SpringBootApplication
-public class SdWanApplication {
+public class SdWanNodeApplication {
 
     public static void main(String[] args) throws Exception {
         System.setProperty("io.netty.leakDetection.level", "PARANOID");
-        ConfigurableApplicationContext context = new SpringApplicationBuilder(SdWanApplication.class)
+        ConfigurableApplicationContext context = new SpringApplicationBuilder(SdWanNodeApplication.class)
                 .web(WebApplicationType.NONE)
                 .run(args);
     }
