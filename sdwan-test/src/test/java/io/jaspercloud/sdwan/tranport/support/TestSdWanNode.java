@@ -5,6 +5,7 @@ import io.jaspercloud.sdwan.SdWanNodeConfig;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.stun.*;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +20,12 @@ import java.net.InetSocketAddress;
 public class TestSdWanNode extends BaseSdWanNode {
 
     public TestSdWanNode(SdWanNodeConfig config) {
-        super(config, () -> new SimpleChannelInboundHandler<StunPacket>() {
+        super(config);
+    }
+
+    @Override
+    protected ChannelHandler getTunHandler() {
+        return new SimpleChannelInboundHandler<StunPacket>() {
             @Override
             protected void channelRead0(ChannelHandlerContext ctx, StunPacket msg) throws Exception {
                 InetSocketAddress sender = msg.sender();
@@ -34,6 +40,6 @@ public class TestSdWanNode extends BaseSdWanNode {
                             ipPacket.getSrcIP(), ipPacket.getDstIP());
                 }
             }
-        });
+        };
     }
 }

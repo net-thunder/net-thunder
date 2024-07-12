@@ -1,8 +1,10 @@
 package io.jaspercloud.sdwan.tranport;
 
+import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.tun.TunAddress;
 import io.jaspercloud.sdwan.tun.TunChannel;
 import io.jaspercloud.sdwan.tun.TunChannelConfig;
+import io.jaspercloud.sdwan.util.ByteBufUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.*;
@@ -31,12 +33,9 @@ public class TunTransport implements TransportLifecycle {
         this.handler = handler;
     }
 
-    @Override
-    public boolean isRunning() {
-        if (null == localChannel) {
-            return false;
-        }
-        return localChannel.isActive();
+    public void writeIpPacket(SDWanProtos.IpPacket ipPacket) {
+        byte[] bytes = ipPacket.getPayload().toByteArray();
+        localChannel.writeAndFlush(ByteBufUtil.toByteBuf(bytes));
     }
 
     @Override
@@ -76,5 +75,13 @@ public class TunTransport implements TransportLifecycle {
             return;
         }
         localChannel.close();
+    }
+
+    @Override
+    public boolean isRunning() {
+        if (null == localChannel) {
+            return false;
+        }
+        return localChannel.isActive();
     }
 }

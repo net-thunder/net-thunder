@@ -1,8 +1,6 @@
-package io.jaspercloud.sdwan.tranport.support;
+package io.jaspercloud.sdwan;
 
 import com.google.protobuf.ByteString;
-import io.jaspercloud.sdwan.BaseSdWanNode;
-import io.jaspercloud.sdwan.SdWanNodeConfig;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.route.RouteManager;
 import io.jaspercloud.sdwan.route.WindowsRouteManager;
@@ -23,14 +21,16 @@ import java.net.InetSocketAddress;
 
 /**
  * @author jasper
- * @create 2024/7/9
+ * @create 2024/7/12
  */
 @Slf4j
-public class TestTunSdWanNode extends BaseSdWanNode {
+public class TunSdWanNode extends BaseSdWanNode {
 
     private SdWanNodeConfig config;
 
-    public TestTunSdWanNode(SdWanNodeConfig config) {
+    private TunTransport tunTransport;
+
+    public TunSdWanNode(SdWanNodeConfig config) {
         super(config);
         this.config = config;
     }
@@ -52,6 +52,10 @@ public class TestTunSdWanNode extends BaseSdWanNode {
                 log.debug("recv transfer type={}, sender={},  src={}, dst={}",
                         transferTypeAttr.getData(), SocketAddressUtil.toAddress(sender),
                         ipPacket.getSrcIP(), ipPacket.getDstIP());
+                if (null == tunTransport || !tunTransport.isRunning()) {
+                    return;
+                }
+                tunTransport.writeIpPacket(ipPacket);
             }
         };
     }
@@ -59,18 +63,17 @@ public class TestTunSdWanNode extends BaseSdWanNode {
     @Override
     protected void init() throws Exception {
         super.init();
-        BaseSdWanNode sdWanNode = this;
         TunTransportConfig tunConfig = TunTransportConfig.builder()
                 .tunName(config.getTunName())
                 .ip(getLocalVip())
                 .maskBits(getMaskBits())
                 .mtu(config.getMtu())
                 .build();
-        TunTransport tunTransport = new TunTransport(tunConfig, () -> new SimpleChannelInboundHandler<ByteBuf>() {
+        tunTransport = new TunTransport(tunConfig, () -> new SimpleChannelInboundHandler<ByteBuf>() {
             @Override
             protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
                 Ipv4Packet ipv4Packet = Ipv4Packet.decodeMark(msg);
-                sdWanNode.sendIpPacket(SDWanProtos.IpPacket.newBuilder()
+                TunSdWanNode.this.sendIpPacket(SDWanProtos.IpPacket.newBuilder()
                         .setSrcIP(ipv4Packet.getSrcIP())
                         .setDstIP(ipv4Packet.getDstIP())
                         .setPayload(ByteString.copyFrom(ByteBufUtil.toBytes(msg)))
@@ -83,5 +86,6 @@ public class TestTunSdWanNode extends BaseSdWanNode {
         for (SDWanProtos.Route route : getRouteList()) {
             routeManager.addRoute(tunChannel, route);
         }
+        log.info("TunSdWanNode started");
     }
 }

@@ -1,26 +1,23 @@
 package io.jaspercloud.sdwan.tranport;
 
-import com.google.protobuf.ByteString;
 import io.jaspercloud.sdwan.SdWanNodeConfig;
-import io.jaspercloud.sdwan.core.proto.SDWanProtos;
-import io.jaspercloud.sdwan.tranport.support.TestSdWanNode;
+import io.jaspercloud.sdwan.TunSdWanNode;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.junit.jupiter.api.Test;
 
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * @author jasper
- * @create 2024/7/2
+ * @create 2024/7/9
  */
-public class TransferTest {
+public class TunTransferTest {
 
     @Test
     public void test() throws Exception {
+        System.setProperty("io.netty.leakDetection.level", "PARANOID");
         String address = InetAddress.getLocalHost().getHostAddress();
         Map<String, String> fixedVipMap = new HashMap<String, String>() {
             {
@@ -29,6 +26,10 @@ public class TransferTest {
             }
         };
         List<SdWanServerConfig.Route> routeList = new ArrayList<>();
+        routeList.add(SdWanServerConfig.Route.builder()
+                .destination("172.168.1.0/24")
+                .nexthop(Arrays.asList("10.5.0.2"))
+                .build());
         SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
                 .port(1800)
                 .heartTimeout(30 * 1000)
@@ -47,13 +48,15 @@ public class TransferTest {
                 .bindPort(3478)
                 .build(), () -> new ChannelInboundHandlerAdapter());
         stunServer.afterPropertiesSet();
-        TestSdWanNode sdWanNode1 = new TestSdWanNode(SdWanNodeConfig.builder()
+        TunSdWanNode sdWanNode1 = new TunSdWanNode(SdWanNodeConfig.builder()
                 .controllerServer(address + ":1800")
                 .relayServer(address + ":2478")
                 .stunServer("127.0.0.1:3478")
                 .p2pPort(1001)
                 .heartTime(15 * 1000)
                 .p2pHeartTime(10 * 1000)
+                .tunName("tun1")
+                .mtu(1440)
                 .build()) {
             @Override
             protected String processMacAddress(String hardwareAddress) {
@@ -61,13 +64,14 @@ public class TransferTest {
             }
         };
         sdWanNode1.afterPropertiesSet();
-        TestSdWanNode sdWanNode2 = new TestSdWanNode(SdWanNodeConfig.builder()
+        TunSdWanNode sdWanNode2 = new TunSdWanNode(SdWanNodeConfig.builder()
                 .controllerServer(address + ":1800")
                 .relayServer(address + ":2478")
                 .stunServer("127.0.0.1:3478")
                 .p2pPort(1002)
                 .heartTime(15 * 1000)
                 .p2pHeartTime(10 * 1000)
+                .tunName("tun2")
                 .build()) {
             @Override
             protected String processMacAddress(String hardwareAddress) {
@@ -75,13 +79,7 @@ public class TransferTest {
             }
         };
         sdWanNode2.afterPropertiesSet();
-        while (true) {
-            sdWanNode1.sendIpPacket(SDWanProtos.IpPacket.newBuilder()
-                    .setSrcIP("10.5.0.1")
-                    .setDstIP("10.5.0.2")
-                    .setPayload(ByteString.copyFrom("hello".getBytes()))
-                    .build());
-            Thread.sleep(1000);
-        }
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        countDownLatch.await();
     }
 }

@@ -89,7 +89,7 @@ message RouteList {
 message IpPacket {
   required string srcIP = 1;
   required string dstIP = 2;
-  required bytes data = 3;
+  required bytes payload = 3;
 }
 
 message P2pOffer {

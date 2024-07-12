@@ -98,7 +98,7 @@ public class TransferRelayTest {
             sdWanNode1.sendIpPacket(SDWanProtos.IpPacket.newBuilder()
                     .setSrcIP("192.168.1.2")
                     .setDstIP("10.5.0.2")
-                    .setData(ByteString.copyFrom(("hello" + i++).getBytes()))
+                    .setPayload(ByteString.copyFrom(("hello" + i++).getBytes()))
                     .build());
             Thread.sleep(3000);
         }
@@ -167,7 +167,7 @@ public class TransferRelayTest {
             sdWanNode1.sendIpPacket(SDWanProtos.IpPacket.newBuilder()
                     .setSrcIP("192.168.1.2")
                     .setDstIP("10.5.0.2")
-                    .setData(ByteString.copyFrom(("hello" + i++).getBytes()))
+                    .setPayload(ByteString.copyFrom(("hello" + i++).getBytes()))
                     .build());
             Thread.sleep(3000);
         }
@@ -240,7 +240,7 @@ public class TransferRelayTest {
             sdWanNode1.sendIpPacket(SDWanProtos.IpPacket.newBuilder()
                     .setSrcIP("192.168.1.2")
                     .setDstIP("10.5.0.2")
-                    .setData(ByteString.copyFrom(("hello" + i++).getBytes()))
+                    .setPayload(ByteString.copyFrom(("hello" + i++).getBytes()))
                     .build());
             Thread.sleep(3000);
         }

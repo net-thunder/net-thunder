@@ -78,12 +78,12 @@ public class TransferRouteTest {
         sdWanNode1.sendIpPacket(SDWanProtos.IpPacket.newBuilder()
                 .setSrcIP("192.168.1.2")
                 .setDstIP("172.168.1.2")
-                .setData(ByteString.copyFrom("hello1".getBytes()))
+                .setPayload(ByteString.copyFrom("hello1".getBytes()))
                 .build());
         sdWanNode1.sendIpPacket(SDWanProtos.IpPacket.newBuilder()
                 .setSrcIP("192.168.1.2")
                 .setDstIP("10.5.0.2")
-                .setData(ByteString.copyFrom("hello2".getBytes()))
+                .setPayload(ByteString.copyFrom("hello2".getBytes()))
                 .build());
         CountDownLatch countDownLatch = new CountDownLatch(1);
         countDownLatch.await();

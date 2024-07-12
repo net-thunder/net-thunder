@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -36,7 +35,6 @@ import java.util.stream.Collectors;
 public class BaseSdWanNode implements InitializingBean, Runnable {
 
     private SdWanNodeConfig config;
-    private Supplier<ChannelHandler> handler;
 
     private IceClient iceClient;
     private SdWanClient sdWanClient;
@@ -77,9 +75,8 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
         return iceClient;
     }
 
-    public BaseSdWanNode(SdWanNodeConfig config, Supplier<ChannelHandler> handler) {
+    public BaseSdWanNode(SdWanNodeConfig config) {
         this.config = config;
-        this.handler = handler;
     }
 
     @Override
@@ -136,6 +133,7 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
             @Override
             protected void initChannel(Channel ch) throws Exception {
                 ChannelPipeline pipeline = ch.pipeline();
+                pipeline.addLast(getTunHandler());
                 pipeline.addLast(new ChannelInboundHandlerAdapter() {
                     @Override
                     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
@@ -143,7 +141,6 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
                         ctx.fireChannelInactive();
                     }
                 });
-                pipeline.addLast(handler.get());
             }
         });
         init();
@@ -223,6 +220,10 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
         maskBits = regResp.getMaskBits();
         vipCidr = Cidr.parseCidr(regResp.getVip(), maskBits);
         routeList = regResp.getRouteList().getRouteList();
+    }
+
+    protected ChannelHandler getTunHandler() {
+        return new ChannelInboundHandlerAdapter();
     }
 
     protected MappingAddress processMappingAddress(MappingAddress mappingAddress) {
