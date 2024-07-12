@@ -1,10 +1,8 @@
-package io.jaspercloud.sdwan;
+package io.jaspercloud.sdwan.support;
 
 import com.google.protobuf.ProtocolStringList;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.stun.MappingAddress;
-import io.jaspercloud.sdwan.support.AsyncTask;
-import io.jaspercloud.sdwan.support.Cidr;
 import io.jaspercloud.sdwan.tranport.SdWanClient;
 import io.jaspercloud.sdwan.tranport.SdWanClientConfig;
 import io.jaspercloud.sdwan.util.AddressType;

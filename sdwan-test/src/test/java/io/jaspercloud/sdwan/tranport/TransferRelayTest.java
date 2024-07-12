@@ -1,7 +1,7 @@
 package io.jaspercloud.sdwan.tranport;
 
 import com.google.protobuf.ByteString;
-import io.jaspercloud.sdwan.SdWanNodeConfig;
+import io.jaspercloud.sdwan.support.SdWanNodeConfig;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.stun.MappingAddress;
 import io.jaspercloud.sdwan.tranport.support.TestSdWanNode;

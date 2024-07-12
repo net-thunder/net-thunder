@@ -1,8 +1,8 @@
 package io.jaspercloud.sdwan.tranport.support;
 
 import com.google.protobuf.ByteString;
-import io.jaspercloud.sdwan.BaseSdWanNode;
-import io.jaspercloud.sdwan.SdWanNodeConfig;
+import io.jaspercloud.sdwan.support.BaseSdWanNode;
+import io.jaspercloud.sdwan.support.SdWanNodeConfig;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.route.RouteManager;
 import io.jaspercloud.sdwan.route.WindowsRouteManager;

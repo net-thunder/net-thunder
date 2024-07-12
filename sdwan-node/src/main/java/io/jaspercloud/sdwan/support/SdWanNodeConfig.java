@@ -1,16 +1,18 @@
-package io.jaspercloud.sdwan;
+package io.jaspercloud.sdwan.support;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * @author jasper
  * @create 2024/7/2
  */
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
+@ConfigurationProperties(prefix = "node")
 public class SdWanNodeConfig {
 
     private String controllerServer;

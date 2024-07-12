@@ -1,4 +1,4 @@
-package io.jaspercloud.sdwan;
+package io.jaspercloud.sdwan.support;
 
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.stun.MappingAddress;

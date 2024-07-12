@@ -1,4 +1,4 @@
-package io.jaspercloud.sdwan;
+package io.jaspercloud.sdwan.support;
 
 import com.google.protobuf.ByteString;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;

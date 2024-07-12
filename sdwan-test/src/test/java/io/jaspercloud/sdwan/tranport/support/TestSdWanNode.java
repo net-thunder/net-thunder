@@ -1,7 +1,7 @@
 package io.jaspercloud.sdwan.tranport.support;
 
-import io.jaspercloud.sdwan.BaseSdWanNode;
-import io.jaspercloud.sdwan.SdWanNodeConfig;
+import io.jaspercloud.sdwan.support.BaseSdWanNode;
+import io.jaspercloud.sdwan.support.SdWanNodeConfig;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.stun.*;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;

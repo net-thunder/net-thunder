@@ -3,14 +3,16 @@ package io.jaspercloud.sdwan.adapter.server;
 import io.jaspercloud.sdwan.tranport.RelayServerConfig;
 import io.jaspercloud.sdwan.tranport.SdWanServerConfig;
 import io.jaspercloud.sdwan.tranport.StunServerConfig;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * @author jasper
  * @create 2024/7/5
  */
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
 @ConfigurationProperties(prefix = "controller")
