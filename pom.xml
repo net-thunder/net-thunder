@@ -13,6 +13,7 @@
     </properties>
 
     <modules>
+        <module>sdwan-common</module>
         <module>sdwan-core</module>
         <module>sdwan-controller</module>
         <module>sdwan-node</module>
@@ -36,6 +37,11 @@
                 <version>2.5.13</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.jaspercloud</groupId>
+                <artifactId>sdwan-common</artifactId>
+                <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>io.jaspercloud</groupId>

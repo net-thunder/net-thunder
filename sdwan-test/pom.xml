@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>io.jaspercloud</groupId>
-        <artifactId>sdwan</artifactId>
+        <artifactId>net-thunder</artifactId>
         <version>${revision}</version>
     </parent>
     <artifactId>sdwan-test</artifactId>
