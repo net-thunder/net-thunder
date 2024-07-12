@@ -49,7 +49,7 @@ public class TunSdWanNode extends BaseSdWanNode {
                     return;
                 }
                 SDWanProtos.IpPacket ipPacket = SDWanProtos.IpPacket.parseFrom(data);
-                log.debug("recv transfer type={}, sender={},  src={}, dst={}",
+                log.debug("recv transfer type={}, sender={}, src={}, dst={}",
                         transferTypeAttr.getData(), SocketAddressUtil.toAddress(sender),
                         ipPacket.getSrcIP(), ipPacket.getDstIP());
                 if (null == tunTransport || !tunTransport.isRunning()) {

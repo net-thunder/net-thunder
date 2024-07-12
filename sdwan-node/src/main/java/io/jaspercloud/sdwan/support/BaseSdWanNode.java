@@ -18,6 +18,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -43,7 +44,7 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
     private List<SDWanProtos.Route> routeList;
     private ReentrantLock lock = new ReentrantLock();
     private Condition condition = lock.newCondition();
-    private AtomicReference<Map<String, SDWanProtos.NodeInfo>> nodeInfoMapRef = new AtomicReference<>();
+    private AtomicReference<Map<String, SDWanProtos.NodeInfo>> nodeInfoMapRef = new AtomicReference<>(new HashMap<>());
 
     public NatAddress getMappingAddress() {
         return natAddress;
@@ -153,6 +154,12 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
     private void sendTo(String dstIp, byte[] bytes) {
         String dstVip = findNexthop(dstIp);
         if (null == dstVip) {
+            return;
+        }
+        if (Cidr.isBroadcastAddress(vipCidr, dstVip)) {
+            nodeInfoMapRef.get().values().forEach(nodeInfo -> {
+                iceClient.sendNode(nodeInfo, bytes);
+            });
             return;
         }
         SDWanProtos.NodeInfo nodeInfo = nodeInfoMapRef.get().get(dstVip);

@@ -6,7 +6,10 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.junit.jupiter.api.Test;
 
 import java.net.InetAddress;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -26,10 +29,6 @@ public class TunTransferTest {
             }
         };
         List<SdWanServerConfig.Route> routeList = new ArrayList<>();
-        routeList.add(SdWanServerConfig.Route.builder()
-                .destination("172.168.1.0/24")
-                .nexthop(Arrays.asList("10.5.0.2"))
-                .build());
         SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
                 .port(1800)
                 .heartTimeout(30 * 1000)
@@ -56,7 +55,7 @@ public class TunTransferTest {
                 .heartTime(15 * 1000)
                 .p2pHeartTime(10 * 1000)
                 .tunName("tun1")
-                .mtu(1440)
+                .mtu(1500)
                 .build()) {
             @Override
             protected String processMacAddress(String hardwareAddress) {
@@ -72,6 +71,7 @@ public class TunTransferTest {
                 .heartTime(15 * 1000)
                 .p2pHeartTime(10 * 1000)
                 .tunName("tun2")
+                .mtu(1500)
                 .build()) {
             @Override
             protected String processMacAddress(String hardwareAddress) {
@@ -79,6 +79,7 @@ public class TunTransferTest {
             }
         };
         sdWanNode2.afterPropertiesSet();
+        System.out.println("started");
         CountDownLatch countDownLatch = new CountDownLatch(1);
         countDownLatch.await();
     }

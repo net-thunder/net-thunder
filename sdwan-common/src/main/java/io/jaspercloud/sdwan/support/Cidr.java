@@ -3,6 +3,7 @@ package io.jaspercloud.sdwan.support;
 import io.jaspercloud.sdwan.exception.CidrParseException;
 import io.jaspercloud.sdwan.util.IPUtil;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 import sun.net.util.IPAddressUtil;
 
 import java.util.ArrayList;
@@ -98,6 +99,17 @@ public class Cidr {
         return ip;
     }
 
+    public static boolean isBroadcastAddress(String cidr, String ip) {
+        check(cidr);
+        String[] split = cidr.split("/");
+        int maskBits = Integer.parseInt(split[1]);
+        int address = IPUtil.ip2int(split[0]);
+        address = (address >> (32 - maskBits)) << (32 - maskBits);
+        String broadcastAddress = parseBroadcastAddress(address, maskBits);
+        boolean equals = StringUtils.equals(ip, broadcastAddress);
+        return equals;
+    }
+
     private static String parseBroadcastAddress(int address, int maskBits) {
         address = (address >> (32 - maskBits)) << (32 - maskBits);
         int count = (int) Math.pow(2, 32 - maskBits) - 1;
@@ -115,14 +127,13 @@ public class Cidr {
     public static boolean contains(String cidr, String ip) {
         check(cidr);
         String[] split = cidr.split("/");
-        String address = split[0];
         int maskBits = Integer.parseInt(split[1]);
-        int addr = IPUtil.ip2int(address);
-        int minAddr = (addr >> (32 - maskBits)) << (32 - maskBits);
+        int address = IPUtil.ip2int(split[0]);
+        address = (address >> (32 - maskBits)) << (32 - maskBits);
         int count = (int) Math.pow(2, 32 - maskBits) - 1;
-        int maxAddr = minAddr + count;
+        int maxAddr = address + count;
         int checkAddr = IPUtil.ip2int(ip);
-        boolean contains = checkAddr >= minAddr && checkAddr <= maxAddr;
+        boolean contains = checkAddr >= address && checkAddr <= maxAddr;
         return contains;
     }
 
