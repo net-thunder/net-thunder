@@ -134,6 +134,7 @@ public class IceClient implements TransportLifecycle {
         p2pTransportManager.afterPropertiesSet();
         p2pClient.start();
         relayClient.start();
+        log.info("ice client started");
     }
 
     @Override

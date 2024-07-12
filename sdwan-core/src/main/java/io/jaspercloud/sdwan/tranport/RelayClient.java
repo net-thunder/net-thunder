@@ -112,6 +112,7 @@ public class RelayClient implements TransportLifecycle, Runnable {
         InetSocketAddress localAddress = new InetSocketAddress("0.0.0.0", port);
         try {
             localChannel = bootstrap.bind(localAddress).syncUninterruptibly().channel();
+            log.info("relay client started");
             curToken = regist(3000).get();
             bossGroup.scheduleAtFixedRate(this, 0, heartTime, TimeUnit.MILLISECONDS);
             localChannel.closeFuture().addListener(new ChannelFutureListener() {

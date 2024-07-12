@@ -187,6 +187,7 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
     protected void init() throws Exception {
         iceClient.start();
         sdWanClient.start();
+        log.info("sdwan node started");
         SDWanProtos.RegistReq.Builder builder = SDWanProtos.RegistReq.newBuilder()
                 .setNodeType(SDWanProtos.NodeTypeCode.SimpleType)
                 .setMacAddress(processMacAddress(NetworkInterfaceUtil.getHardwareAddress()));
@@ -204,7 +205,9 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
             builder.addAddressUri(host);
         });
         mappingAddress = processMappingAddress(iceClient.parseMappingAddress(3000));
+        log.info("parseMappingAddress success");
         String token = iceClient.registRelay(3000);
+        log.info("registRelay success");
         String srflx = UriComponentsBuilder.fromUriString(String.format("%s://%s:%d", AddressType.SRFLX,
                 mappingAddress.getMappingAddress().getHostString(), mappingAddress.getMappingAddress().getPort()))
                 .queryParam("mappingType", mappingAddress.getMappingType().name()).build().toString();
@@ -215,6 +218,7 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
         builder.addAddressUri(srflx);
         builder.addAddressUri(relay);
         SDWanProtos.RegistResp regResp = sdWanClient.regist(builder.build(), 3000).get();
+        log.info("registSdwan success");
         localVip = regResp.getVip();
         maskBits = regResp.getMaskBits();
         vipCidr = Cidr.parseCidr(regResp.getVip(), maskBits);
