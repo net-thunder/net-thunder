@@ -125,7 +125,6 @@ public class SdWanClient implements TransportLifecycle, Runnable {
                     @Override
                     protected void initChannel(Channel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
-                        pipeline.addLast(new TcpLogHandler("sdwan"));
                         pipeline.addLast(new ProtobufVarint32FrameDecoder());
                         pipeline.addLast(new ProtobufDecoder(SDWanProtos.Message.getDefaultInstance()));
                         pipeline.addLast(new ProtobufVarint32LengthFieldPrepender());
