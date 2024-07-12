@@ -142,7 +142,7 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
                 });
             }
         });
-        init();
+        initialize();
         log.info("SdWanNode started");
         new Thread(this, "loop").start();
     }
@@ -187,7 +187,7 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
         return null;
     }
 
-    protected void init() throws Exception {
+    protected void initialize() throws Exception {
         iceClient.start();
         sdWanClient.start();
         log.info("sdwan node init");
@@ -230,6 +230,11 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
         log.info("sdwan node started");
     }
 
+    protected void destroy() throws Exception {
+        iceClient.stop();
+        sdWanClient.stop();
+    }
+
     protected ChannelHandler getTunHandler() {
         return new ChannelInboundHandlerAdapter();
     }
@@ -269,9 +274,8 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
                     await();
                     status = false;
                 }
-                iceClient.stop();
-                sdWanClient.stop();
-                init();
+                destroy();
+                initialize();
                 status = true;
             } catch (Exception e) {
                 log.error(e.getMessage(), e);

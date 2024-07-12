@@ -1,12 +1,12 @@
 package io.jaspercloud.sdwan.tranport.support;
 
 import com.google.protobuf.ByteString;
-import io.jaspercloud.sdwan.support.BaseSdWanNode;
-import io.jaspercloud.sdwan.support.SdWanNodeConfig;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.route.RouteManager;
 import io.jaspercloud.sdwan.route.WindowsRouteManager;
 import io.jaspercloud.sdwan.stun.*;
+import io.jaspercloud.sdwan.support.BaseSdWanNode;
+import io.jaspercloud.sdwan.support.SdWanNodeConfig;
 import io.jaspercloud.sdwan.tranport.TunTransport;
 import io.jaspercloud.sdwan.tranport.TunTransportConfig;
 import io.jaspercloud.sdwan.tun.Ipv4Packet;
@@ -29,6 +29,7 @@ import java.net.InetSocketAddress;
 public class TestTunSdWanNode extends BaseSdWanNode {
 
     private SdWanNodeConfig config;
+    private TunTransport tunTransport;
 
     public TestTunSdWanNode(SdWanNodeConfig config) {
         super(config);
@@ -57,8 +58,8 @@ public class TestTunSdWanNode extends BaseSdWanNode {
     }
 
     @Override
-    protected void init() throws Exception {
-        super.init();
+    protected void initialize() throws Exception {
+        super.initialize();
         BaseSdWanNode sdWanNode = this;
         TunTransportConfig tunConfig = TunTransportConfig.builder()
                 .tunName(config.getTunName())
@@ -66,7 +67,7 @@ public class TestTunSdWanNode extends BaseSdWanNode {
                 .maskBits(getMaskBits())
                 .mtu(config.getMtu())
                 .build();
-        TunTransport tunTransport = new TunTransport(tunConfig, () -> new SimpleChannelInboundHandler<ByteBuf>() {
+        tunTransport = new TunTransport(tunConfig, () -> new SimpleChannelInboundHandler<ByteBuf>() {
             @Override
             protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
                 Ipv4Packet ipv4Packet = Ipv4Packet.decodeMark(msg);
@@ -83,5 +84,11 @@ public class TestTunSdWanNode extends BaseSdWanNode {
         for (SDWanProtos.Route route : getRouteList()) {
             routeManager.addRoute(tunChannel, route);
         }
+    }
+
+    @Override
+    protected void destroy() throws Exception {
+        tunTransport.stop();
+        super.destroy();
     }
 }
