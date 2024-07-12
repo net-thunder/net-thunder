@@ -13,9 +13,8 @@ public class Cidr {
 
     private List<String> ipList;
     private List<String> availableIpList;
-    private String address;
-    private String maskAddress;
     private String networkIdentifier;
+    private String maskAddress;
     private String broadcastAddress;
     private String gatewayAddress;
     private int maskBits;
@@ -37,24 +36,26 @@ public class Cidr {
 
     public static Cidr parseCidr(String text) {
         String[] split = text.split("/");
-        String address = split[0];
+        int address = IPUtil.ip2int(split[0]);
         int maskBits = Integer.parseInt(split[1]);
-        List<String> ipList = parseIpList(IPUtil.ip2int(address), maskBits);
+        address = parseBaseAddress(address, maskBits);
+        List<String> ipList = parseIpList(address, maskBits);
         String maskAddress = parseMaskAddress(maskBits);
-        String networkIdentifier = parseNetworkIdentifier(IPUtil.ip2int(address), maskBits);
-        String broadcastAddress = parseBroadcastAddress(IPUtil.ip2int(address), maskBits);
-        String gatewayAddress = parseIp(IPUtil.ip2int(address), maskBits, +1);
+        String networkIdentifier = parseNetworkIdentifier(address, maskBits);
+        String broadcastAddress = parseBroadcastAddress(address, maskBits);
+        String gatewayAddress = parseIp(address, maskBits, +1);
         Cidr cidr = new Cidr();
-        cidr.setAddress(address);
+        cidr.setNetworkIdentifier(networkIdentifier);
         cidr.setMaskBits(maskBits);
         cidr.setMaskAddress(maskAddress);
-        cidr.setNetworkIdentifier(networkIdentifier);
         cidr.setBroadcastAddress(broadcastAddress);
         cidr.setGatewayAddress(gatewayAddress);
         cidr.setIpList(ipList);
         List<String> availableIpList = new ArrayList<>(ipList);
-        availableIpList.remove(address);
+        availableIpList.remove(networkIdentifier);
+        availableIpList.remove(maskAddress);
         availableIpList.remove(broadcastAddress);
+        availableIpList.remove(gatewayAddress);
         cidr.setAvailableIpList(availableIpList);
         return cidr;
     }
@@ -84,6 +85,11 @@ public class Cidr {
         address = (address >> (32 - maskBits)) << (32 - maskBits);
         String ip = IPUtil.int2ip(address + index);
         return ip;
+    }
+
+    private static int parseBaseAddress(int address, int maskBits) {
+        address = (address >> (32 - maskBits)) << (32 - maskBits);
+        return address;
     }
 
     private static String parseNetworkIdentifier(int address, int maskBits) {
@@ -122,6 +128,6 @@ public class Cidr {
 
     @Override
     public String toString() {
-        return String.format("%s/%d", address, maskBits);
+        return String.format("%s/%d", networkIdentifier, maskBits);
     }
 }
