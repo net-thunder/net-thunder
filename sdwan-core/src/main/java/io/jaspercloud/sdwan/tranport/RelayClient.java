@@ -62,7 +62,7 @@ public class RelayClient implements TransportLifecycle, Runnable {
     }
 
     public void transfer(String token, byte[] bytes) {
-        log.debug("relay send transfer: {}", relayAddress);
+        log.debug("relay send transfer: {}", SocketAddressUtil.toAddress(relayAddress));
         StunMessage message = new StunMessage(MessageType.Transfer);
         message.setAttr(AttrType.TransferType, new StringAttr("relay"));
         message.setAttr(AttrType.RelayToken, new StringAttr(token));
