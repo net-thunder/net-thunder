@@ -95,6 +95,9 @@ public class StunServer implements InitializingBean, DisposableBean {
 
     @Override
     public void destroy() throws Exception {
+        if (null == localChannel) {
+            return;
+        }
         localChannel.close();
     }
 }

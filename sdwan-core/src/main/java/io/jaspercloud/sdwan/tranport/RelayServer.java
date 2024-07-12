@@ -121,6 +121,9 @@ public class RelayServer implements InitializingBean, DisposableBean, Runnable {
 
     @Override
     public void destroy() throws Exception {
+        if (null == localChannel) {
+            return;
+        }
         localChannel.close();
     }
 
