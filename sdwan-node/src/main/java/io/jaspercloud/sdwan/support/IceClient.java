@@ -1,7 +1,7 @@
 package io.jaspercloud.sdwan.support;
 
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
-import io.jaspercloud.sdwan.stun.MappingAddress;
+import io.jaspercloud.sdwan.stun.NatAddress;
 import io.jaspercloud.sdwan.tranport.P2pClient;
 import io.jaspercloud.sdwan.tranport.RelayClient;
 import io.jaspercloud.sdwan.tranport.TransportLifecycle;
@@ -45,8 +45,8 @@ public class IceClient implements TransportLifecycle {
         this.handler = handler;
     }
 
-    public MappingAddress parseMappingAddress(int timeout) throws Exception {
-        return p2pClient.parseMappingAddress(timeout);
+    public NatAddress parseNatAddress(int timeout) throws Exception {
+        return p2pClient.parseNatAddress(timeout);
     }
 
     public String registRelay(int timeout) throws Exception {

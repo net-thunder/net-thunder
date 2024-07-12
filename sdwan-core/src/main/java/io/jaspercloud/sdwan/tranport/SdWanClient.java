@@ -68,7 +68,6 @@ public class SdWanClient implements TransportLifecycle, Runnable {
         return task.thenApply(result -> {
             try {
                 SDWanProtos.RegistResp regResp = SDWanProtos.RegistResp.parseFrom(result.getData());
-                log.info("regist vip={}", regResp.getVip());
                 return regResp;
             } catch (Exception e) {
                 throw new ProcessException(e.getMessage(), e);

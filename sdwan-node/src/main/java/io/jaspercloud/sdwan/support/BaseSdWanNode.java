@@ -2,7 +2,7 @@ package io.jaspercloud.sdwan.support;
 
 import com.google.protobuf.ProtocolStringList;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
-import io.jaspercloud.sdwan.stun.MappingAddress;
+import io.jaspercloud.sdwan.stun.NatAddress;
 import io.jaspercloud.sdwan.tranport.SdWanClient;
 import io.jaspercloud.sdwan.tranport.SdWanClientConfig;
 import io.jaspercloud.sdwan.util.AddressType;
@@ -36,7 +36,7 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
 
     private IceClient iceClient;
     private SdWanClient sdWanClient;
-    private MappingAddress mappingAddress;
+    private NatAddress natAddress;
     private String localVip;
     private int maskBits;
     private String vipCidr;
@@ -45,8 +45,8 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
     private Condition condition = lock.newCondition();
     private AtomicReference<Map<String, SDWanProtos.NodeInfo>> nodeInfoMapRef = new AtomicReference<>();
 
-    public MappingAddress getMappingAddress() {
-        return mappingAddress;
+    public NatAddress getMappingAddress() {
+        return natAddress;
     }
 
     public String getLocalVip() {
@@ -199,13 +199,14 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
             String host = UriComponentsBuilder.fromUriString(String.format("%s://%s:%d", AddressType.HOST, address, config.getP2pPort())).build().toString();
             builder.addAddressUri(host);
         });
-        mappingAddress = processMappingAddress(iceClient.parseMappingAddress(3000));
-        log.info("parseMappingAddress success");
+        natAddress = processNatAddress(iceClient.parseNatAddress(3000));
+        log.info("parseNatAddress: type={}, address={}",
+                natAddress.getMappingType().name(), SocketAddressUtil.toAddress(natAddress.getMappingAddress()));
         String token = iceClient.registRelay(3000);
-        log.info("registRelay success");
+        log.info("registRelay: token={}", token);
         String srflx = UriComponentsBuilder.fromUriString(String.format("%s://%s:%d", AddressType.SRFLX,
-                mappingAddress.getMappingAddress().getHostString(), mappingAddress.getMappingAddress().getPort()))
-                .queryParam("mappingType", mappingAddress.getMappingType().name()).build().toString();
+                natAddress.getMappingAddress().getHostString(), natAddress.getMappingAddress().getPort()))
+                .queryParam("mappingType", natAddress.getMappingType().name()).build().toString();
         InetSocketAddress relayAddress = SocketAddressUtil.parse(config.getRelayServer());
         String relay = UriComponentsBuilder.fromUriString(String.format("%s://%s:%d", AddressType.RELAY,
                 relayAddress.getHostString(), relayAddress.getPort()))
@@ -213,7 +214,7 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
         builder.addAddressUri(srflx);
         builder.addAddressUri(relay);
         SDWanProtos.RegistResp regResp = sdWanClient.regist(builder.build(), 3000).get();
-        log.info("registSdwan success");
+        log.info("registSdwan: vip={}", regResp.getVip());
         localVip = regResp.getVip();
         maskBits = regResp.getMaskBits();
         vipCidr = Cidr.parseCidr(regResp.getVip(), maskBits);
@@ -224,8 +225,8 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
         return new ChannelInboundHandlerAdapter();
     }
 
-    protected MappingAddress processMappingAddress(MappingAddress mappingAddress) {
-        return mappingAddress;
+    protected NatAddress processNatAddress(NatAddress natAddress) {
+        return natAddress;
     }
 
     protected String processMacAddress(String hardwareAddress) {

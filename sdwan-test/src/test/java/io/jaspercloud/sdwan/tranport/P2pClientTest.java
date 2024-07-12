@@ -1,6 +1,6 @@
 package io.jaspercloud.sdwan.tranport;
 
-import io.jaspercloud.sdwan.stun.MappingAddress;
+import io.jaspercloud.sdwan.stun.NatAddress;
 import io.jaspercloud.sdwan.stun.StunPacket;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -17,10 +17,10 @@ import java.util.concurrent.CompletableFuture;
 public class P2pClientTest {
 
     @Test
-    public void parseMappingAddress() throws Exception {
+    public void parseNatAddress() throws Exception {
         P2pClient p2pClient = new P2pClient("127.0.0.1:3478", 3000, () -> new ChannelInboundHandlerAdapter());
         p2pClient.start();
-        MappingAddress mappingAddress = p2pClient.parseMappingAddress(3000);
+        NatAddress natAddress = p2pClient.parseNatAddress(3000);
         System.out.println();
     }
 
@@ -34,7 +34,7 @@ public class P2pClientTest {
         stunServer.afterPropertiesSet();
         P2pClient p2pClient = new P2pClient("127.0.0.1:1000", 3000, () -> new ChannelInboundHandlerAdapter());
         p2pClient.start();
-        MappingAddress mappingAddress = p2pClient.parseMappingAddress(3000);
+        NatAddress natAddress = p2pClient.parseNatAddress(3000);
         System.out.println();
     }
 

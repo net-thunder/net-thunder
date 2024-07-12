@@ -30,7 +30,7 @@ public class P2pClient implements TransportLifecycle, Runnable {
     private Supplier<ChannelHandler> handler;
 
     private Channel localChannel;
-    private MappingAddress curMappingAddress;
+    private NatAddress curNatAddress;
 
     public P2pClient(String stunServer, long heartTime, Supplier<ChannelHandler> handler) {
         this(stunServer, 0, heartTime, handler);
@@ -90,7 +90,7 @@ public class P2pClient implements TransportLifecycle, Runnable {
         localChannel.writeAndFlush(request);
     }
 
-    public MappingAddress parseMappingAddress(long timeout) throws Exception {
+    public NatAddress parseNatAddress(long timeout) throws Exception {
         InetSocketAddress remote = SocketAddressUtil.parse(stunServer);
         StunPacket response = sendBind(remote, timeout).get();
         Map<AttrType, Attr> attrs = response.content().getAttrs();
@@ -99,9 +99,9 @@ public class P2pClient implements TransportLifecycle, Runnable {
         AddressAttr mappedAddressAttr = (AddressAttr) attrs.get(AttrType.MappedAddress);
         InetSocketAddress mappedAddress1 = mappedAddressAttr.getAddress();
         if (null != (response = testChangeBind(remote, true, true, timeout))) {
-            return new MappingAddress(SDWanProtos.MappingTypeCode.FullCone, mappedAddress1);
+            return new NatAddress(SDWanProtos.MappingTypeCode.FullCone, mappedAddress1);
         } else if (null != (response = testChangeBind(remote, false, true, timeout))) {
-            return new MappingAddress(SDWanProtos.MappingTypeCode.RestrictedCone, mappedAddress1);
+            return new NatAddress(SDWanProtos.MappingTypeCode.RestrictedCone, mappedAddress1);
         }
         try {
             response = sendBind(changedAddress, timeout).get();
@@ -109,13 +109,13 @@ public class P2pClient implements TransportLifecycle, Runnable {
             mappedAddressAttr = (AddressAttr) attrs.get(AttrType.MappedAddress);
             InetSocketAddress mappedAddress2 = mappedAddressAttr.getAddress();
             if (Objects.equals(mappedAddress1, mappedAddress2)) {
-                return new MappingAddress(SDWanProtos.MappingTypeCode.PortRestrictedCone, mappedAddress1);
+                return new NatAddress(SDWanProtos.MappingTypeCode.PortRestrictedCone, mappedAddress1);
             } else {
-                return new MappingAddress(SDWanProtos.MappingTypeCode.Symmetric, mappedAddress1);
+                return new NatAddress(SDWanProtos.MappingTypeCode.Symmetric, mappedAddress1);
             }
         } catch (ExecutionException e) {
             if (e.getCause() instanceof TimeoutException) {
-                return new MappingAddress(SDWanProtos.MappingTypeCode.Symmetric, mappedAddress1);
+                return new NatAddress(SDWanProtos.MappingTypeCode.Symmetric, mappedAddress1);
             } else {
                 throw e;
             }
@@ -184,7 +184,7 @@ public class P2pClient implements TransportLifecycle, Runnable {
         try {
             localChannel = bootstrap.bind(localAddress).sync().channel();
             log.info("p2p client started");
-            curMappingAddress = parseMappingAddress(3000);
+            curNatAddress = parseNatAddress(3000);
             bossGroup.scheduleAtFixedRate(this, 0, heartTime, TimeUnit.MILLISECONDS);
             localChannel.closeFuture().addListener(new ChannelFutureListener() {
                 @Override
@@ -209,8 +209,8 @@ public class P2pClient implements TransportLifecycle, Runnable {
     @Override
     public void run() {
         try {
-            MappingAddress mappingAddress = parseMappingAddress(3000);
-            if (!mappingAddress.equals(curMappingAddress)) {
+            NatAddress natAddress = parseNatAddress(3000);
+            if (!natAddress.equals(curNatAddress)) {
                 localChannel.close();
             }
         } catch (ExecutionException e) {

@@ -3,7 +3,7 @@ package io.jaspercloud.sdwan.tranport;
 import com.google.protobuf.ByteString;
 import io.jaspercloud.sdwan.support.SdWanNodeConfig;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
-import io.jaspercloud.sdwan.stun.MappingAddress;
+import io.jaspercloud.sdwan.stun.NatAddress;
 import io.jaspercloud.sdwan.tranport.support.TestSdWanNode;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.junit.jupiter.api.Test;
@@ -66,7 +66,7 @@ public class TransferRelayTest {
             }
 
             @Override
-            protected MappingAddress processMappingAddress(MappingAddress mappingAddress) {
+            protected NatAddress processMappingAddress(NatAddress mappingAddress) {
                 mappingAddress.setMappingAddress(new InetSocketAddress("192.168.1.0", 1000));
                 return mappingAddress;
             }
@@ -87,7 +87,7 @@ public class TransferRelayTest {
             }
 
             @Override
-            protected MappingAddress processMappingAddress(MappingAddress mappingAddress) {
+            protected NatAddress processMappingAddress(NatAddress mappingAddress) {
                 mappingAddress.setMappingAddress(new InetSocketAddress("192.168.1.0", 1000));
                 return mappingAddress;
             }

@@ -7,12 +7,12 @@ import java.net.InetSocketAddress;
 import java.util.Objects;
 
 @Data
-public class MappingAddress {
+public class NatAddress {
 
     private SDWanProtos.MappingTypeCode mappingType;
     private InetSocketAddress mappingAddress;
 
-    public MappingAddress(SDWanProtos.MappingTypeCode mappingType, InetSocketAddress mappingAddress) {
+    public NatAddress(SDWanProtos.MappingTypeCode mappingType, InetSocketAddress mappingAddress) {
         this.mappingType = mappingType;
         this.mappingAddress = mappingAddress;
     }
@@ -21,7 +21,7 @@ public class MappingAddress {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        MappingAddress that = (MappingAddress) o;
+        NatAddress that = (NatAddress) o;
         return getMappingType() == that.getMappingType() && Objects.equals(getMappingAddress(), that.getMappingAddress());
     }
 
