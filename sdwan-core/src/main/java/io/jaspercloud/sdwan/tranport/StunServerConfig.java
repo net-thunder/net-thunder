@@ -13,6 +13,6 @@ import lombok.*;
 @Setter
 public class StunServerConfig {
 
-    private String bindHost;
-    private int bindPort;
+    private String bindHost = "127.0.0.1";
+    private int bindPort = 3478;
 }

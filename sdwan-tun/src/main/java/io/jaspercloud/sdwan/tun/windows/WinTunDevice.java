@@ -46,7 +46,7 @@ public class WinTunDevice extends TunDevice {
 
     @Override
     public ByteBuf readPacket(ByteBufAllocator alloc) {
-        while (true) {
+        while (isActive()) {
             if (closing) {
                 throw new ProcessException("Device is closed.");
             }
@@ -70,6 +70,7 @@ public class WinTunDevice extends TunDevice {
                 }
             }
         }
+        throw new ProcessException("Device is closed.");
     }
 
     @Override
@@ -91,6 +92,7 @@ public class WinTunDevice extends TunDevice {
             return;
         }
         closing = true;
+        setActive(false);
         NativeWinTunApi.WintunEndSession(session);
         NativeWinTunApi.WintunCloseAdapter(adapter);
     }

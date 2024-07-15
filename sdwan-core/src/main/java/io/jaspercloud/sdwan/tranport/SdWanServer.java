@@ -90,9 +90,9 @@ public class SdWanServer implements InitializingBean, DisposableBean, Runnable {
     }
 
     private void processRegist(ChannelHandlerContext ctx, SDWanProtos.Message msg) throws Exception {
+        Channel channel = ctx.channel();
         //regist
         {
-            Channel channel = ctx.channel();
             SDWanProtos.RegistReq registReq = SDWanProtos.RegistReq.parseFrom(msg.getData());
             ChannelAttributes attr = ChannelAttributes.attr(channel);
             String vip = registChannelMap.computeIfAbsent(channel, key -> {
@@ -124,24 +124,41 @@ public class SdWanServer implements InitializingBean, DisposableBean, Runnable {
                     .build();
             SdWanServer.reply(channel, msg, SDWanProtos.MessageTypeCode.RegistRespType, regResp);
         }
-        //nodeInfoList
-        {
-            SDWanProtos.NodeInfoList.Builder builder = SDWanProtos.NodeInfoList.newBuilder();
-            for (Channel channel : registChannelMap.keySet()) {
-                ChannelAttributes attr = ChannelAttributes.attr(channel);
-                SDWanProtos.NodeInfo nodeInfo = SDWanProtos.NodeInfo.newBuilder()
-                        .setVip(attr.getVip())
-                        .addAllAddressUri(attr.getAddressUriList())
-                        .build();
-                builder.addNodeInfo(nodeInfo);
+        sendAllChannelNodeOnline(channel);
+        channel.closeFuture().addListener(new ChannelFutureListener() {
+            @Override
+            public void operationComplete(ChannelFuture future) throws Exception {
+                sendAllChannelNodeOffline(channel);
             }
-            SDWanProtos.NodeInfoList nodeInfoList = builder.build();
-            for (Channel channel : registChannelMap.keySet()) {
-                try {
-                    SdWanServer.push(channel, SDWanProtos.MessageTypeCode.NodeInfoListType, nodeInfoList);
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                }
+        });
+    }
+
+    private void sendAllChannelNodeOnline(Channel channel) {
+        ChannelAttributes attr = ChannelAttributes.attr(channel);
+        SDWanProtos.NodeInfo nodeInfo = SDWanProtos.NodeInfo.newBuilder()
+                .setVip(attr.getVip())
+                .addAllAddressUri(attr.getAddressUriList())
+                .build();
+        for (Channel item : registChannelMap.keySet()) {
+            try {
+                SdWanServer.push(item, SDWanProtos.MessageTypeCode.NodeOnlineType, nodeInfo);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+    }
+
+    private void sendAllChannelNodeOffline(Channel channel) {
+        ChannelAttributes attr = ChannelAttributes.attr(channel);
+        SDWanProtos.NodeInfo nodeInfo = SDWanProtos.NodeInfo.newBuilder()
+                .setVip(attr.getVip())
+                .addAllAddressUri(attr.getAddressUriList())
+                .build();
+        for (Channel item : registChannelMap.keySet()) {
+            try {
+                SdWanServer.push(item, SDWanProtos.MessageTypeCode.NodeOfflineType, nodeInfo);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
             }
         }
     }
@@ -173,6 +190,12 @@ public class SdWanServer implements InitializingBean, DisposableBean, Runnable {
                 bindIPMap.get(vip).set(null);
             }
         });
+    }
+
+    public void push(SDWanProtos.MessageTypeCode msgCode, AbstractMessageLite data) {
+        for (Channel channel : registChannelMap.keySet()) {
+            push(channel, msgCode, data);
+        }
     }
 
     public static void push(Channel channel, SDWanProtos.MessageTypeCode msgCode, AbstractMessageLite data) {

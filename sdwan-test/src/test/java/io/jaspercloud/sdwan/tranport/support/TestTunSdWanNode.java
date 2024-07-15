@@ -60,8 +60,8 @@ public class TestTunSdWanNode extends BaseSdWanNode {
     }
 
     @Override
-    protected void initialize() throws Exception {
-        super.initialize();
+    protected void install() throws Exception {
+        super.install();
         BaseSdWanNode sdWanNode = this;
         TunTransportConfig tunConfig = TunTransportConfig.builder()
                 .tunName(config.getTunName())
@@ -87,9 +87,9 @@ public class TestTunSdWanNode extends BaseSdWanNode {
     }
 
     @Override
-    protected void destroy() throws Exception {
+    protected void uninstall() throws Exception {
         tunTransport.stop();
         routeManager.stop();
-        super.destroy();
+        super.uninstall();
     }
 }

@@ -40,6 +40,7 @@ public abstract class AbstractRouteManager implements RouteManager, Consumer<Lis
             for (SDWanProtos.Route route : virtualRouter.getRouteList()) {
                 addRoute(tunChannel, route);
             }
+            cache.set(virtualRouter.getRouteList());
         } finally {
             lock.unlock();
         }

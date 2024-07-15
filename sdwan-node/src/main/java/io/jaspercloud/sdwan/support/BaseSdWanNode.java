@@ -11,26 +11,26 @@ import io.jaspercloud.sdwan.util.NetworkInterfaceUtil;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;
 import io.netty.channel.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 
 /**
  * @author jasper
  * @create 2024/7/2
  */
 @Slf4j
-public class BaseSdWanNode implements InitializingBean, Runnable {
+public class BaseSdWanNode implements InitializingBean, DisposableBean, Runnable {
 
     private SdWanNodeConfig config;
 
@@ -41,9 +41,11 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
     private int maskBits;
     private String vipCidr;
     private VirtualRouter virtualRouter;
+    private AtomicBoolean loopStatus = new AtomicBoolean(false);
+    private Thread loopThread;
     private ReentrantLock lock = new ReentrantLock();
     private Condition condition = lock.newCondition();
-    private AtomicReference<Map<String, SDWanProtos.NodeInfo>> nodeInfoMapRef = new AtomicReference<>(new HashMap<>());
+    private Map<String, SDWanProtos.NodeInfo> nodeInfoMap = new ConcurrentHashMap<>();
 
     public NatAddress getMappingAddress() {
         return natAddress;
@@ -118,21 +120,21 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
                                 AsyncTask.completeTask(msg.getReqId(), msg);
                                 break;
                             }
-                            case SDWanProtos.MessageTypeCode.NodeInfoListType_VALUE: {
-                                SDWanProtos.NodeInfoList nodeInfoList = SDWanProtos.NodeInfoList.parseFrom(msg.getData());
-                                Map<String, SDWanProtos.NodeInfo> map = nodeInfoList.getNodeInfoList().stream().collect(Collectors.toMap(e -> e.getVip(), e -> e));
-                                nodeInfoMapRef.set(map);
-                                break;
-                            }
                             case SDWanProtos.MessageTypeCode.RouteListType_VALUE: {
                                 SDWanProtos.RouteList routeList = SDWanProtos.RouteList.parseFrom(msg.getData());
                                 virtualRouter.updateRoutes(routeList.getRouteList());
                                 break;
                             }
                             case SDWanProtos.MessageTypeCode.NodeOnlineType_VALUE: {
+                                SDWanProtos.NodeInfo nodeInfo = SDWanProtos.NodeInfo.parseFrom(msg.getData());
+                                nodeInfoMap.put(nodeInfo.getVip(), nodeInfo);
+                                log.debug("onlineNode: vip={}", nodeInfo.getVip());
                                 break;
                             }
                             case SDWanProtos.MessageTypeCode.NodeOfflineType_VALUE: {
+                                SDWanProtos.NodeInfo nodeInfo = SDWanProtos.NodeInfo.parseFrom(msg.getData());
+                                nodeInfoMap.remove(nodeInfo.getVip());
+                                log.debug("offlineNode: vip={}", nodeInfo.getVip());
                                 break;
                             }
                         }
@@ -153,9 +155,18 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
             }
         });
         virtualRouter = new VirtualRouter();
-        initialize();
+        install();
         log.info("SdWanNode started");
-        new Thread(this, "loop").start();
+        loopStatus.set(true);
+        loopThread = new Thread(this, "loop");
+        loopThread.start();
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        loopStatus.set(false);
+        loopThread.interrupt();
+        uninstall();
     }
 
     public void sendIpPacket(SDWanProtos.IpPacket ipPacket) {
@@ -168,19 +179,19 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
             return;
         }
         if (Cidr.isBroadcastAddress(vipCidr, dstVip)) {
-            nodeInfoMapRef.get().values().forEach(nodeInfo -> {
+            nodeInfoMap.values().forEach(nodeInfo -> {
                 iceClient.sendNode(nodeInfo, bytes);
             });
             return;
         }
-        SDWanProtos.NodeInfo nodeInfo = nodeInfoMapRef.get().get(dstVip);
+        SDWanProtos.NodeInfo nodeInfo = nodeInfoMap.get(dstVip);
         if (null == nodeInfo) {
             return;
         }
         iceClient.sendNode(nodeInfo, bytes);
     }
 
-    protected void initialize() throws Exception {
+    protected void install() throws Exception {
         iceClient.start();
         sdWanClient.start();
         log.info("sdwan node init");
@@ -197,7 +208,7 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
         }
         interfaceInfoList.forEach(e -> {
             String address = e.getInterfaceAddress().getAddress().getHostAddress();
-            String host = UriComponentsBuilder.fromUriString(String.format("%s://%s:%d", AddressType.HOST, address, config.getP2pPort())).build().toString();
+            String host = UriComponentsBuilder.fromUriString(String.format("%s://%s:%d", AddressType.HOST, address, iceClient.getP2pClient().getLocalPort())).build().toString();
             builder.addAddressUri(host);
         });
         natAddress = processNatAddress(iceClient.parseNatAddress(3000));
@@ -224,7 +235,7 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
         log.info("sdwan node started");
     }
 
-    protected void destroy() throws Exception {
+    protected void uninstall() throws Exception {
         iceClient.stop();
         sdWanClient.stop();
     }
@@ -262,14 +273,14 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
     @Override
     public void run() {
         boolean status = true;
-        while (true) {
+        while (loopStatus.get()) {
             try {
                 if (status) {
                     await();
                     status = false;
                 }
-                destroy();
-                initialize();
+                uninstall();
+                install();
                 status = true;
             } catch (Exception e) {
                 log.error(e.getMessage(), e);

@@ -7,8 +7,8 @@ import org.apache.commons.lang3.RandomUtils;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
@@ -22,14 +22,14 @@ public class VirtualRouter {
     private String cidr;
     private List<SDWanProtos.Route> routeList = Collections.emptyList();
     private ReadWriteLock lock = new ReentrantReadWriteLock();
-    private Set<Consumer<List<SDWanProtos.Route>>> listenerSet = new ConcurrentSkipListSet<>();
+    private Map<Integer, Consumer<List<SDWanProtos.Route>>> listenerMap = new ConcurrentHashMap<>();
 
     public void addListener(Consumer<List<SDWanProtos.Route>> listener) {
-        listenerSet.add(listener);
+        listenerMap.put(listener.hashCode(), listener);
     }
 
     public void removeListener(Consumer<List<SDWanProtos.Route>> listener) {
-        listenerSet.remove(listener);
+        listenerMap.remove(listener.hashCode());
     }
 
     public void updateCidr(String cidr) {
@@ -52,7 +52,7 @@ public class VirtualRouter {
         } finally {
             lock.writeLock().unlock();
         }
-        listenerSet.forEach(e -> e.accept(routeList));
+        listenerMap.forEach((k, v) -> v.accept(routeList));
     }
 
     public String route(String ip) {

@@ -13,6 +13,6 @@ import lombok.*;
 @Setter
 public class RelayServerConfig {
 
-    private int bindPort;
-    private long heartTimeout;
+    private int bindPort = 2478;
+    private long heartTimeout = 15 * 1000;
 }

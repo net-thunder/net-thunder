@@ -35,6 +35,10 @@ public class IceClient implements TransportLifecycle {
     private RelayClient relayClient;
     private P2pTransportManager p2pTransportManager;
 
+    public P2pClient getP2pClient() {
+        return p2pClient;
+    }
+
     public P2pTransportManager getP2pTransportManager() {
         return p2pTransportManager;
     }
@@ -90,7 +94,7 @@ public class IceClient implements TransportLifecycle {
                     .setDstVIP(nodeInfo.getVip())
                     .setOfferAddress(SDWanProtos.SocketAddress.newBuilder()
                             .setIp(sdWanNode.getMappingAddress().getMappingAddress().getHostString())
-                            .setPort(config.getP2pPort())
+                            .setPort(p2pClient.getLocalPort())
                             .build())
                     .setAnswerAddress(SDWanProtos.SocketAddress.newBuilder()
                             .setIp(uri.getHost())

@@ -2,6 +2,7 @@ package io.jaspercloud.sdwan.tranport;
 
 import lombok.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -16,11 +17,11 @@ import java.util.Map;
 @Setter
 public class SdWanServerConfig {
 
-    private int port;
-    private String vipCidr;
-    private Map<String, String> fixedVipMap;
-    private long heartTimeout;
-    private List<Route> routeList;
+    private int port = 1800;
+    private String vipCidr = "10.1.0.0/24";
+    private Map<String, String> fixedVipMap = Collections.emptyMap();
+    private long heartTimeout = 30 * 1000;
+    private List<Route> routeList = Collections.emptyList();
 
     @Builder
     @AllArgsConstructor

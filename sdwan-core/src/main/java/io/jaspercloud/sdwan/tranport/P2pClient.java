@@ -32,6 +32,11 @@ public class P2pClient implements TransportLifecycle, Runnable {
     private Channel localChannel;
     private NatAddress curNatAddress;
 
+    public int getLocalPort() {
+        InetSocketAddress address = (InetSocketAddress) localChannel.localAddress();
+        return address.getPort();
+    }
+
     public P2pClient(String stunServer, long heartTime, Supplier<ChannelHandler> handler) {
         this(stunServer, 0, heartTime, handler);
     }

@@ -62,8 +62,8 @@ public class TunSdWanNode extends BaseSdWanNode {
     }
 
     @Override
-    protected void initialize() throws Exception {
-        super.initialize();
+    protected void install() throws Exception {
+        super.install();
         TunTransportConfig tunConfig = TunTransportConfig.builder()
                 .tunName(config.getTunName())
                 .ip(getLocalVip())
@@ -88,9 +88,9 @@ public class TunSdWanNode extends BaseSdWanNode {
     }
 
     @Override
-    protected void destroy() throws Exception {
+    protected void uninstall() throws Exception {
         tunTransport.stop();
         routeManager.stop();
-        super.destroy();
+        super.uninstall();
     }
 }
