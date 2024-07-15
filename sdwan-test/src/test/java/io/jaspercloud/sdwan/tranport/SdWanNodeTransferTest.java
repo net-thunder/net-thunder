@@ -6,11 +6,13 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.junit.jupiter.api.Test;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 
 /**
  * @author jasper
@@ -80,7 +82,12 @@ public class SdWanNodeTransferTest {
         };
         sdWanNode2.afterPropertiesSet();
         System.out.println("started");
-        CountDownLatch countDownLatch = new CountDownLatch(1);
-        countDownLatch.await();
+        ServerSocket serverSocket = new ServerSocket();
+        serverSocket.bind(new InetSocketAddress("10.5.0.12", 8888));
+        Socket socket = new Socket();
+        socket.bind(new InetSocketAddress("10.5.0.11", 0));
+        socket.connect(new InetSocketAddress("10.5.0.12", 8888));
+        Socket accept = serverSocket.accept();
+        System.out.println();
     }
 }
