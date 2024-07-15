@@ -29,6 +29,7 @@ public class TunSdWanNode extends BaseSdWanNode {
     private SdWanNodeConfig config;
 
     private TunTransport tunTransport;
+    private RouteManager routeManager;
 
     public TunSdWanNode(SdWanNodeConfig config) {
         super(config);
@@ -82,15 +83,14 @@ public class TunSdWanNode extends BaseSdWanNode {
         });
         tunTransport.start();
         TunChannel tunChannel = tunTransport.getChannel();
-        RouteManager routeManager = new WindowsRouteManager();
-        for (SDWanProtos.Route route : getRouteList()) {
-            routeManager.addRoute(tunChannel, route);
-        }
+        routeManager = new WindowsRouteManager(tunChannel, getVirtualRouter());
+        routeManager.start();
     }
 
     @Override
     protected void destroy() throws Exception {
         tunTransport.stop();
+        routeManager.stop();
         super.destroy();
     }
 }

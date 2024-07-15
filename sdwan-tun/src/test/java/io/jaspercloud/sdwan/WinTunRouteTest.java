@@ -3,6 +3,7 @@ package io.jaspercloud.sdwan;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.route.RouteManager;
 import io.jaspercloud.sdwan.route.WindowsRouteManager;
+import io.jaspercloud.sdwan.tranport.VirtualRouter;
 import io.jaspercloud.sdwan.tun.Ipv4Packet;
 import io.jaspercloud.sdwan.tun.TunAddress;
 import io.jaspercloud.sdwan.tun.TunChannel;
@@ -41,19 +42,23 @@ public class WinTunRouteTest {
         String ip = "10.5.0.5";
         ChannelFuture future = bootstrap.bind(new TunAddress("net-thunder", ip, 24));
         TunChannel tunChannel = (TunChannel) future.syncUninterruptibly().channel();
-        RouteManager routeManager = new WindowsRouteManager();
-        routeManager.addRoute(tunChannel, SDWanProtos.Route.newBuilder()
-                .setDestination("172.168.1.0/24")
-                .addAllNexthop(Arrays.asList("10.5.0.5"))
-                .build());
-        routeManager.addRoute(tunChannel, SDWanProtos.Route.newBuilder()
-                .setDestination("172.168.2.0/24")
-                .addAllNexthop(Arrays.asList("10.5.0.5"))
-                .build());
-        routeManager.addRoute(tunChannel, SDWanProtos.Route.newBuilder()
-                .setDestination("172.168.3.0/24")
-                .addAllNexthop(Arrays.asList("10.5.0.5"))
-                .build());
+        VirtualRouter virtualRouter = new VirtualRouter();
+        virtualRouter.updateRoutes(Arrays.asList(
+                SDWanProtos.Route.newBuilder()
+                        .setDestination("172.168.1.0/24")
+                        .addAllNexthop(Arrays.asList("10.5.0.5"))
+                        .build(),
+                SDWanProtos.Route.newBuilder()
+                        .setDestination("172.168.2.0/24")
+                        .addAllNexthop(Arrays.asList("10.5.0.5"))
+                        .build(),
+                SDWanProtos.Route.newBuilder()
+                        .setDestination("172.168.3.0/24")
+                        .addAllNexthop(Arrays.asList("10.5.0.5"))
+                        .build()
+        ));
+        RouteManager routeManager = new WindowsRouteManager(tunChannel, virtualRouter);
+        routeManager.start();
         CountDownLatch countDownLatch = new CountDownLatch(1);
         countDownLatch.await();
     }

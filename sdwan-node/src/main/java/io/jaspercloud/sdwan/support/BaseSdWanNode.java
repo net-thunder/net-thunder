@@ -1,17 +1,16 @@
 package io.jaspercloud.sdwan.support;
 
-import com.google.protobuf.ProtocolStringList;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.stun.NatAddress;
 import io.jaspercloud.sdwan.tranport.SdWanClient;
 import io.jaspercloud.sdwan.tranport.SdWanClientConfig;
+import io.jaspercloud.sdwan.tranport.VirtualRouter;
 import io.jaspercloud.sdwan.util.AddressType;
 import io.jaspercloud.sdwan.util.NetworkInterfaceInfo;
 import io.jaspercloud.sdwan.util.NetworkInterfaceUtil;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;
 import io.netty.channel.*;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.RandomUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -41,7 +40,7 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
     private String localVip;
     private int maskBits;
     private String vipCidr;
-    private List<SDWanProtos.Route> routeList;
+    private VirtualRouter virtualRouter;
     private ReentrantLock lock = new ReentrantLock();
     private Condition condition = lock.newCondition();
     private AtomicReference<Map<String, SDWanProtos.NodeInfo>> nodeInfoMapRef = new AtomicReference<>(new HashMap<>());
@@ -62,8 +61,8 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
         return vipCidr;
     }
 
-    public List<SDWanProtos.Route> getRouteList() {
-        return routeList;
+    public VirtualRouter getVirtualRouter() {
+        return virtualRouter;
     }
 
     public SdWanClient getSdWanClient() {
@@ -125,6 +124,17 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
                                 nodeInfoMapRef.set(map);
                                 break;
                             }
+                            case SDWanProtos.MessageTypeCode.RouteListType_VALUE: {
+                                SDWanProtos.RouteList routeList = SDWanProtos.RouteList.parseFrom(msg.getData());
+                                virtualRouter.updateRoutes(routeList.getRouteList());
+                                break;
+                            }
+                            case SDWanProtos.MessageTypeCode.NodeOnlineType_VALUE: {
+                                break;
+                            }
+                            case SDWanProtos.MessageTypeCode.NodeOfflineType_VALUE: {
+                                break;
+                            }
                         }
                     }
                 });
@@ -142,6 +152,7 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
                 });
             }
         });
+        virtualRouter = new VirtualRouter();
         initialize();
         log.info("SdWanNode started");
         new Thread(this, "loop").start();
@@ -152,7 +163,7 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
     }
 
     private void sendTo(String dstIp, byte[] bytes) {
-        String dstVip = findNexthop(dstIp);
+        String dstVip = virtualRouter.route(dstIp);
         if (null == dstVip) {
             return;
         }
@@ -167,24 +178,6 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
             return;
         }
         iceClient.sendNode(nodeInfo, bytes);
-    }
-
-    private String findNexthop(String ip) {
-        for (SDWanProtos.Route route : routeList) {
-            if (Cidr.contains(route.getDestination(), ip)) {
-                ProtocolStringList nexthopList = route.getNexthopList();
-                if (nexthopList.isEmpty()) {
-                    return null;
-                }
-                int rand = RandomUtils.nextInt(0, nexthopList.size());
-                String nexthop = nexthopList.get(rand);
-                return nexthop;
-            }
-        }
-        if (Cidr.contains(vipCidr, ip)) {
-            return ip;
-        }
-        return null;
     }
 
     protected void initialize() throws Exception {
@@ -226,7 +219,8 @@ public class BaseSdWanNode implements InitializingBean, Runnable {
         localVip = regResp.getVip();
         maskBits = regResp.getMaskBits();
         vipCidr = Cidr.parseCidr(regResp.getVip(), maskBits);
-        routeList = regResp.getRouteList().getRouteList();
+        virtualRouter.updateCidr(vipCidr);
+        virtualRouter.updateRoutes(regResp.getRouteList().getRouteList());
         log.info("sdwan node started");
     }
 
