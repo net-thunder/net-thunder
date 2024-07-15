@@ -52,21 +52,60 @@ public class SdWanNodePushTest {
         };
         sdWanNode.afterPropertiesSet();
         System.out.println("started");
-        Thread.sleep(3000);
-        SDWanProtos.RouteList routeListData = SDWanProtos.RouteList.newBuilder()
-                .addRoute(SDWanProtos.Route.newBuilder()
-                        .setDestination("172.168.2.0/24")
-                        .addAllNexthop(Arrays.asList("10.5.0.2"))
-                        .build())
-                .addRoute(SDWanProtos.Route.newBuilder()
-                        .setDestination("172.168.3.0/24")
-                        .addAllNexthop(Arrays.asList("10.5.0.2"))
-                        .build())
-                .build();
-        sdWanServer.push(SDWanProtos.MessageTypeCode.RouteListType, routeListData);
-        System.out.println("push RouteList");
-        CountDownLatch countDownLatch = new CountDownLatch(1);
-        countDownLatch.await();
+        {
+            SDWanProtos.RouteList routeListData = SDWanProtos.RouteList.newBuilder()
+                    .addRoute(SDWanProtos.Route.newBuilder()
+                            .setDestination("172.168.2.0/24")
+                            .addAllNexthop(Arrays.asList("10.5.0.2"))
+                            .build())
+                    .addRoute(SDWanProtos.Route.newBuilder()
+                            .setDestination("172.168.3.0/24")
+                            .addAllNexthop(Arrays.asList("10.5.0.2"))
+                            .build())
+                    .build();
+            sdWanServer.push(SDWanProtos.MessageTypeCode.RouteListType, routeListData);
+            System.out.println("push RouteList1");
+        }
+        Thread.sleep(5 * 1000);
+        {
+            SDWanProtos.RouteList routeListData = SDWanProtos.RouteList.newBuilder()
+                    .addRoute(SDWanProtos.Route.newBuilder()
+                            .setDestination("172.168.4.0/24")
+                            .addAllNexthop(Arrays.asList("10.5.0.2"))
+                            .build())
+                    .addRoute(SDWanProtos.Route.newBuilder()
+                            .setDestination("172.168.5.0/24")
+                            .addAllNexthop(Arrays.asList("10.5.0.2"))
+                            .build())
+                    .build();
+            sdWanServer.push(SDWanProtos.MessageTypeCode.RouteListType, routeListData);
+            System.out.println("push RouteList1");
+        }
+        Thread.sleep(5 * 1000);
+        {
+            SDWanProtos.RouteList routeListData = SDWanProtos.RouteList.newBuilder()
+                    .addRoute(SDWanProtos.Route.newBuilder()
+                            .setDestination("172.168.6.0/24")
+                            .addAllNexthop(Arrays.asList("10.5.0.2"))
+                            .build())
+                    .addRoute(SDWanProtos.Route.newBuilder()
+                            .setDestination("172.168.7.0/24")
+                            .addAllNexthop(Arrays.asList("10.5.0.2"))
+                            .build())
+                    .addRoute(SDWanProtos.Route.newBuilder()
+                            .setDestination("172.168.8.0/24")
+                            .addAllNexthop(Arrays.asList("10.5.0.2"))
+                            .build())
+                    .addRoute(SDWanProtos.Route.newBuilder()
+                            .setDestination("172.168.9.0/24")
+                            .addAllNexthop(Arrays.asList("10.5.0.2"))
+                            .build())
+                    .build();
+            sdWanServer.push(SDWanProtos.MessageTypeCode.RouteListType, routeListData);
+            System.out.println("push RouteList1");
+        }
+        Thread.sleep(5 * 1000);
+        System.out.println();
     }
 
     @Test
