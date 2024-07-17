@@ -192,6 +192,7 @@ public class BaseSdWanNode implements InitializingBean, DisposableBean, Runnable
     }
 
     protected void install() throws Exception {
+        nodeInfoMap.clear();
         iceClient.start();
         sdWanClient.start();
         log.info("sdwan node init");

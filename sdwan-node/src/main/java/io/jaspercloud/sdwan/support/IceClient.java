@@ -149,5 +149,8 @@ public class IceClient implements TransportLifecycle {
         if (null != relayClient) {
             relayClient.stop();
         }
+        if (null != p2pTransportManager) {
+            p2pTransportManager.destroy();
+        }
     }
 }
