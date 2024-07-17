@@ -135,7 +135,7 @@ public class IceClient implements TransportLifecycle {
         p2pClient = new P2pClient(config.getStunServer(), config.getP2pPort(), config.getP2pHeartTime(), handler);
         relayClient = new RelayClient(config.getRelayServer(), config.getP2pHeartTime(), handler);
         p2pTransportManager = new P2pTransportManager(p2pClient, config.getP2pHeartTime());
-        p2pTransportManager.afterPropertiesSet();
+        p2pTransportManager.start();
         p2pClient.start();
         relayClient.start();
         log.info("ice client started");
@@ -143,14 +143,14 @@ public class IceClient implements TransportLifecycle {
 
     @Override
     public void stop() throws Exception {
+        if (null != p2pTransportManager) {
+            p2pTransportManager.stop();
+        }
         if (null != p2pClient) {
             p2pClient.stop();
         }
         if (null != relayClient) {
             relayClient.stop();
-        }
-        if (null != p2pTransportManager) {
-            p2pTransportManager.destroy();
         }
     }
 }

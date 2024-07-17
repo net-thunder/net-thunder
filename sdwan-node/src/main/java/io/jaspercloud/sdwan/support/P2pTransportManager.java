@@ -18,7 +18,7 @@ import java.util.concurrent.*;
  * @create 2024/7/2
  */
 @Slf4j
-public class P2pTransportManager implements InitializingBean, DisposableBean, Runnable {
+public class P2pTransportManager implements Runnable {
 
     private P2pClient p2pClient;
     private long heartTime;
@@ -74,14 +74,12 @@ public class P2pTransportManager implements InitializingBean, DisposableBean, Ru
         }
     }
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
+    public void start() {
         scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         scheduledExecutorService.scheduleAtFixedRate(this, 0, heartTime, TimeUnit.MILLISECONDS);
     }
 
-    @Override
-    public void destroy() throws Exception {
+    public void stop() {
         scheduledExecutorService.shutdown();
     }
 }
