@@ -93,15 +93,18 @@ message IpPacket {
 }
 
 message P2pOffer {
-  required string srcVIP = 1;
-  required string dstVIP = 2;
-  required SocketAddress offerAddress = 3;
-  required SocketAddress answerAddress = 4;
+  required string type = 1;
+  required string srcVIP = 2;
+  required string dstVIP = 3;
+  required string offerData = 4;
+  required string answerData = 5;
+  required bytes encryptionKey = 6;
 }
 
 message P2pAnswer {
   required MessageCode code = 1;
   required string srcVIP = 2;
   required string dstVIP = 3;
+  required bytes encryptionKey = 4;
 }
 

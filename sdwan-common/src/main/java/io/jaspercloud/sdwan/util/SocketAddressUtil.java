@@ -23,4 +23,9 @@ public final class SocketAddressUtil {
         String text = address.toString().replaceAll("^/", "");
         return text;
     }
+
+    public static String toAddress(String host, int port) {
+        String text = String.format("%s:%d", host, port);
+        return text;
+    }
 }

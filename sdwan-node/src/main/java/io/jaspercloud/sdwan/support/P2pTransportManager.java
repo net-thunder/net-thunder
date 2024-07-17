@@ -1,17 +1,16 @@
 package io.jaspercloud.sdwan.support;
 
 import io.jaspercloud.sdwan.tranport.P2pClient;
-import io.jaspercloud.sdwan.util.SocketAddressUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
 
-import java.net.InetSocketAddress;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 /**
  * @author jasper
@@ -24,23 +23,35 @@ public class P2pTransportManager implements Runnable {
     private long heartTime;
 
     private ScheduledExecutorService scheduledExecutorService;
-    private Map<String, Set<InetSocketAddress>> p2pAddressMap = new ConcurrentHashMap<>();
+    private Map<String, AtomicReference<IceClient.Transport>> transportMap = new ConcurrentHashMap<>();
 
-    public void clearP2pAddress() {
-        p2pAddressMap.clear();
+    public void clear() {
+        transportMap.clear();
     }
 
-    public Set<InetSocketAddress> getP2pAddressSet(String vip) {
-        Set<InetSocketAddress> addressSet = p2pAddressMap.get(vip);
-        if (null == addressSet) {
-            addressSet = Collections.emptySet();
+    public IceClient.Transport get(String ip) {
+        AtomicReference<IceClient.Transport> ref = transportMap.get(ip);
+        if (null == ref) {
+            return null;
         }
-        return addressSet;
+        IceClient.Transport transport = ref.get();
+        return transport;
     }
 
-    public void addP2pAddress(String vip, InetSocketAddress address) {
-        Set<InetSocketAddress> set = p2pAddressMap.computeIfAbsent(vip, key -> new ConcurrentSkipListSet<>());
-        set.add(address);
+    public AtomicReference<IceClient.Transport> getOrCreate(String ip, Consumer<String> consumer) {
+        return transportMap.computeIfAbsent(ip, key -> {
+            AtomicReference<IceClient.Transport> ref = new AtomicReference<>();
+            consumer.accept(key);
+            return ref;
+        });
+    }
+
+    public void addTransport(String ip, IceClient.Transport transport) {
+        transportMap.put(ip, new AtomicReference<>(transport));
+    }
+
+    public void deleteTransport(String ip) {
+        transportMap.remove(ip);
     }
 
     public P2pTransportManager(P2pClient p2pClient, long heartTime) {
@@ -50,25 +61,17 @@ public class P2pTransportManager implements Runnable {
 
     @Override
     public void run() {
-        Iterator<String> iterator = p2pAddressMap.keySet().iterator();
+        Iterator<String> iterator = transportMap.keySet().iterator();
         while (iterator.hasNext()) {
             String key = iterator.next();
-            Set<InetSocketAddress> addressSet = p2pAddressMap.get(key);
-            testAddressSet(addressSet);
-            if (addressSet.isEmpty()) {
-                p2pAddressMap.remove(key);
+            IceClient.Transport transport = transportMap.get(key).get();
+            if (null == transport) {
+                continue;
             }
-        }
-    }
-
-    private void testAddressSet(Set<InetSocketAddress> addressSet) {
-        Iterator<InetSocketAddress> iterator = addressSet.iterator();
-        while (iterator.hasNext()) {
-            InetSocketAddress address = iterator.next();
             try {
-                log.debug("p2p heart: {}", SocketAddressUtil.toAddress(address));
-                p2pClient.parseNATAddress(address, 3000).get();
+                transport.ping(3000);
             } catch (Exception e) {
+                log.error(e.getMessage(), e);
                 iterator.remove();
             }
         }

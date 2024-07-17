@@ -41,18 +41,6 @@ public class RelayServer implements InitializingBean, DisposableBean, Runnable {
         this.handler = handler;
     }
 
-    private void processTransfer(ChannelHandlerContext ctx, StunPacket request) {
-        Channel channel = ctx.channel();
-        StunMessage stunMessage = request.content();
-        StringAttr tokenAttr = stunMessage.getAttr(AttrType.RelayToken);
-        InetSocketAddress address = transferMap.get(tokenAttr.getData());
-        if (null == address) {
-            return;
-        }
-        StunPacket response = new StunPacket(stunMessage, address);
-        channel.writeAndFlush(response);
-    }
-
     private void processBindRelayRequest(ChannelHandlerContext ctx, StunPacket request) {
         Channel channel = ctx.channel();
         InetSocketAddress sender = request.sender();
@@ -69,6 +57,41 @@ public class RelayServer implements InitializingBean, DisposableBean, Runnable {
         StunMessage stunMessage = new StunMessage(MessageType.BindRelayResponse, request.content().getTranId());
         stunMessage.setAttr(AttrType.RelayToken, new StringAttr(heart.getToken()));
         StunPacket response = new StunPacket(stunMessage, request.sender());
+        channel.writeAndFlush(response);
+    }
+
+    private void processPingRequest(ChannelHandlerContext ctx, StunPacket request) {
+        Channel channel = ctx.channel();
+        InetSocketAddress sender = request.sender();
+        StunMessage stunMessage = request.content();
+        StringAttr tokenAttr = stunMessage.getAttr(AttrType.RelayToken);
+        InetSocketAddress address = transferMap.get(tokenAttr.getData());
+        if (null == address) {
+            return;
+        }
+        stunMessage.setAttr(AttrType.SourceAddress, new AddressAttr(sender.getHostString(), sender.getPort()));
+        StunPacket response = new StunPacket(stunMessage, address);
+        channel.writeAndFlush(response);
+    }
+
+    private void processPingResponse(ChannelHandlerContext ctx, StunPacket request) {
+        Channel channel = ctx.channel();
+        StunMessage stunMessage = request.content();
+        AddressAttr addressAttr = stunMessage.getAttr(AttrType.SourceAddress);
+        InetSocketAddress address = addressAttr.getAddress();
+        StunPacket response = new StunPacket(stunMessage, address);
+        channel.writeAndFlush(response);
+    }
+
+    private void processTransfer(ChannelHandlerContext ctx, StunPacket request) {
+        Channel channel = ctx.channel();
+        StunMessage stunMessage = request.content();
+        StringAttr tokenAttr = stunMessage.getAttr(AttrType.RelayToken);
+        InetSocketAddress address = transferMap.get(tokenAttr.getData());
+        if (null == address) {
+            return;
+        }
+        StunPacket response = new StunPacket(stunMessage, address);
         channel.writeAndFlush(response);
     }
 
@@ -92,6 +115,10 @@ public class RelayServer implements InitializingBean, DisposableBean, Runnable {
                                 InetSocketAddress sender = packet.sender();
                                 if (MessageType.BindRelayRequest.equals(request.getMessageType())) {
                                     processBindRelayRequest(ctx, packet);
+                                } else if (MessageType.PingRequest.equals(request.getMessageType())) {
+                                    processPingRequest(ctx, packet);
+                                } else if (MessageType.PingResponse.equals(request.getMessageType())) {
+                                    processPingResponse(ctx, packet);
                                 } else if (MessageType.Transfer.equals(request.getMessageType())) {
                                     processTransfer(ctx, packet);
                                 } else {

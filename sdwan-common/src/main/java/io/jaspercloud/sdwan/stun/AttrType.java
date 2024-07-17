@@ -14,7 +14,9 @@ public enum AttrType {
 
     Data(0x8003, BytesAttr.Decode),
     RelayToken(0x8004, StringAttr.Decode),
-    TransferType(0x8005, StringAttr.Decode);
+    TransferType(0x8005, StringAttr.Decode),
+    Time(0x8006, LongAttr.Decode),
+    SrcVip(0x8007, StringAttr.Decode);
 
     private int code;
     private AttrDecode decode;

@@ -24,7 +24,9 @@ public class SdWanNodeConfig {
 
     private String localAddress;
     private int p2pPort = 0;
+    private int relayPort = 0;
     private long p2pHeartTime = 10 * 1000;
+    private boolean onlyRelayTransport = false;
 
     private String tunName = "net-thunder";
     private int mtu = 1440;

@@ -18,6 +18,10 @@ public class AddressAttr extends Attr {
     public AddressAttr() {
     }
 
+    public AddressAttr(String ip, Integer port) {
+        this(ProtoFamily.IPv4, ip, port);
+    }
+
     public AddressAttr(ProtoFamily family, String ip, Integer port) {
         this.family = family;
         this.ip = ip;

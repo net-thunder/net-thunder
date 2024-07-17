@@ -1,6 +1,8 @@
 package io.jaspercloud.sdwan.tranport;
 
+import io.jaspercloud.sdwan.stun.MessageType;
 import io.jaspercloud.sdwan.stun.NatAddress;
+import io.jaspercloud.sdwan.stun.StunMessage;
 import io.jaspercloud.sdwan.stun.StunPacket;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -40,6 +42,12 @@ public class P2pClientTest {
 
     @Test
     public void transfer() throws Exception {
+        StunServerConfig config = StunServerConfig.builder()
+                .bindHost("127.0.0.1")
+                .bindPort(3478)
+                .build();
+        StunServer stunServer = new StunServer(config, () -> new ChannelInboundHandlerAdapter());
+        stunServer.afterPropertiesSet();
         CompletableFuture<StunPacket> future = new CompletableFuture<>();
         P2pClient p2pClient1 = new P2pClient("127.0.0.1:3478", 1001, 3000, () -> new SimpleChannelInboundHandler<StunPacket>() {
             @Override
@@ -50,8 +58,37 @@ public class P2pClientTest {
         p2pClient1.start();
         P2pClient p2pClient2 = new P2pClient("127.0.0.1:3478", 1002, 3000, () -> new ChannelInboundHandlerAdapter());
         p2pClient2.start();
-        p2pClient2.transfer(new InetSocketAddress("127.0.0.1", 1001), "test".getBytes());
+        p2pClient2.transfer("127.0.0.1", new InetSocketAddress("127.0.0.1", 1001), "test".getBytes());
         StunPacket stunPacket = future.get();
+        System.out.println();
+    }
+
+    @Test
+    public void ping() throws Exception {
+        StunServerConfig config = StunServerConfig.builder()
+                .bindHost("127.0.0.1")
+                .bindPort(3478)
+                .build();
+        StunServer stunServer = new StunServer(config, () -> new ChannelInboundHandlerAdapter());
+        stunServer.afterPropertiesSet();
+        P2pClient p2pClient1 = new P2pClient("127.0.0.1:3478", 1001, 3000, () -> new SimpleChannelInboundHandler<StunPacket>() {
+            @Override
+            protected void channelRead0(ChannelHandlerContext ctx, StunPacket msg) throws Exception {
+                System.out.println();
+            }
+        });
+        p2pClient1.start();
+        P2pClient p2pClient2 = new P2pClient("127.0.0.1:3478", 1002, 3000, () -> new SimpleChannelInboundHandler<StunPacket>() {
+            @Override
+            protected void channelRead0(ChannelHandlerContext ctx, StunPacket packet) throws Exception {
+                StunMessage message = packet.content();
+                message.setMessageType(MessageType.PingResponse);
+                StunPacket response = new StunPacket(message, packet.sender());
+                ctx.writeAndFlush(response);
+            }
+        });
+        p2pClient2.start();
+        p2pClient1.ping(new InetSocketAddress("127.0.0.1", 1002), 3000).get();
         System.out.println();
     }
 }

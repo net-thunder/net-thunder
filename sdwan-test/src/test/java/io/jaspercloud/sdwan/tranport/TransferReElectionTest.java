@@ -1,9 +1,9 @@
 package io.jaspercloud.sdwan.tranport;
 
 import com.google.protobuf.ByteString;
-import io.jaspercloud.sdwan.support.SdWanNodeConfig;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.stun.NatAddress;
+import io.jaspercloud.sdwan.support.SdWanNodeConfig;
 import io.jaspercloud.sdwan.tranport.support.TestSdWanNode;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
  * @author jasper
  * @create 2024/7/2
  */
-public class TransferRelayTest {
+public class TransferReElectionTest {
 
     @Test
     public void relayTrue() throws Exception {
@@ -97,7 +97,7 @@ public class TransferRelayTest {
         while (true) {
             sdWanNode1.sendIpPacket(SDWanProtos.IpPacket.newBuilder()
                     .setSrcIP("192.168.1.2")
-                    .setDstIP("10.5.0.2")
+                    .setDstIP("10.5.0.12")
                     .setPayload(ByteString.copyFrom(("hello" + i++).getBytes()))
                     .build());
             Thread.sleep(3000);
@@ -233,13 +233,13 @@ public class TransferRelayTest {
         sdWanNode2.afterPropertiesSet();
         Executors.newSingleThreadScheduledExecutor()
                 .scheduleAtFixedRate(() -> {
-                    sdWanNode1.getIceClient().getP2pTransportManager().clearP2pAddress();
+                    sdWanNode1.getIceClient().getP2pTransportManager().clear();
                 }, 0, 10 * 1000, TimeUnit.MILLISECONDS);
         int i = 1;
         while (true) {
             sdWanNode1.sendIpPacket(SDWanProtos.IpPacket.newBuilder()
                     .setSrcIP("192.168.1.2")
-                    .setDstIP("10.5.0.2")
+                    .setDstIP("10.5.0.12")
                     .setPayload(ByteString.copyFrom(("hello" + i++).getBytes()))
                     .build());
             Thread.sleep(3000);

@@ -97,21 +97,8 @@ public class BaseSdWanNode implements InitializingBean, DisposableBean, Runnable
                         switch (msg.getType().getNumber()) {
                             case SDWanProtos.MessageTypeCode.P2pOfferType_VALUE: {
                                 SDWanProtos.P2pOffer p2pOffer = SDWanProtos.P2pOffer.parseFrom(msg.getData());
-                                SDWanProtos.SocketAddress address = p2pOffer.getOfferAddress();
-                                InetSocketAddress remoteAddress = new InetSocketAddress(address.getIp(), address.getPort());
-                                iceClient.ping(p2pOffer.getSrcVIP(), remoteAddress, 1000)
-                                        .whenComplete((result, ex) -> {
-                                            SDWanProtos.MessageCode code;
-                                            if (null == ex) {
-                                                code = SDWanProtos.MessageCode.Success;
-                                            } else {
-                                                code = SDWanProtos.MessageCode.Failed;
-                                            }
-                                            SDWanProtos.P2pAnswer p2pAnswer = SDWanProtos.P2pAnswer.newBuilder()
-                                                    .setCode(code)
-                                                    .setSrcVIP(p2pOffer.getDstVIP())
-                                                    .setDstVIP(p2pOffer.getSrcVIP())
-                                                    .build();
+                                iceClient.processOffer(p2pOffer)
+                                        .thenAccept(p2pAnswer -> {
                                             sdWanClient.answer(msg.getReqId(), p2pAnswer);
                                         });
                                 break;
@@ -170,17 +157,17 @@ public class BaseSdWanNode implements InitializingBean, DisposableBean, Runnable
     }
 
     public void sendIpPacket(SDWanProtos.IpPacket ipPacket) {
-        sendTo(ipPacket.getDstIP(), ipPacket.toByteArray());
+        sendTo(localVip, ipPacket.getDstIP(), ipPacket.toByteArray());
     }
 
-    private void sendTo(String dstIp, byte[] bytes) {
+    private void sendTo(String srcVip, String dstIp, byte[] bytes) {
         String dstVip = virtualRouter.route(dstIp);
         if (null == dstVip) {
             return;
         }
         if (Cidr.isBroadcastAddress(vipCidr, dstVip)) {
             nodeInfoMap.values().forEach(nodeInfo -> {
-                iceClient.sendNode(nodeInfo, bytes);
+                iceClient.sendNode(srcVip, nodeInfo, bytes);
             });
             return;
         }
@@ -188,7 +175,7 @@ public class BaseSdWanNode implements InitializingBean, DisposableBean, Runnable
         if (null == nodeInfo) {
             return;
         }
-        iceClient.sendNode(nodeInfo, bytes);
+        iceClient.sendNode(srcVip, nodeInfo, bytes);
     }
 
     protected void install() throws Exception {

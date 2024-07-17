@@ -8,7 +8,9 @@ public enum MessageType {
     BindRelayRequest(0x0303),
     BindRelayResponse(0x0304),
     RefreshRelayRequest(0x0305),
-    RefreshRelayResponse(0x0306);
+    RefreshRelayResponse(0x0306),
+    PingRequest(0x0307),
+    PingResponse(0x0308);
 
     private int code;
 

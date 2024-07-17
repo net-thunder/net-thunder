@@ -7,6 +7,7 @@ import io.netty.util.TimerTask;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -19,8 +20,19 @@ public class AsyncTask<T> {
             20, TimeUnit.MILLISECONDS);
     private static Map<String, CompletableFuture> futureMap = new ConcurrentHashMap<>();
 
+    public static <T> CompletableFuture<T> create(long timeout) {
+        FutureTask futureTask = new FutureTask(UUID.randomUUID().toString());
+        futureTask.timeoutTask = TIMEOUT.newTimeout(new TimerTask() {
+            @Override
+            public void run(Timeout timeout) throws Exception {
+                futureTask.completeExceptionally(new TimeoutException());
+            }
+        }, timeout, TimeUnit.MILLISECONDS);
+        return futureTask;
+    }
+
     public static <T> CompletableFuture<T> waitTask(String id, long timeout) {
-        FutureTask futureTask = new FutureTask();
+        FutureTask futureTask = new FutureTask(id);
         futureMap.put(id, futureTask);
         futureTask.timeoutTask = TIMEOUT.newTimeout(new TimerTask() {
             @Override
@@ -47,7 +59,12 @@ public class AsyncTask<T> {
 
     private static class FutureTask extends CompletableFuture {
 
+        private String id;
         private Timeout timeoutTask;
+
+        public FutureTask(String id) {
+            this.id = id;
+        }
 
         @Override
         public boolean complete(Object value) {

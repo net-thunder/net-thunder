@@ -78,18 +78,19 @@ public class P2pClient implements TransportLifecycle, Runnable {
         return future;
     }
 
-    public CompletableFuture<InetSocketAddress> parseNATAddress(InetSocketAddress address, long timeout) {
-        CompletableFuture<StunPacket> future = sendBind(address, timeout);
-        return future.thenApply(result -> {
-            InetSocketAddress sender = result.sender();
-            return sender;
-        });
+    public CompletableFuture<StunPacket> ping(InetSocketAddress address, long timeout) {
+        StunMessage message = new StunMessage(MessageType.PingRequest);
+        message.setAttr(AttrType.Time, new LongAttr(System.currentTimeMillis()));
+        StunPacket request = new StunPacket(message, address);
+        CompletableFuture<StunPacket> future = invokeAsync(request, timeout);
+        return future;
     }
 
-    public void transfer(InetSocketAddress toAddress, byte[] bytes) {
+    public void transfer(String vip, InetSocketAddress toAddress, byte[] bytes) {
         log.debug("p2p send transfer: {}", SocketAddressUtil.toAddress(toAddress));
         StunMessage message = new StunMessage(MessageType.Transfer);
         message.setAttr(AttrType.TransferType, new StringAttr("p2p"));
+        message.setAttr(AttrType.SrcVip, new StringAttr(vip));
         message.setAttr(AttrType.Data, new BytesAttr(bytes));
         StunPacket request = new StunPacket(message, toAddress);
         localChannel.writeAndFlush(request);
@@ -176,6 +177,8 @@ public class P2pClient implements TransportLifecycle, Runnable {
                                 } else if (MessageType.BindResponse.equals(request.getMessageType())) {
                                     AsyncTask.completeTask(request.getTranId(), packet);
                                 } else if (MessageType.BindRelayResponse.equals(request.getMessageType())) {
+                                    AsyncTask.completeTask(request.getTranId(), packet);
+                                } else if (MessageType.PingResponse.equals(request.getMessageType())) {
                                     AsyncTask.completeTask(request.getTranId(), packet);
                                 } else {
                                     ctx.fireChannelRead(packet);

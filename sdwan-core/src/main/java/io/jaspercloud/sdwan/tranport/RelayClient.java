@@ -32,6 +32,10 @@ public class RelayClient implements TransportLifecycle, Runnable {
     private Channel localChannel;
     private String curToken;
 
+    public String getCurToken() {
+        return curToken;
+    }
+
     public RelayClient(String relayServer, long heartTime, Supplier<ChannelHandler> handler) {
         this(relayServer, 0, heartTime, handler);
     }
@@ -49,6 +53,15 @@ public class RelayClient implements TransportLifecycle, Runnable {
         return future;
     }
 
+    public CompletableFuture<StunPacket> ping(String token, long timeout) {
+        StunMessage message = new StunMessage(MessageType.PingRequest);
+        message.setAttr(AttrType.RelayToken, new StringAttr(token));
+        message.setAttr(AttrType.Time, new LongAttr(System.currentTimeMillis()));
+        StunPacket request = new StunPacket(message, relayAddress);
+        CompletableFuture<StunPacket> future = invokeAsync(request, timeout);
+        return future;
+    }
+
     public CompletableFuture<String> regist(long timeout) {
         StunMessage message = new StunMessage(MessageType.BindRelayRequest);
         StunPacket request = new StunPacket(message, relayAddress);
@@ -61,11 +74,12 @@ public class RelayClient implements TransportLifecycle, Runnable {
         });
     }
 
-    public void transfer(String token, byte[] bytes) {
+    public void transfer(String vip, String token, byte[] bytes) {
         log.debug("relay send transfer: {}", SocketAddressUtil.toAddress(relayAddress));
         StunMessage message = new StunMessage(MessageType.Transfer);
         message.setAttr(AttrType.TransferType, new StringAttr("relay"));
         message.setAttr(AttrType.RelayToken, new StringAttr(token));
+        message.setAttr(AttrType.SrcVip, new StringAttr(vip));
         message.setAttr(AttrType.Data, new BytesAttr(bytes));
         StunPacket request = new StunPacket(message, relayAddress);
         localChannel.writeAndFlush(request);
@@ -101,6 +115,8 @@ public class RelayClient implements TransportLifecycle, Runnable {
                                     AsyncTask.completeTask(request.getTranId(), packet);
                                 } else if (MessageType.RefreshRelayResponse.equals(request.getMessageType())) {
                                     AsyncTask.completeTask(request.getTranId(), packet);
+                                } else if (MessageType.PingResponse.equals(request.getMessageType())) {
+                                    AsyncTask.completeTask(request.getTranId(), packet);
                                 } else {
                                     ctx.fireChannelRead(packet);
                                 }
@@ -114,6 +130,7 @@ public class RelayClient implements TransportLifecycle, Runnable {
             localChannel = bootstrap.bind(localAddress).syncUninterruptibly().channel();
             log.info("relay client started");
             curToken = regist(3000).get();
+            log.info("port={}, token={}", port, curToken);
             bossGroup.scheduleAtFixedRate(this, 0, heartTime, TimeUnit.MILLISECONDS);
             localChannel.closeFuture().addListener(new ChannelFutureListener() {
                 @Override
