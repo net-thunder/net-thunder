@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * @author jasper
@@ -107,6 +108,16 @@ public class SdWanServer implements InitializingBean, DisposableBean, Runnable {
             });
             attr.setMacAddress(registReq.getMacAddress());
             attr.setAddressUriList(registReq.getAddressUriList());
+            SDWanProtos.NodeInfoList nodeInfoList = SDWanProtos.NodeInfoList.newBuilder()
+                    .addAllNodeInfo(registChannelMap.keySet().stream()
+                            .map(ch -> {
+                                ChannelAttributes chAttr = ChannelAttributes.attr(ch);
+                                return SDWanProtos.NodeInfo.newBuilder()
+                                        .setVip(chAttr.getVip())
+                                        .addAllAddressUri(chAttr.getAddressUriList())
+                                        .build();
+                            }).collect(Collectors.toList()))
+                    .build();
             SDWanProtos.RouteList.Builder routeBuilder = SDWanProtos.RouteList.newBuilder();
             if (!CollectionUtils.isEmpty(config.getRouteList())) {
                 config.getRouteList().forEach(e -> {
@@ -120,6 +131,7 @@ public class SdWanServer implements InitializingBean, DisposableBean, Runnable {
                     .setCode(SDWanProtos.MessageCode.Success)
                     .setVip(vip)
                     .setMaskBits(ipPool.getMaskBits())
+                    .setNodeList(nodeInfoList)
                     .setRouteList(routeBuilder.build())
                     .build();
             SdWanServer.reply(channel, msg, SDWanProtos.MessageTypeCode.RegistRespType, regResp);
@@ -140,6 +152,9 @@ public class SdWanServer implements InitializingBean, DisposableBean, Runnable {
                 .addAllAddressUri(attr.getAddressUriList())
                 .build();
         for (Channel item : registChannelMap.keySet()) {
+            if (item.id().asShortText().equals(channel.id().asShortText())) {
+                continue;
+            }
             try {
                 SdWanServer.push(item, SDWanProtos.MessageTypeCode.NodeOnlineType, nodeInfo);
             } catch (Exception e) {

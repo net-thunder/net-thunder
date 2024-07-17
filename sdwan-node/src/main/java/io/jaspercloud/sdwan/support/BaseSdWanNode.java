@@ -218,6 +218,9 @@ public class BaseSdWanNode implements InitializingBean, DisposableBean, Runnable
         localVip = regResp.getVip();
         maskBits = regResp.getMaskBits();
         vipCidr = Cidr.parseCidr(regResp.getVip(), maskBits);
+        regResp.getNodeList().getNodeInfoList().forEach(e -> {
+            nodeInfoMap.put(e.getVip(), e);
+        });
         virtualRouter.updateCidr(vipCidr);
         virtualRouter.updateRoutes(regResp.getRouteList().getRouteList());
         log.info("sdwan node started");

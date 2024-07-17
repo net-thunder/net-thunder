@@ -65,7 +65,8 @@ message RegistResp {
   required MessageCode code = 1;
   optional string vip = 2;
   optional int32 maskBits = 3;
-  optional RouteList routeList = 4;
+  optional NodeInfoList nodeList = 4;
+  optional RouteList routeList = 5;
 }
 
 message NodeInfo {
