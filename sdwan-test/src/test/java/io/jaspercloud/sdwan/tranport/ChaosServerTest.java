@@ -51,9 +51,9 @@ public class ChaosServerTest {
                             return mac;
                         }
                     };
-                    sdWanNode.afterPropertiesSet();
+                    sdWanNode.start();
                     Thread.sleep(RandomUtils.nextLong(min, max));
-                    sdWanNode.destroy();
+                    sdWanNode.stop();
                     Thread.sleep(interval);
                 } catch (Exception e) {
                 }
@@ -71,10 +71,10 @@ public class ChaosServerTest {
                             .bindHost(address)
                             .bindPort(3478)
                             .build(), () -> new ChannelInboundHandlerAdapter());
-                    stunServer.afterPropertiesSet();
+                    stunServer.start();
                     countDownLatch.countDown();
                     Thread.sleep(RandomUtils.nextLong(min, max));
-                    stunServer.destroy();
+                    stunServer.stop();
                     Thread.sleep(interval);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -92,10 +92,10 @@ public class ChaosServerTest {
                             .bindPort(2478)
                             .heartTimeout(15000)
                             .build(), () -> new ChannelInboundHandlerAdapter());
-                    relayServer.afterPropertiesSet();
+                    relayServer.start();
                     countDownLatch.countDown();
                     Thread.sleep(RandomUtils.nextLong(min, max));
-                    relayServer.destroy();
+                    relayServer.stop();
                     Thread.sleep(interval);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -124,10 +124,10 @@ public class ChaosServerTest {
                             .fixedVipList(Collections.emptyList())
                             .routeList(routeList)
                             .build(), () -> new ChannelInboundHandlerAdapter());
-                    sdWanServer.afterPropertiesSet();
+                    sdWanServer.start();
                     countDownLatch.countDown();
                     Thread.sleep(RandomUtils.nextLong(min, max));
-                    sdWanServer.destroy();
+                    sdWanServer.stop();
                     Thread.sleep(interval);
                 } catch (Exception e) {
                     e.printStackTrace();

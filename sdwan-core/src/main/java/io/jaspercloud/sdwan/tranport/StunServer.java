@@ -7,8 +7,6 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
 import sun.net.util.IPAddressUtil;
 
 import java.net.InetSocketAddress;
@@ -19,7 +17,7 @@ import java.util.function.Supplier;
  * @create 2024/7/2
  */
 @Slf4j
-public class StunServer implements InitializingBean, DisposableBean {
+public class StunServer implements Lifecycle {
 
     private StunServerConfig config;
     private Supplier<ChannelHandler> handler;
@@ -50,7 +48,7 @@ public class StunServer implements InitializingBean, DisposableBean {
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void start() throws Exception {
         NioEventLoopGroup bossGroup = NioEventLoopFactory.createBossGroup();
         Bootstrap bootstrap = new Bootstrap()
                 .group(bossGroup)
@@ -94,7 +92,7 @@ public class StunServer implements InitializingBean, DisposableBean {
     }
 
     @Override
-    public void destroy() throws Exception {
+    public void stop() throws Exception {
         if (null == localChannel) {
             return;
         }

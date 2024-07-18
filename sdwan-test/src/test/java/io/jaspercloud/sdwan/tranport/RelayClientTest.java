@@ -18,7 +18,7 @@ public class RelayClientTest {
                 .heartTimeout(15 * 1000)
                 .build();
         RelayServer relayServer = new RelayServer(config, () -> new ChannelInboundHandlerAdapter());
-        relayServer.afterPropertiesSet();
+        relayServer.start();
         RelayClient relayClient = new RelayClient("127.0.0.1:1300", 1234, () -> new ChannelInboundHandlerAdapter());
         relayClient.start();
         String token = relayClient.regist(3000).get();

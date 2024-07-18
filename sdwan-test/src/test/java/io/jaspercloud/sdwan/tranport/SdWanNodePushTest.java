@@ -30,17 +30,17 @@ public class SdWanNodePushTest {
                 .vipCidr("10.5.0.0/24")
                 .routeList(routeList)
                 .build(), () -> new ChannelInboundHandlerAdapter());
-        sdWanServer.afterPropertiesSet();
+        sdWanServer.start();
         RelayServer relayServer = new RelayServer(RelayServerConfig.builder()
                 .bindPort(2478)
                 .heartTimeout(15000)
                 .build(), () -> new ChannelInboundHandlerAdapter());
-        relayServer.afterPropertiesSet();
+        relayServer.start();
         StunServer stunServer = new StunServer(StunServerConfig.builder()
                 .bindHost("127.0.0.1")
                 .bindPort(3478)
                 .build(), () -> new ChannelInboundHandlerAdapter());
-        stunServer.afterPropertiesSet();
+        stunServer.start();
         TunSdWanNode sdWanNode = new TunSdWanNode(SdWanNodeConfig.builder()
                 .controllerServer("127.0.0.1:1800")
                 .relayServer("127.0.0.1:2478")
@@ -50,7 +50,7 @@ public class SdWanNodePushTest {
                 .tunName("net-thunder")
                 .build()) {
         };
-        sdWanNode.afterPropertiesSet();
+        sdWanNode.start();
         System.out.println("started");
         {
             SDWanProtos.RouteList routeListData = SDWanProtos.RouteList.newBuilder()
@@ -121,17 +121,17 @@ public class SdWanNodePushTest {
                 .vipCidr("10.5.0.0/24")
                 .routeList(routeList)
                 .build(), () -> new ChannelInboundHandlerAdapter());
-        sdWanServer.afterPropertiesSet();
+        sdWanServer.start();
         RelayServer relayServer = new RelayServer(RelayServerConfig.builder()
                 .bindPort(2478)
                 .heartTimeout(15000)
                 .build(), () -> new ChannelInboundHandlerAdapter());
-        relayServer.afterPropertiesSet();
+        relayServer.start();
         StunServer stunServer = new StunServer(StunServerConfig.builder()
                 .bindHost("127.0.0.1")
                 .bindPort(3478)
                 .build(), () -> new ChannelInboundHandlerAdapter());
-        stunServer.afterPropertiesSet();
+        stunServer.start();
         TunSdWanNode sdWanNode = new TunSdWanNode(SdWanNodeConfig.builder()
                 .controllerServer("127.0.0.1:1800")
                 .relayServer("127.0.0.1:2478")
@@ -145,7 +145,7 @@ public class SdWanNodePushTest {
                 return "x1:x:x:x:x:x";
             }
         };
-        sdWanNode.afterPropertiesSet();
+        sdWanNode.start();
         System.out.println("started");
         for (int i = 0; i < 5; i++) {
             TunSdWanNode testNode = new TunSdWanNode(SdWanNodeConfig.builder()
@@ -161,8 +161,8 @@ public class SdWanNodePushTest {
                     return "x2:x:x:x:x:x";
                 }
             };
-            testNode.afterPropertiesSet();
-            testNode.destroy();
+            testNode.start();
+            testNode.stop();
         }
         CountDownLatch countDownLatch = new CountDownLatch(1);
         countDownLatch.await();

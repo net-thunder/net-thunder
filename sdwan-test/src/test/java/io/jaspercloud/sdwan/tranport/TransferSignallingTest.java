@@ -27,7 +27,7 @@ public class TransferSignallingTest {
                 .heartTime(15 * 1000)
                 .p2pHeartTime(10 * 1000)
                 .build());
-        sdWanNode1.afterPropertiesSet();
+        sdWanNode1.start();
         TestSdWanNode sdWanNode2 = new TestSdWanNode(SdWanNodeConfig.builder()
                 .controllerServer("127.0.0.1:1800")
                 .relayServer("127.0.0.1:2478")
@@ -37,7 +37,7 @@ public class TransferSignallingTest {
                 .heartTime(15 * 1000)
                 .p2pHeartTime(10 * 1000)
                 .build());
-        sdWanNode2.afterPropertiesSet();
+        sdWanNode2.start();
         new Thread(() -> {
             while (true) {
                 SDWanProtos.IpPacket ipPacket = SDWanProtos.IpPacket.newBuilder()

@@ -40,17 +40,17 @@ public class TransferTest {
                 .fixedVipList(fixVipList)
                 .routeList(routeList)
                 .build(), () -> new ChannelInboundHandlerAdapter());
-        sdWanServer.afterPropertiesSet();
+        sdWanServer.start();
         RelayServer relayServer = new RelayServer(RelayServerConfig.builder()
                 .bindPort(2478)
                 .heartTimeout(15000)
                 .build(), () -> new ChannelInboundHandlerAdapter());
-        relayServer.afterPropertiesSet();
+        relayServer.start();
         StunServer stunServer = new StunServer(StunServerConfig.builder()
                 .bindHost(address)
                 .bindPort(3478)
                 .build(), () -> new ChannelInboundHandlerAdapter());
-        stunServer.afterPropertiesSet();
+        stunServer.start();
         TestSdWanNode sdWanNode1 = new TestSdWanNode(SdWanNodeConfig.builder()
                 .controllerServer(address + ":1800")
                 .relayServer(address + ":2478")
@@ -64,7 +64,7 @@ public class TransferTest {
                 return "x1:x:x:x:x:x";
             }
         };
-        sdWanNode1.afterPropertiesSet();
+        sdWanNode1.start();
         TestSdWanNode sdWanNode2 = new TestSdWanNode(SdWanNodeConfig.builder()
                 .controllerServer(address + ":1800")
                 .relayServer(address + ":2478")
@@ -78,7 +78,7 @@ public class TransferTest {
                 return "x2:x:x:x:x:x";
             }
         };
-        sdWanNode2.afterPropertiesSet();
+        sdWanNode2.start();
         while (true) {
             sdWanNode1.sendIpPacket(SDWanProtos.IpPacket.newBuilder()
                     .setSrcIP("10.5.0.1")

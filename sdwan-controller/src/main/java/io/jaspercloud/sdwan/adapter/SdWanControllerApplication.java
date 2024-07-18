@@ -1,10 +1,10 @@
 package io.jaspercloud.sdwan.adapter;
 
+import io.jaspercloud.sdwan.adapter.server.RelayServerBean;
 import io.jaspercloud.sdwan.adapter.server.SdWanControllerProperties;
-import io.jaspercloud.sdwan.tranport.RelayServer;
-import io.jaspercloud.sdwan.tranport.SdWanServer;
-import io.jaspercloud.sdwan.tranport.StunServer;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.jaspercloud.sdwan.adapter.server.SdWanServerBean;
+import io.jaspercloud.sdwan.adapter.server.StunServerBean;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Configuration;
  * @author jasper
  * @create 2024/7/12
  */
+@Slf4j
 @EnableConfigurationProperties(SdWanControllerProperties.class)
 @Configuration
 @SpringBootApplication
@@ -30,18 +31,17 @@ public class SdWanControllerApplication {
     }
 
     @Bean
-    public SdWanServer sdWanServer(SdWanControllerProperties properties) {
-        SdWanServer sdWanServer = new SdWanServer(properties.getSdwan(), () -> new ChannelInboundHandlerAdapter());
-        return sdWanServer;
+    public SdWanServerBean sdWanServer(SdWanControllerProperties properties) {
+        return new SdWanServerBean(properties.getSdwan());
     }
 
     @Bean
-    public RelayServer relayServer(SdWanControllerProperties properties) {
-        return new RelayServer(properties.getRelay(), () -> new ChannelInboundHandlerAdapter());
+    public RelayServerBean relayServer(SdWanControllerProperties properties) {
+        return new RelayServerBean(properties.getRelay());
     }
 
     @Bean
-    public StunServer stunServer(SdWanControllerProperties properties) {
-        return new StunServer(properties.getStun(), () -> new ChannelInboundHandlerAdapter());
+    public StunServerBean stunServer(SdWanControllerProperties properties) {
+        return new StunServerBean(properties.getStun());
     }
 }

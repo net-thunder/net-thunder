@@ -1,5 +1,6 @@
 package io.jaspercloud.sdwan.tranport;
 
+import cn.hutool.core.collection.CollUtil;
 import com.google.protobuf.AbstractMessageLite;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.exception.ProcessCodeException;
@@ -16,9 +17,6 @@ import io.netty.handler.codec.protobuf.ProtobufEncoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.util.CollectionUtils;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -34,7 +32,7 @@ import java.util.stream.Collectors;
  * @create 2024/7/2
  */
 @Slf4j
-public class SdWanServer implements InitializingBean, DisposableBean, Runnable {
+public class SdWanServer implements Lifecycle, Runnable {
 
     private SdWanServerConfig config;
     private Supplier<ChannelHandler> handler;
@@ -119,7 +117,7 @@ public class SdWanServer implements InitializingBean, DisposableBean, Runnable {
                             }).collect(Collectors.toList()))
                     .build();
             SDWanProtos.RouteList.Builder routeBuilder = SDWanProtos.RouteList.newBuilder();
-            if (!CollectionUtils.isEmpty(config.getRouteList())) {
+            if (!CollUtil.isEmpty(config.getRouteList())) {
                 config.getRouteList().forEach(e -> {
                     routeBuilder.addRoute(SDWanProtos.Route.newBuilder()
                             .setDestination(e.getDestination())
@@ -246,8 +244,8 @@ public class SdWanServer implements InitializingBean, DisposableBean, Runnable {
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
-        if (!CollectionUtils.isEmpty(config.getFixedVipList())) {
+    public void start() throws Exception {
+        if (!CollUtil.isEmpty(config.getFixedVipList())) {
             config.getFixedVipList().forEach(e -> {
                 fixedVipMap.put(e.getMac(), e.getVip());
             });
@@ -327,7 +325,7 @@ public class SdWanServer implements InitializingBean, DisposableBean, Runnable {
     }
 
     @Override
-    public void destroy() throws Exception {
+    public void stop() throws Exception {
         if (null == localChannel) {
             return;
         }

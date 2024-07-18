@@ -3,6 +3,7 @@ package io.jaspercloud.sdwan.support;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.stun.NatAddress;
+import io.jaspercloud.sdwan.tranport.Lifecycle;
 import io.jaspercloud.sdwan.tranport.SdWanClient;
 import io.jaspercloud.sdwan.tranport.SdWanClientConfig;
 import io.jaspercloud.sdwan.tranport.VirtualRouter;
@@ -12,13 +13,11 @@ import io.jaspercloud.sdwan.util.NetworkInterfaceUtil;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;
 import io.netty.channel.*;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,7 +31,7 @@ import java.util.stream.Collectors;
  * @create 2024/7/2
  */
 @Slf4j
-public class BaseSdWanNode implements InitializingBean, DisposableBean, Runnable {
+public class BaseSdWanNode implements Lifecycle, Runnable {
 
     private SdWanNodeConfig config;
 
@@ -87,7 +86,7 @@ public class BaseSdWanNode implements InitializingBean, DisposableBean, Runnable
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void start() throws Exception {
         sdWanClient = new SdWanClient(SdWanClientConfig.builder()
                 .controllerServer(config.getControllerServer())
                 .connectTimeout(config.getConnectTimeout())
@@ -154,7 +153,7 @@ public class BaseSdWanNode implements InitializingBean, DisposableBean, Runnable
     }
 
     @Override
-    public void destroy() throws Exception {
+    public void stop() throws Exception {
         log.info("SdWanNode stopping");
         loopStatus.set(false);
         loopThread.interrupt();
@@ -203,23 +202,33 @@ public class BaseSdWanNode implements InitializingBean, DisposableBean, Runnable
             }
             interfaceInfoList.forEach(e -> {
                 String address = e.getInterfaceAddress().getAddress().getHostAddress();
-                String host = UriComponentsBuilder.fromUriString(String.format("%s://%s:%d", AddressType.HOST, address, iceClient.getP2pClient().getLocalPort())).build().toString();
+                String host = AddressUri.builder()
+                        .scheme(AddressType.HOST)
+                        .host(address)
+                        .port(iceClient.getP2pClient().getLocalPort())
+                        .build().toString();
                 builder.addAddressUri(host);
             });
             natAddress = processNatAddress(iceClient.parseNatAddress(3000));
             log.info("parseNatAddress: type={}, address={}",
                     natAddress.getMappingType().name(), SocketAddressUtil.toAddress(natAddress.getMappingAddress()));
-            String srflx = UriComponentsBuilder.fromUriString(String.format("%s://%s:%d", AddressType.SRFLX,
-                    natAddress.getMappingAddress().getHostString(), natAddress.getMappingAddress().getPort()))
-                    .queryParam("mappingType", natAddress.getMappingType().name()).build().toString();
+            String srflx = AddressUri.builder()
+                    .scheme(AddressType.SRFLX)
+                    .host(natAddress.getMappingAddress().getHostString())
+                    .port(natAddress.getMappingAddress().getPort())
+                    .params(Collections.singletonMap("mappingType", natAddress.getMappingType().name()))
+                    .build().toString();
             builder.addAddressUri(srflx);
         }
         String token = iceClient.registRelay(3000);
         log.info("registRelay: token={}", token);
         InetSocketAddress relayAddress = SocketAddressUtil.parse(config.getRelayServer());
-        String relay = UriComponentsBuilder.fromUriString(String.format("%s://%s:%d", AddressType.RELAY,
-                relayAddress.getHostString(), relayAddress.getPort()))
-                .queryParam("token", token).build().toString();
+        String relay = AddressUri.builder()
+                .scheme(AddressType.RELAY)
+                .host(relayAddress.getHostString())
+                .port(relayAddress.getPort())
+                .params(Collections.singletonMap("token", token))
+                .build().toString();
         builder.addAddressUri(relay);
         SDWanProtos.RegistReq registReq = builder.build();
         SDWanProtos.RegistResp regResp = sdWanClient.regist(registReq, 3000).get();

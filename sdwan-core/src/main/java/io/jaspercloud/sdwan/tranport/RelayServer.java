@@ -11,8 +11,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
 
 import java.net.InetSocketAddress;
 import java.util.Iterator;
@@ -27,7 +25,7 @@ import java.util.function.Supplier;
  * @create 2024/7/2
  */
 @Slf4j
-public class RelayServer implements InitializingBean, DisposableBean, Runnable {
+public class RelayServer implements Lifecycle, Runnable {
 
     private RelayServerConfig config;
     private Supplier<ChannelHandler> handler;
@@ -96,7 +94,7 @@ public class RelayServer implements InitializingBean, DisposableBean, Runnable {
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void start() throws Exception {
         NioEventLoopGroup bossGroup = NioEventLoopFactory.createBossGroup();
         Bootstrap bootstrap = new Bootstrap()
                 .group(bossGroup)
@@ -147,7 +145,7 @@ public class RelayServer implements InitializingBean, DisposableBean, Runnable {
     }
 
     @Override
-    public void destroy() throws Exception {
+    public void stop() throws Exception {
         if (null == localChannel) {
             return;
         }

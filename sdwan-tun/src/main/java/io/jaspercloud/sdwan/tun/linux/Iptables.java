@@ -1,11 +1,12 @@
 package io.jaspercloud.sdwan.tun.linux;
 
+import cn.hutool.core.io.FileUtil;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.tun.ProcessUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.util.FileCopyUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 public final class Iptables {
@@ -34,11 +35,7 @@ public final class Iptables {
 
     private static void enableIpForward() {
         File file = new File("/proc/sys/net/ipv4/ip_forward");
-        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "utf-8"))) {
-            FileCopyUtils.copy("1", writer);
-        } catch (Throwable e) {
-            throw new ProcessException("enableIpForward failed", e);
-        }
+        FileUtil.writeBytes("1".getBytes(), file);
     }
 
     private static void addFilterRule(String tunName, String ethName) throws IOException, InterruptedException {

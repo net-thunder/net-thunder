@@ -26,7 +26,7 @@ public class SDClientTest {
                 .heartTimeout(30 * 1000)
                 .vipCidr("10.5.0.0/24")
                 .build(), () -> new ChannelInboundHandlerAdapter());
-        sdWanServer.afterPropertiesSet();
+        sdWanServer.start();
         SdWanClient sdWanClient = new SdWanClient(SdWanClientConfig.builder()
                 .controllerServer("127.0.0.1:1800")
                 .connectTimeout(3000)
@@ -65,7 +65,7 @@ public class SDClientTest {
                 .vipCidr("10.5.0.0/24")
                 .fixedVipList(fixVipList)
                 .build(), () -> new ChannelInboundHandlerAdapter());
-        sdWanServer.afterPropertiesSet();
+        sdWanServer.start();
         SdWanClient sdWanClient = new SdWanClient(SdWanClientConfig.builder()
                 .controllerServer("127.0.0.1:1800")
                 .connectTimeout(3000)
@@ -133,7 +133,7 @@ public class SDClientTest {
             protected void channelRead0(ChannelHandlerContext ctx, SDWanProtos.Message msg) throws Exception {
             }
         });
-        sdWanServer.afterPropertiesSet();
+        sdWanServer.start();
         CompletableFuture<SDWanProtos.NodeInfoList> nodeInfoListFuture = new CompletableFuture<>();
         CompletableFuture<SDWanProtos.RouteList> routeListFuture = new CompletableFuture<>();
         CompletableFuture<SDWanProtos.NodeInfo> onlineFuture = new CompletableFuture<>();

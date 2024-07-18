@@ -1,7 +1,6 @@
 package io.jaspercloud.sdwan.support;
 
 import lombok.*;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * @author jasper
@@ -12,7 +11,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @AllArgsConstructor
 @Getter
 @Setter
-@ConfigurationProperties(prefix = "node")
 public class SdWanNodeConfig {
 
     private String controllerServer = "127.0.0.1:1800";

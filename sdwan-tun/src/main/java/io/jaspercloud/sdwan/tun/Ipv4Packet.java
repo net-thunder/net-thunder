@@ -1,9 +1,9 @@
 package io.jaspercloud.sdwan.tun;
 
+import cn.hutool.core.lang.Assert;
 import io.jaspercloud.sdwan.util.ByteBufUtil;
 import io.jaspercloud.sdwan.util.IPUtil;
 import io.netty.buffer.ByteBuf;
-import org.springframework.util.Assert;
 
 public class Ipv4Packet implements IpPacket {
 

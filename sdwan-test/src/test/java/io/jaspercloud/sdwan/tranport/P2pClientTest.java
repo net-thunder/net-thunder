@@ -33,7 +33,7 @@ public class P2pClientTest {
                 .bindPort(1000)
                 .build();
         StunServer stunServer = new StunServer(config, () -> new ChannelInboundHandlerAdapter());
-        stunServer.afterPropertiesSet();
+        stunServer.start();
         P2pClient p2pClient = new P2pClient("127.0.0.1:1000", 3000, () -> new ChannelInboundHandlerAdapter());
         p2pClient.start();
         NatAddress natAddress = p2pClient.parseNatAddress(3000);
@@ -47,7 +47,7 @@ public class P2pClientTest {
                 .bindPort(3478)
                 .build();
         StunServer stunServer = new StunServer(config, () -> new ChannelInboundHandlerAdapter());
-        stunServer.afterPropertiesSet();
+        stunServer.start();
         CompletableFuture<StunPacket> future = new CompletableFuture<>();
         P2pClient p2pClient1 = new P2pClient("127.0.0.1:3478", 1001, 3000, () -> new SimpleChannelInboundHandler<StunPacket>() {
             @Override
@@ -70,7 +70,7 @@ public class P2pClientTest {
                 .bindPort(3478)
                 .build();
         StunServer stunServer = new StunServer(config, () -> new ChannelInboundHandlerAdapter());
-        stunServer.afterPropertiesSet();
+        stunServer.start();
         P2pClient p2pClient1 = new P2pClient("127.0.0.1:3478", 1001, 3000, () -> new SimpleChannelInboundHandler<StunPacket>() {
             @Override
             protected void channelRead0(ChannelHandlerContext ctx, StunPacket msg) throws Exception {
