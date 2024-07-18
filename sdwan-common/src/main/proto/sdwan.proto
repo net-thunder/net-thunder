@@ -96,9 +96,8 @@ message IpPacket {
 message P2pOffer {
   required string srcVIP = 2;
   required string dstVIP = 3;
-  repeated string offerData = 4;
-  repeated string answerData = 5;
-  required bytes publicKey = 6;
+  repeated string addressUri = 4;
+  required bytes publicKey = 5;
 }
 
 message P2pAnswer {

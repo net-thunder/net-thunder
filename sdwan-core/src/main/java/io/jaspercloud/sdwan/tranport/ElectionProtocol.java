@@ -80,8 +80,7 @@ public abstract class ElectionProtocol {
         SDWanProtos.P2pOffer p2pOfferReq = SDWanProtos.P2pOffer.newBuilder()
                 .setSrcVIP(getLocalVip())
                 .setDstVIP(nodeInfo.getVip())
-                .addAllOfferData(pingRequestList.stream().map(e -> e.getSrcUri().toString()).collect(Collectors.toList()))
-                .addAllAnswerData(pingRequestList.stream().map(e -> e.getDstUri().toString()).collect(Collectors.toList()))
+                .addAllAddressUri(pingRequestList.stream().map(e -> e.getSrcUri().toString()).collect(Collectors.toList()))
                 .setPublicKey(ByteString.copyFrom(encryptionKeyPair.getPublic().getEncoded()))
                 .build();
         return sendOffer(p2pOfferReq)
@@ -100,7 +99,7 @@ public abstract class ElectionProtocol {
     }
 
     public CompletableFuture<DataTransport> answer(String reqId, SDWanProtos.P2pOffer p2pOffer) {
-        List<AddressUri> uriList = p2pOffer.getOfferDataList().stream()
+        List<AddressUri> uriList = p2pOffer.getAddressUriList().stream()
                 .map(u -> AddressUri.parse(u))
                 .collect(Collectors.toList());
         List<PingRequest> pingRequestList = uriList.stream().map(uri -> {
