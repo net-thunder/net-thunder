@@ -135,11 +135,6 @@ public class SdWanServer implements InitializingBean, DisposableBean, Runnable {
                     .setRouteList(routeBuilder.build())
                     .build();
             SdWanServer.reply(channel, msg, SDWanProtos.MessageTypeCode.RegistRespType, regResp);
-        } catch (ProcessCodeException e) {
-            SDWanProtos.RegistResp regResp = SDWanProtos.RegistResp.newBuilder()
-                    .setCode(SDWanProtos.MessageCode.forNumber(e.getCode()))
-                    .build();
-            SdWanServer.reply(channel, msg, SDWanProtos.MessageTypeCode.RegistRespType, regResp);
             sendAllChannelNodeOnline(channel);
             channel.closeFuture().addListener(new ChannelFutureListener() {
                 @Override
@@ -147,6 +142,11 @@ public class SdWanServer implements InitializingBean, DisposableBean, Runnable {
                     sendAllChannelNodeOffline(channel);
                 }
             });
+        } catch (ProcessCodeException e) {
+            SDWanProtos.RegistResp regResp = SDWanProtos.RegistResp.newBuilder()
+                    .setCode(SDWanProtos.MessageCode.forNumber(e.getCode()))
+                    .build();
+            SdWanServer.reply(channel, msg, SDWanProtos.MessageTypeCode.RegistRespType, regResp);
         } catch (Exception e) {
             SDWanProtos.RegistResp regResp = SDWanProtos.RegistResp.newBuilder()
                     .setCode(SDWanProtos.MessageCode.SysError)
