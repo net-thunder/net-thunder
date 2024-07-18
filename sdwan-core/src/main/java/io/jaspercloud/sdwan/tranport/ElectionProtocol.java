@@ -48,7 +48,7 @@ public abstract class ElectionProtocol {
                 .stream()
                 .map(u -> AddressUri.parse(u))
                 .collect(Collectors.toList());
-        List<PingRequest> pingRequestList = uriList.parallelStream().map(uri -> {
+        List<PingRequest> pingRequestList = uriList.stream().map(uri -> {
             if (AddressType.RELAY.equals(uri.getScheme())) {
                 return parseRelayPing(uri);
             } else if (AddressType.HOST.equals(uri.getScheme()) || AddressType.SRFLX.equals(uri.getScheme())) {
@@ -59,7 +59,7 @@ public abstract class ElectionProtocol {
         }).collect(Collectors.toList());
         //wait ping resp
         BlockingQueue<DataTransport> queue = new LinkedBlockingQueue<>();
-        pingRequestList.parallelStream().forEach(e -> {
+        pingRequestList.stream().forEach(e -> {
             e.execute().thenAccept(pingResp -> {
                 AddressUri uri = e.getDstUri();
                 if (AddressType.RELAY.equals(uri.getScheme())) {
@@ -103,7 +103,7 @@ public abstract class ElectionProtocol {
         List<AddressUri> uriList = p2pOffer.getOfferDataList().stream()
                 .map(u -> AddressUri.parse(u))
                 .collect(Collectors.toList());
-        List<PingRequest> pingRequestList = uriList.parallelStream().map(uri -> {
+        List<PingRequest> pingRequestList = uriList.stream().map(uri -> {
             if (AddressType.RELAY.equals(uri.getScheme())) {
                 return parseRelayPing(uri);
             } else if (AddressType.HOST.equals(uri.getScheme()) || AddressType.SRFLX.equals(uri.getScheme())) {
@@ -120,7 +120,7 @@ public abstract class ElectionProtocol {
                 future.complete(list);
             }
         });
-        pingRequestList.parallelStream().forEach(e -> {
+        pingRequestList.stream().forEach(e -> {
             e.execute().thenAccept(pingResp -> {
                 try {
                     AddressUri uri = e.getDstUri();
