@@ -145,7 +145,7 @@ public class SdWanClient implements TransportLifecycle, Runnable {
         InetSocketAddress socketAddress = SocketAddressUtil.parse(config.getControllerServer());
         try {
             localChannel = bootstrap.connect(socketAddress).syncUninterruptibly().channel();
-            log.info("sdwan client started");
+            log.info("SdWanClient started");
             bossGroup.scheduleAtFixedRate(this, 0, config.getHeartTime(), TimeUnit.MILLISECONDS);
             localChannel.closeFuture().addListener(new ChannelFutureListener() {
                 @Override

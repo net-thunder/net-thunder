@@ -188,10 +188,10 @@ public class P2pClient implements TransportLifecycle, Runnable {
                         pipeline.addLast("p2pClient:handler", handler.get());
                     }
                 });
-        InetSocketAddress localAddress = new InetSocketAddress("0.0.0.0", port);
         try {
-            localChannel = bootstrap.bind(localAddress).sync().channel();
-            log.info("P2pClient started");
+            localChannel = bootstrap.bind(new InetSocketAddress("0.0.0.0", port)).sync().channel();
+            InetSocketAddress localAddress = (InetSocketAddress) localChannel.localAddress();
+            log.info("P2pClient started: port={}", localAddress.getPort());
             curNatAddress = parseNatAddress(3000);
             bossGroup.scheduleAtFixedRate(this, 0, heartTime, TimeUnit.MILLISECONDS);
             localChannel.closeFuture().addListener(new ChannelFutureListener() {

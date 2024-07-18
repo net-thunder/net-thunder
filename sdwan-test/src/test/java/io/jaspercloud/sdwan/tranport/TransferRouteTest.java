@@ -16,6 +16,7 @@ import org.springframework.beans.factory.InitializingBean;
 import java.net.InetSocketAddress;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
+import java.util.stream.Collectors;
 
 /**
  * @author jasper
@@ -31,6 +32,9 @@ public class TransferRouteTest {
                 put("x2:x:x:x:x:x", "10.5.0.12");
             }
         };
+        List<SdWanServerConfig.FixVip> fixVipList = fixedVipMap.entrySet().stream().map(e -> {
+            return SdWanServerConfig.FixVip.builder().mac(e.getKey()).vip(e.getValue()).build();
+        }).collect(Collectors.toList());
         List<SdWanServerConfig.Route> routeList = new ArrayList<>();
         routeList.add(SdWanServerConfig.Route.builder()
                 .destination("172.168.1.0/24")
@@ -40,7 +44,7 @@ public class TransferRouteTest {
                 .port(1800)
                 .heartTimeout(30 * 1000)
                 .vipCidr("10.5.0.0/24")
-                .fixedVipMap(fixedVipMap)
+                .fixedVipList(fixVipList)
                 .routeList(routeList)
                 .build(), () -> new ChannelInboundHandlerAdapter());
         sdWanServer.afterPropertiesSet();
@@ -105,6 +109,9 @@ public class TransferRouteTest {
                 put("x2:x:x:x:x:x", "10.5.0.12");
             }
         };
+        List<SdWanServerConfig.FixVip> fixVipList = fixedVipMap.entrySet().stream().map(e -> {
+            return SdWanServerConfig.FixVip.builder().mac(e.getKey()).vip(e.getValue()).build();
+        }).collect(Collectors.toList());
         List<SdWanServerConfig.Route> routeList = new ArrayList<>();
         routeList.add(SdWanServerConfig.Route.builder()
                 .destination("172.168.1.0/24")
@@ -114,7 +121,7 @@ public class TransferRouteTest {
                 .port(1800)
                 .heartTimeout(30 * 1000)
                 .vipCidr("10.5.0.0/24")
-                .fixedVipMap(fixedVipMap)
+                .fixedVipList(fixVipList)
                 .routeList(routeList)
                 .build(), () -> new ChannelInboundHandlerAdapter());
         sdWanServer.afterPropertiesSet();
@@ -190,6 +197,9 @@ public class TransferRouteTest {
                         put("x2:x:x:x:x:x", "10.5.0.12");
                     }
                 };
+                List<SdWanServerConfig.FixVip> fixVipList = fixedVipMap.entrySet().stream().map(e -> {
+                    return SdWanServerConfig.FixVip.builder().mac(e.getKey()).vip(e.getValue()).build();
+                }).collect(Collectors.toList());
                 List<SdWanServerConfig.Route> routeList = new ArrayList<>();
                 routeList.add(SdWanServerConfig.Route.builder()
                         .destination("172.168.1.0/24")
@@ -199,7 +209,7 @@ public class TransferRouteTest {
                         .port(1800)
                         .heartTimeout(30 * 1000)
                         .vipCidr("10.5.0.0/24")
-                        .fixedVipMap(fixedVipMap)
+                        .fixedVipList(fixVipList)
                         .routeList(routeList)
                         .build(), () -> new ChannelInboundHandlerAdapter());
                 sdWanServer.afterPropertiesSet();
@@ -217,7 +227,6 @@ public class TransferRouteTest {
                         .controllerServer("127.0.0.1:1800")
                         .relayServer("127.0.0.1:2478")
                         .stunServer("127.0.0.1:3478")
-                        .p2pPort(1001)
                         .heartTime(15 * 1000)
                         .p2pHeartTime(10 * 1000)
                         .build()) {
@@ -231,7 +240,6 @@ public class TransferRouteTest {
                         .controllerServer("127.0.0.1:1800")
                         .relayServer("127.0.0.1:2478")
                         .stunServer("127.0.0.1:3478")
-                        .p2pPort(1002)
                         .heartTime(15 * 1000)
                         .p2pHeartTime(10 * 1000)
                         .build()) {

@@ -8,8 +8,10 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 /**
  * @author jasper
@@ -54,11 +56,14 @@ public class SDClientTest {
                 put("d1:d2:d3:d4:d5:d6", "10.5.0.35");
             }
         };
+        List<SdWanServerConfig.FixVip> fixVipList = fixedVipMap.entrySet().stream().map(e -> {
+            return SdWanServerConfig.FixVip.builder().mac(e.getKey()).vip(e.getValue()).build();
+        }).collect(Collectors.toList());
         SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
                 .port(1800)
                 .heartTimeout(30 * 1000)
                 .vipCidr("10.5.0.0/24")
-                .fixedVipMap(fixedVipMap)
+                .fixedVipList(fixVipList)
                 .build(), () -> new ChannelInboundHandlerAdapter());
         sdWanServer.afterPropertiesSet();
         SdWanClient sdWanClient = new SdWanClient(SdWanClientConfig.builder()

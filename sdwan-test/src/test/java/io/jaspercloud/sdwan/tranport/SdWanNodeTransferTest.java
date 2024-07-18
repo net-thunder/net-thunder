@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author jasper
@@ -30,12 +31,15 @@ public class SdWanNodeTransferTest {
                 put("x2:x:x:x:x:x", "10.5.0.12");
             }
         };
+        List<SdWanServerConfig.FixVip> fixVipList = fixedVipMap.entrySet().stream().map(e -> {
+            return SdWanServerConfig.FixVip.builder().mac(e.getKey()).vip(e.getValue()).build();
+        }).collect(Collectors.toList());
         List<SdWanServerConfig.Route> routeList = new ArrayList<>();
         SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
                 .port(1800)
                 .heartTimeout(30 * 1000)
                 .vipCidr("10.5.0.0/24")
-                .fixedVipMap(fixedVipMap)
+                .fixedVipList(fixVipList)
                 .routeList(routeList)
                 .build(), () -> new ChannelInboundHandlerAdapter());
         sdWanServer.afterPropertiesSet();

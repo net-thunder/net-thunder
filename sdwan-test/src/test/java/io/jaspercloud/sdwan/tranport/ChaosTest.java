@@ -12,10 +12,7 @@ import org.slf4j.impl.StaticLoggerBinder;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 public class ChaosTest {
@@ -129,15 +126,11 @@ public class ChaosTest {
                         }
                     };
                     List<SdWanServerConfig.Route> routeList = new ArrayList<>();
-//                    routeList.add(SdWanServerConfig.Route.builder()
-//                            .destination("172.168.1.0/24")
-//                            .nexthop(Arrays.asList("10.5.0.12"))
-//                            .build());
                     SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
                             .port(1800)
                             .heartTimeout(30 * 1000)
                             .vipCidr("10.5.0.0/24")
-                            .fixedVipMap(fixedVipMap)
+                            .fixedVipList(Collections.emptyList())
                             .routeList(routeList)
                             .build(), () -> new ChannelInboundHandlerAdapter());
                     sdWanServer.afterPropertiesSet();

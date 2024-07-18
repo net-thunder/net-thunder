@@ -247,8 +247,10 @@ public class SdWanServer implements InitializingBean, DisposableBean, Runnable {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        if (!CollectionUtils.isEmpty(config.getFixedVipMap())) {
-            fixedVipMap.putAll(config.getFixedVipMap());
+        if (!CollectionUtils.isEmpty(config.getFixedVipList())) {
+            config.getFixedVipList().forEach(e -> {
+                fixedVipMap.put(e.getMac(), e.getVip());
+            });
         }
         ipPool = Cidr.parseCidr(config.getVipCidr());
         ipPool.getAvailableIpList()
