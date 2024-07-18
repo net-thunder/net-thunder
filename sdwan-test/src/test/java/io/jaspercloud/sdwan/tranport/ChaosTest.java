@@ -9,6 +9,8 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.apache.commons.lang3.RandomUtils;
 import org.slf4j.impl.StaticLoggerBinder;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,11 +22,11 @@ public class ChaosTest {
 
     public static void main(String[] args) throws Exception {
         applyLog();
-        applySdWanServer(60 * 1000, 120 * 1000, 15 * 1000);
-        applyRelayServer(60 * 1000, 120 * 1000, 15 * 1000);
-        applyStunServer(60 * 1000, 120 * 1000, 15 * 1000);
-        applyNode("tun1", "x1:x:x:x:x:x", 60 * 1000, 120 * 1000, 15 * 1000);
-        applyNode("tun2", "x2:x:x:x:x:x", 15 * 1000, 30 * 1000, 15 * 1000);
+        applySdWanServer(60 * 1000, 120 * 1000, 5 * 1000);
+        applyRelayServer(60 * 1000, 120 * 1000, 5 * 1000);
+        applyStunServer(60 * 1000, 120 * 1000, 5 * 1000);
+        applyNode("tun1", "x1:x:x:x:x:x", 60 * 1000, 120 * 1000, 5 * 1000);
+        applyNode("tun2", "x2:x:x:x:x:x", 15 * 1000, 30 * 1000, 5 * 1000);
         LoggerContext loggerContext = (LoggerContext) StaticLoggerBinder.getSingleton().getLoggerFactory();
         List<Logger> loggerList = loggerContext.getLoggerList();
         loggerList.forEach(log -> {
@@ -32,8 +34,13 @@ public class ChaosTest {
                 log.setLevel(Level.DEBUG);
             }
         });
-        CountDownLatch countDownLatch = new CountDownLatch(1);
-        countDownLatch.await();
+        Process process = Runtime.getRuntime().exec("ping -S 10.5.0.11 10.5.0.12 -n 1000");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), "GBK"));
+        String line;
+        while (null != (line = reader.readLine())) {
+            System.out.println("process: " + line);
+        }
+        System.out.println();
     }
 
     private static void applyNode(String tun, String mac, long min, long max, long interval) {

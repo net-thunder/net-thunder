@@ -2,7 +2,7 @@ package io.jaspercloud.sdwan.tranport;
 
 import com.google.protobuf.AbstractMessageLite;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
-import io.jaspercloud.sdwan.exception.ProcessException;
+import io.jaspercloud.sdwan.exception.ProcessCodeException;
 import io.jaspercloud.sdwan.support.ChannelAttributes;
 import io.jaspercloud.sdwan.support.Cidr;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;
@@ -90,10 +90,10 @@ public class SdWanServer implements InitializingBean, DisposableBean, Runnable {
         }
     }
 
-    private void processRegist(ChannelHandlerContext ctx, SDWanProtos.Message msg) throws Exception {
+    private void processRegist(ChannelHandlerContext ctx, SDWanProtos.Message msg) {
         Channel channel = ctx.channel();
         //regist
-        {
+        try {
             SDWanProtos.RegistReq registReq = SDWanProtos.RegistReq.parseFrom(msg.getData());
             ChannelAttributes attr = ChannelAttributes.attr(channel);
             String vip = registChannelMap.computeIfAbsent(channel, key -> {
@@ -133,6 +133,16 @@ public class SdWanServer implements InitializingBean, DisposableBean, Runnable {
                     .setMaskBits(ipPool.getMaskBits())
                     .setNodeList(nodeInfoList)
                     .setRouteList(routeBuilder.build())
+                    .build();
+            SdWanServer.reply(channel, msg, SDWanProtos.MessageTypeCode.RegistRespType, regResp);
+        } catch (ProcessCodeException e) {
+            SDWanProtos.RegistResp regResp = SDWanProtos.RegistResp.newBuilder()
+                    .setCode(SDWanProtos.MessageCode.forNumber(e.getCode()))
+                    .build();
+            SdWanServer.reply(channel, msg, SDWanProtos.MessageTypeCode.RegistRespType, regResp);
+        } catch (Exception e) {
+            SDWanProtos.RegistResp regResp = SDWanProtos.RegistResp.newBuilder()
+                    .setCode(SDWanProtos.MessageCode.SysError)
                     .build();
             SdWanServer.reply(channel, msg, SDWanProtos.MessageTypeCode.RegistRespType, regResp);
         }
@@ -182,7 +192,7 @@ public class SdWanServer implements InitializingBean, DisposableBean, Runnable {
         String fixedIp = fixedVipMap.get(registReq.getMacAddress());
         if (null != fixedIp) {
             if (!bindIPMap.get(fixedIp).compareAndSet(null, channel)) {
-                throw new ProcessException();
+                throw new ProcessCodeException(SDWanProtos.MessageCode.VipBound_VALUE);
             }
             bindVip(channel, attr, fixedIp);
             return fixedIp;
@@ -194,7 +204,7 @@ public class SdWanServer implements InitializingBean, DisposableBean, Runnable {
                 return vip;
             }
         }
-        throw new ProcessException();
+        throw new ProcessCodeException(SDWanProtos.MessageCode.NotEnough_VALUE);
     }
 
     private void bindVip(Channel channel, ChannelAttributes attr, String vip) {

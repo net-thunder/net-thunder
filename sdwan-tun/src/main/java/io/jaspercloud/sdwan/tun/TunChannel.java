@@ -172,7 +172,7 @@ public class TunChannel extends AbstractChannel {
                 closed = true;
             }
 
-            pipeline.fireExceptionCaught(exception);
+            // pipeline.fireExceptionCaught(exception);
         }
 
         if (closed) {
