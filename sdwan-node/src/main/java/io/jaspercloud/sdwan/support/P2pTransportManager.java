@@ -1,14 +1,10 @@
 package io.jaspercloud.sdwan.support;
 
-import io.jaspercloud.sdwan.tranport.P2pClient;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -19,7 +15,6 @@ import java.util.function.Consumer;
 @Slf4j
 public class P2pTransportManager implements Runnable {
 
-    private P2pClient p2pClient;
     private long heartTime;
 
     private ScheduledExecutorService scheduledExecutorService;
@@ -54,8 +49,7 @@ public class P2pTransportManager implements Runnable {
         transportMap.remove(ip);
     }
 
-    public P2pTransportManager(P2pClient p2pClient, long heartTime) {
-        this.p2pClient = p2pClient;
+    public P2pTransportManager(long heartTime) {
         this.heartTime = heartTime;
     }
 
@@ -70,6 +64,13 @@ public class P2pTransportManager implements Runnable {
             }
             try {
                 transport.ping(3000);
+            } catch (ExecutionException e) {
+                if (e.getCause() instanceof TimeoutException) {
+                    log.error(e.getMessage());
+                } else {
+                    log.error(e.getMessage(), e);
+                }
+                iterator.remove();
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
                 iterator.remove();

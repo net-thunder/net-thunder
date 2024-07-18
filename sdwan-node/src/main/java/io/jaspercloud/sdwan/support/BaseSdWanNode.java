@@ -182,7 +182,7 @@ public class BaseSdWanNode implements InitializingBean, DisposableBean, Runnable
         nodeInfoMap.clear();
         iceClient.start();
         sdWanClient.start();
-        log.info("sdwan node init");
+        log.info("SdWanNode install");
         SDWanProtos.RegistReq.Builder builder = SDWanProtos.RegistReq.newBuilder()
                 .setNodeType(SDWanProtos.NodeTypeCode.SimpleType)
                 .setMacAddress(processMacAddress(NetworkInterfaceUtil.getHardwareAddress()));
@@ -223,10 +223,11 @@ public class BaseSdWanNode implements InitializingBean, DisposableBean, Runnable
         });
         virtualRouter.updateCidr(vipCidr);
         virtualRouter.updateRoutes(regResp.getRouteList().getRouteList());
-        log.info("sdwan node started");
+        log.info("SdWanNode installed");
     }
 
     protected void uninstall() throws Exception {
+        log.info("SdWanNode uninstalling");
         iceClient.stop();
         sdWanClient.stop();
     }
@@ -273,6 +274,7 @@ public class BaseSdWanNode implements InitializingBean, DisposableBean, Runnable
                 uninstall();
                 install();
                 status = true;
+            } catch (InterruptedException e) {
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }

@@ -318,11 +318,11 @@ public class IceClient implements TransportLifecycle {
                 pipeline.addLast(handler.get());
             }
         });
-        p2pTransportManager = new P2pTransportManager(p2pClient, config.getP2pHeartTime());
+        p2pTransportManager = new P2pTransportManager(config.getP2pHeartTime());
         p2pTransportManager.start();
         p2pClient.start();
         relayClient.start();
-        log.info("ice client started");
+        log.info("IceClient started");
     }
 
     private void processPingRequest(ChannelHandlerContext ctx, StunPacket packet) {

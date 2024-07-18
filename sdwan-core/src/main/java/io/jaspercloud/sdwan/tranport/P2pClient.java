@@ -87,7 +87,7 @@ public class P2pClient implements TransportLifecycle, Runnable {
     }
 
     public void transfer(String vip, InetSocketAddress toAddress, byte[] bytes) {
-        log.debug("p2p send transfer: {}", SocketAddressUtil.toAddress(toAddress));
+        log.trace("p2p send transfer: {}", SocketAddressUtil.toAddress(toAddress));
         StunMessage message = new StunMessage(MessageType.Transfer);
         message.setAttr(AttrType.TransferType, new StringAttr("p2p"));
         message.setAttr(AttrType.SrcVip, new StringAttr(vip));

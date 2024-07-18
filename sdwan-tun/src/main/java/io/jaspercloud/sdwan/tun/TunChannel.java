@@ -1,5 +1,6 @@
 package io.jaspercloud.sdwan.tun;
 
+import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.tun.linux.LinuxTunDevice;
 import io.jaspercloud.sdwan.tun.osx.OsxTunDevice;
 import io.jaspercloud.sdwan.tun.windows.WinTunDevice;
@@ -8,6 +9,7 @@ import io.jaspercloud.sdwan.util.NetworkInterfaceUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.util.internal.PlatformDependent;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.net.SocketAddress;
@@ -16,6 +18,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
+@Slf4j
 public class TunChannel extends AbstractChannel {
 
     private static final ChannelMetadata METADATA = new ChannelMetadata(false);
@@ -23,7 +26,13 @@ public class TunChannel extends AbstractChannel {
     private Runnable readTask = new Runnable() {
         @Override
         public void run() {
-            doRead();
+            try {
+                doRead();
+            } catch (ProcessException e) {
+                log.error(e.getMessage());
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
         }
     };
     private boolean readPending;

@@ -75,7 +75,7 @@ public class RelayClient implements TransportLifecycle, Runnable {
     }
 
     public void transfer(String vip, String token, byte[] bytes) {
-        log.debug("relay send transfer: {}", SocketAddressUtil.toAddress(relayAddress));
+        log.trace("relay send transfer: {}", SocketAddressUtil.toAddress(relayAddress));
         StunMessage message = new StunMessage(MessageType.Transfer);
         message.setAttr(AttrType.TransferType, new StringAttr("relay"));
         message.setAttr(AttrType.RelayToken, new StringAttr(token));
@@ -125,12 +125,12 @@ public class RelayClient implements TransportLifecycle, Runnable {
                         pipeline.addLast("relayClient:handler", handler.get());
                     }
                 });
-        InetSocketAddress localAddress = new InetSocketAddress("0.0.0.0", port);
         try {
-            localChannel = bootstrap.bind(localAddress).syncUninterruptibly().channel();
+            localChannel = bootstrap.bind(new InetSocketAddress("0.0.0.0", port)).syncUninterruptibly().channel();
+            InetSocketAddress localAddress = (InetSocketAddress) localChannel.localAddress();
             log.info("relay client started");
             curToken = regist(3000).get();
-            log.info("port={}, token={}", port, curToken);
+            log.info("port={}, token={}", localAddress.getPort(), curToken);
             bossGroup.scheduleAtFixedRate(this, 0, heartTime, TimeUnit.MILLISECONDS);
             localChannel.closeFuture().addListener(new ChannelFutureListener() {
                 @Override
