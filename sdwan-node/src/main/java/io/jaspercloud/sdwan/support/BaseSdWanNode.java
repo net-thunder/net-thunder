@@ -1,6 +1,7 @@
 package io.jaspercloud.sdwan.support;
 
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
+import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.stun.NatAddress;
 import io.jaspercloud.sdwan.tranport.SdWanClient;
 import io.jaspercloud.sdwan.tranport.SdWanClientConfig;
@@ -215,6 +216,9 @@ public class BaseSdWanNode implements InitializingBean, DisposableBean, Runnable
                 .queryParam("token", token).build().toString();
         builder.addAddressUri(relay);
         SDWanProtos.RegistResp regResp = sdWanClient.regist(builder.build(), 3000).get();
+        if (!SDWanProtos.MessageCode.Success.equals(regResp.getCode())) {
+            throw new ProcessException("registSdwan failed=" + regResp.getCode().name());
+        }
         log.info("registSdwan: vip={}", regResp.getVip());
         localVip = regResp.getVip();
         maskBits = regResp.getMaskBits();
