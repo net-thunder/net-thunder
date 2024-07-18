@@ -131,7 +131,7 @@ public class BaseSdWanNode implements InitializingBean, DisposableBean, Runnable
             @Override
             protected void initChannel(Channel ch) throws Exception {
                 ChannelPipeline pipeline = ch.pipeline();
-                pipeline.addLast(getTunHandler());
+                pipeline.addLast(getProcessHandler());
                 pipeline.addLast(new ChannelInboundHandlerAdapter() {
                     @Override
                     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
@@ -151,9 +151,11 @@ public class BaseSdWanNode implements InitializingBean, DisposableBean, Runnable
 
     @Override
     public void destroy() throws Exception {
+        log.info("SdWanNode stopping");
         loopStatus.set(false);
         loopThread.interrupt();
         uninstall();
+        log.info("SdWanNode stopped");
     }
 
     public void sendIpPacket(SDWanProtos.IpPacket ipPacket) {
@@ -232,7 +234,7 @@ public class BaseSdWanNode implements InitializingBean, DisposableBean, Runnable
         sdWanClient.stop();
     }
 
-    protected ChannelHandler getTunHandler() {
+    protected ChannelHandler getProcessHandler() {
         return new ChannelInboundHandlerAdapter();
     }
 

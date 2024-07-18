@@ -128,7 +128,7 @@ public class RelayClient implements TransportLifecycle, Runnable {
         try {
             localChannel = bootstrap.bind(new InetSocketAddress("0.0.0.0", port)).syncUninterruptibly().channel();
             InetSocketAddress localAddress = (InetSocketAddress) localChannel.localAddress();
-            log.info("relay client started");
+            log.info("RelayClient started");
             curToken = regist(3000).get();
             log.info("port={}, token={}", localAddress.getPort(), curToken);
             bossGroup.scheduleAtFixedRate(this, 0, heartTime, TimeUnit.MILLISECONDS);
@@ -146,10 +146,12 @@ public class RelayClient implements TransportLifecycle, Runnable {
 
     @Override
     public void stop() throws Exception {
+        log.info("RelayClient stopping");
         if (null == localChannel) {
             return;
         }
         localChannel.close();
+        log.info("RelayClient stopped");
     }
 
     @Override

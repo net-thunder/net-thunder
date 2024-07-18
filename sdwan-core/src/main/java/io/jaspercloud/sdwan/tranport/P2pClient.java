@@ -191,7 +191,7 @@ public class P2pClient implements TransportLifecycle, Runnable {
         InetSocketAddress localAddress = new InetSocketAddress("0.0.0.0", port);
         try {
             localChannel = bootstrap.bind(localAddress).sync().channel();
-            log.info("p2p client started");
+            log.info("P2pClient started");
             curNatAddress = parseNatAddress(3000);
             bossGroup.scheduleAtFixedRate(this, 0, heartTime, TimeUnit.MILLISECONDS);
             localChannel.closeFuture().addListener(new ChannelFutureListener() {
@@ -208,10 +208,12 @@ public class P2pClient implements TransportLifecycle, Runnable {
 
     @Override
     public void stop() throws Exception {
+        log.info("P2pClient stopping");
         if (null == localChannel) {
             return;
         }
         localChannel.close();
+        log.info("P2pClient stopped");
     }
 
     @Override

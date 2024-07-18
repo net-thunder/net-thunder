@@ -245,6 +245,17 @@ public class IceClient implements TransportLifecycle {
         }
     }
 
+    private void processPingRequest(ChannelHandlerContext ctx, StunPacket packet) {
+        try {
+            StunMessage message = packet.content();
+            message.setMessageType(MessageType.PingResponse);
+            StunPacket response = new StunPacket(message, packet.sender());
+            ctx.writeAndFlush(response);
+        } catch (Exception e) {
+            throw new ProcessException(e.getMessage(), e);
+        }
+    }
+
     @Override
     public boolean isRunning() {
         return relayClient.isRunning();
@@ -325,19 +336,9 @@ public class IceClient implements TransportLifecycle {
         log.info("IceClient started");
     }
 
-    private void processPingRequest(ChannelHandlerContext ctx, StunPacket packet) {
-        try {
-            StunMessage message = packet.content();
-            message.setMessageType(MessageType.PingResponse);
-            StunPacket response = new StunPacket(message, packet.sender());
-            ctx.writeAndFlush(response);
-        } catch (Exception e) {
-            throw new ProcessException(e.getMessage(), e);
-        }
-    }
-
     @Override
     public void stop() throws Exception {
+        log.info("IceClient stopping");
         if (null != p2pTransportManager) {
             p2pTransportManager.stop();
         }
@@ -347,6 +348,7 @@ public class IceClient implements TransportLifecycle {
         if (null != relayClient) {
             relayClient.stop();
         }
+        log.info("IceClient stopped");
     }
 
     public interface Transport {
@@ -369,7 +371,6 @@ public class IceClient implements TransportLifecycle {
             this.address = address;
             this.secretKey = secretKey;
         }
-
 
         @Override
         public void ping(long timeout) throws Exception {

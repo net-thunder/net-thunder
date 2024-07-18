@@ -37,7 +37,7 @@ public class TunSdWanNode extends BaseSdWanNode {
     }
 
     @Override
-    protected ChannelHandler getTunHandler() {
+    protected ChannelHandler getProcessHandler() {
         return new SimpleChannelInboundHandler<StunPacket>() {
             @Override
             protected void channelRead0(ChannelHandlerContext ctx, StunPacket msg) throws Exception {
