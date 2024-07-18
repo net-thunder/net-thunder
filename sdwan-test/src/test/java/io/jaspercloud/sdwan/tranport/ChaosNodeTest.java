@@ -65,6 +65,7 @@ public class ChaosNodeTest {
                     sdWanNode.destroy();
                     Thread.sleep(interval);
                 } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         }).start();
