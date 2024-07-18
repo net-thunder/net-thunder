@@ -254,7 +254,7 @@ public class TransferRouteTest {
                                     return;
                                 }
                                 SDWanProtos.IpPacket ipPacket = SDWanProtos.IpPacket.parseFrom(data);
-                                System.out.println(String.format("recv transfer type=%s, sender=%s, src=%s, dst=%s data=%s",
+                                System.out.println(String.format("recv transfer: type=%s, sender=%s, src=%s, dst=%s, data=%s",
                                         transferTypeAttr.getData(), SocketAddressUtil.toAddress(sender),
                                         ipPacket.getSrcIP(), ipPacket.getDstIP(), new String(ipPacket.getPayload().toByteArray())));
                                 ipPacket = ipPacket.toBuilder()
