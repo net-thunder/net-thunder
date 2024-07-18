@@ -140,19 +140,19 @@ public class SdWanServer implements InitializingBean, DisposableBean, Runnable {
                     .setCode(SDWanProtos.MessageCode.forNumber(e.getCode()))
                     .build();
             SdWanServer.reply(channel, msg, SDWanProtos.MessageTypeCode.RegistRespType, regResp);
+            sendAllChannelNodeOnline(channel);
+            channel.closeFuture().addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture future) throws Exception {
+                    sendAllChannelNodeOffline(channel);
+                }
+            });
         } catch (Exception e) {
             SDWanProtos.RegistResp regResp = SDWanProtos.RegistResp.newBuilder()
                     .setCode(SDWanProtos.MessageCode.SysError)
                     .build();
             SdWanServer.reply(channel, msg, SDWanProtos.MessageTypeCode.RegistRespType, regResp);
         }
-        sendAllChannelNodeOnline(channel);
-        channel.closeFuture().addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture future) throws Exception {
-                sendAllChannelNodeOffline(channel);
-            }
-        });
     }
 
     private void sendAllChannelNodeOnline(Channel channel) {
