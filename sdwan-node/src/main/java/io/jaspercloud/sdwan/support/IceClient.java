@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
 import java.security.KeyPair;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -155,13 +156,13 @@ public class IceClient implements TransportLifecycle {
             }
 
             @Override
-            protected NatAddress getNatAddress() {
-                return sdWanNode.getNatAddress();
+            protected String getLocalVip() {
+                return sdWanNode.getLocalVip();
             }
 
             @Override
-            protected String getLocalVip() {
-                return sdWanNode.getLocalVip();
+            protected List<String> getLocalAddressUriList() {
+                return sdWanNode.getLocalAddressUriList();
             }
         };
         p2pTransportManager = new P2pTransportManager(config.getP2pHeartTime());

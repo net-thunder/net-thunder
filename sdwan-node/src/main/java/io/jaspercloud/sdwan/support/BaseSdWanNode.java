@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 /**
  * @author jasper
@@ -38,6 +39,7 @@ public class BaseSdWanNode implements InitializingBean, DisposableBean, Runnable
     private IceClient iceClient;
     private SdWanClient sdWanClient;
     private NatAddress natAddress;
+    private List<String> localAddressUriList;
     private String localVip;
     private int maskBits;
     private String vipCidr;
@@ -47,6 +49,10 @@ public class BaseSdWanNode implements InitializingBean, DisposableBean, Runnable
     private ReentrantLock lock = new ReentrantLock();
     private Condition condition = lock.newCondition();
     private Map<String, SDWanProtos.NodeInfo> nodeInfoMap = new ConcurrentHashMap<>();
+
+    public List<String> getLocalAddressUriList() {
+        return localAddressUriList;
+    }
 
     public NatAddress getNatAddress() {
         return natAddress;
@@ -215,11 +221,13 @@ public class BaseSdWanNode implements InitializingBean, DisposableBean, Runnable
                 relayAddress.getHostString(), relayAddress.getPort()))
                 .queryParam("token", token).build().toString();
         builder.addAddressUri(relay);
-        SDWanProtos.RegistResp regResp = sdWanClient.regist(builder.build(), 3000).get();
+        SDWanProtos.RegistReq registReq = builder.build();
+        SDWanProtos.RegistResp regResp = sdWanClient.regist(registReq, 3000).get();
         if (!SDWanProtos.MessageCode.Success.equals(regResp.getCode())) {
             throw new ProcessException("registSdwan failed=" + regResp.getCode().name());
         }
         log.info("registSdwan: vip={}", regResp.getVip());
+        localAddressUriList = registReq.getAddressUriList().stream().collect(Collectors.toList());
         localVip = regResp.getVip();
         maskBits = regResp.getMaskBits();
         vipCidr = Cidr.parseCidr(regResp.getVip(), maskBits);

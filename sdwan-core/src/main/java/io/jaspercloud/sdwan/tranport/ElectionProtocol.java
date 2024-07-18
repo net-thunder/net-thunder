@@ -5,7 +5,6 @@ import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.stun.AttrType;
 import io.jaspercloud.sdwan.stun.LongAttr;
-import io.jaspercloud.sdwan.stun.NatAddress;
 import io.jaspercloud.sdwan.stun.StunPacket;
 import io.jaspercloud.sdwan.support.AddressUri;
 import io.jaspercloud.sdwan.support.AsyncTask;
@@ -49,10 +48,10 @@ public abstract class ElectionProtocol {
                 .map(u -> AddressUri.parse(u))
                 .collect(Collectors.toList());
         List<PingRequest> pingRequestList = uriList.stream().map(uri -> {
-            if (AddressType.RELAY.equals(uri.getScheme())) {
-                return parseRelayPing(uri);
-            } else if (AddressType.HOST.equals(uri.getScheme()) || AddressType.SRFLX.equals(uri.getScheme())) {
+            if (AddressType.HOST.equals(uri.getScheme()) || AddressType.SRFLX.equals(uri.getScheme())) {
                 return parseP2pPing(uri);
+            } else if (AddressType.RELAY.equals(uri.getScheme())) {
+                return parseRelayPing(uri);
             } else {
                 throw new UnsupportedOperationException();
             }
@@ -61,7 +60,7 @@ public abstract class ElectionProtocol {
         BlockingQueue<DataTransport> queue = new LinkedBlockingQueue<>();
         pingRequestList.stream().forEach(e -> {
             e.execute().thenAccept(pingResp -> {
-                AddressUri uri = e.getDstUri();
+                AddressUri uri = e.getAddressUri();
                 if (AddressType.RELAY.equals(uri.getScheme())) {
                     String token = uri.getParams().get("token");
                     long order = System.currentTimeMillis() - ((LongAttr) pingResp.content().getAttr(AttrType.Time)).getData();
@@ -80,7 +79,7 @@ public abstract class ElectionProtocol {
         SDWanProtos.P2pOffer p2pOfferReq = SDWanProtos.P2pOffer.newBuilder()
                 .setSrcVIP(getLocalVip())
                 .setDstVIP(nodeInfo.getVip())
-                .addAllAddressUri(pingRequestList.stream().map(e -> e.getSrcUri().toString()).collect(Collectors.toList()))
+                .addAllAddressUri(getLocalAddressUriList())
                 .setPublicKey(ByteString.copyFrom(encryptionKeyPair.getPublic().getEncoded()))
                 .build();
         return sendOffer(p2pOfferReq)
@@ -103,10 +102,10 @@ public abstract class ElectionProtocol {
                 .map(u -> AddressUri.parse(u))
                 .collect(Collectors.toList());
         List<PingRequest> pingRequestList = uriList.stream().map(uri -> {
-            if (AddressType.RELAY.equals(uri.getScheme())) {
-                return parseRelayPing(uri);
-            } else if (AddressType.HOST.equals(uri.getScheme()) || AddressType.SRFLX.equals(uri.getScheme())) {
+            if (AddressType.HOST.equals(uri.getScheme()) || AddressType.SRFLX.equals(uri.getScheme())) {
                 return parseP2pPing(uri);
+            } else if (AddressType.RELAY.equals(uri.getScheme())) {
+                return parseRelayPing(uri);
             } else {
                 throw new UnsupportedOperationException();
             }
@@ -122,7 +121,7 @@ public abstract class ElectionProtocol {
         pingRequestList.stream().forEach(e -> {
             e.execute().thenAccept(pingResp -> {
                 try {
-                    AddressUri uri = e.getDstUri();
+                    AddressUri uri = e.getAddressUri();
                     if (AddressType.RELAY.equals(uri.getScheme())) {
                         String token = uri.getParams().get("token");
                         long order = System.currentTimeMillis() - ((LongAttr) pingResp.content().getAttr(AttrType.Time)).getData();
@@ -181,32 +180,19 @@ public abstract class ElectionProtocol {
         return transport;
     }
 
+    private PingRequest parseP2pPing(AddressUri uri) {
+        InetSocketAddress addr = new InetSocketAddress(uri.getHost(), uri.getPort());
+        PingRequest pingRequest = new PingRequest();
+        pingRequest.setSupplier(() -> p2pClient.ping(addr, 3000));
+        pingRequest.setAddressUri(uri);
+        return pingRequest;
+    }
+
     private PingRequest parseRelayPing(AddressUri uri) {
         String token = uri.getParams().get("token");
         PingRequest pingRequest = new PingRequest();
         pingRequest.setSupplier(() -> relayClient.ping(token, 3000));
-        pingRequest.setSrcUri(AddressUri.builder()
-                .scheme(uri.getScheme())
-                .host("0.0.0.0")
-                .port(0)
-                .params(Collections.singletonMap("token", relayClient.getCurToken()))
-                .build());
-        pingRequest.setDstUri(uri);
-        return pingRequest;
-    }
-
-    private PingRequest parseP2pPing(AddressUri uri) {
-        InetSocketAddress addr = new InetSocketAddress(uri.getHost(), uri.getPort());
-        NatAddress natAddress = getNatAddress();
-        PingRequest pingRequest = new PingRequest();
-        pingRequest.setSupplier(() -> p2pClient.ping(addr, 3000));
-        pingRequest.setSrcUri(AddressUri.builder()
-                .scheme(uri.getScheme())
-                .host(natAddress.getMappingAddress().getHostString())
-                .port(p2pClient.getLocalPort())
-                .params(Collections.singletonMap("mappingType", natAddress.getMappingType().name()))
-                .build());
-        pingRequest.setDstUri(uri);
+        pingRequest.setAddressUri(uri);
         return pingRequest;
     }
 
@@ -214,17 +200,16 @@ public abstract class ElectionProtocol {
 
     protected abstract void sendAnswer(String reqId, SDWanProtos.P2pAnswer p2pAnswer);
 
-    protected abstract NatAddress getNatAddress();
-
     protected abstract String getLocalVip();
+
+    protected abstract List<String> getLocalAddressUriList();
 
     @Getter
     @Setter
     private static class PingRequest {
 
         private Supplier<CompletableFuture<StunPacket>> supplier;
-        private AddressUri srcUri;
-        private AddressUri dstUri;
+        private AddressUri addressUri;
 
         public CompletableFuture<StunPacket> execute() {
             return supplier.get();
