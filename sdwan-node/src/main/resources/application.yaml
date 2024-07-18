@@ -6,7 +6,6 @@ node:
   stunServer: 127.0.0.1:3478
   relayServer: 127.0.0.1:2478
   #
-  p2pPort: 6578
   p2pHeartTime: 10000
   #
   tunName: net-thunder
