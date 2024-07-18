@@ -67,15 +67,15 @@ public class P2pTransportManager implements Runnable {
                 transport.ping(3000);
             } catch (ExecutionException e) {
                 if (e.getCause() instanceof TimeoutException) {
-                    log.debug("timeout remove transport: {}", key);
+                    log.info("timeout remove transport: {}", key);
                 } else {
                     log.error(e.getMessage(), e);
-                    log.debug("remove transport: {}", key);
+                    log.info("remove transport: {}", key);
                 }
                 iterator.remove();
             } catch (Throwable e) {
                 log.error(e.getMessage(), e);
-                log.debug("remove transport: {}", key);
+                log.info("remove transport: {}", key);
                 iterator.remove();
             }
         }
