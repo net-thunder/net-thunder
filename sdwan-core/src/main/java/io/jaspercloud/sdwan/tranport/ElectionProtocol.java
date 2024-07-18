@@ -87,8 +87,8 @@ public abstract class ElectionProtocol {
                 .thenApply(resp -> {
                     try {
                         List<DataTransport> transportList = queue.stream().collect(Collectors.toList());
-                        byte[] encryptionKey = resp.getPublicKey().toByteArray();
-                        SecretKey secretKey = Ecdh.generateAESKey(encryptionKeyPair.getPrivate(), encryptionKey);
+                        byte[] publicKey = resp.getPublicKey().toByteArray();
+                        SecretKey secretKey = Ecdh.generateAESKey(encryptionKeyPair.getPrivate(), publicKey);
                         DataTransport transport = selectDataTransport(transportList);
                         transport.setSecretKey(secretKey);
                         return transport;
@@ -146,8 +146,8 @@ public abstract class ElectionProtocol {
                 if (null == transportList) {
                     transportList = Collections.emptyList();
                 }
-                byte[] encryptionKey = p2pOffer.getPublicKey().toByteArray();
-                SecretKey secretKey = Ecdh.generateAESKey(encryptionKeyPair.getPrivate(), encryptionKey);
+                byte[] publicKey = p2pOffer.getPublicKey().toByteArray();
+                SecretKey secretKey = Ecdh.generateAESKey(encryptionKeyPair.getPrivate(), publicKey);
                 DataTransport transport = selectDataTransport(transportList);
                 transport.setSecretKey(secretKey);
                 SDWanProtos.P2pAnswer p2pAnswer = SDWanProtos.P2pAnswer.newBuilder()
