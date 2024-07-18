@@ -13,12 +13,16 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class AsyncTask<T> {
+public class AsyncTask {
 
     public static final Timer TIMEOUT = new HashedWheelTimer(
             new DefaultThreadFactory("async-task-timeout", true),
             20, TimeUnit.MILLISECONDS);
     private static Map<String, CompletableFuture> futureMap = new ConcurrentHashMap<>();
+
+    public static void waitTime(long timeout, TimerTask timerTask) {
+        TIMEOUT.newTimeout(timerTask, timeout, TimeUnit.MILLISECONDS);
+    }
 
     public static <T> CompletableFuture<T> create(long timeout) {
         FutureTask futureTask = new FutureTask(UUID.randomUUID().toString());

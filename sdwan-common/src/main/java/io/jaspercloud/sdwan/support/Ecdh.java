@@ -34,33 +34,21 @@ public final class Ecdh {
 
     //生成共享密钥
     private static byte[] generateSecret(PrivateKey privateKey, byte[] publicKeyBytes) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeyException, InvalidKeySpecException {
-        long s = System.currentTimeMillis();
-        try {
-            KeyAgreement bobKeyAgreement = KeyAgreement.getInstance("ECDH", "BC");
-            bobKeyAgreement.init(privateKey);
-            PublicKey alicePublicKey = KeyFactory.getInstance("ECDH", "BC").generatePublic(new X509EncodedKeySpec(publicKeyBytes));
-            bobKeyAgreement.doPhase(alicePublicKey, true);
-            byte[] sharedSecret = bobKeyAgreement.generateSecret();
-            return sharedSecret;
-        } finally {
-            long e = System.currentTimeMillis();
-//            System.out.println(String.format("Ecdh:generateSecret: %s ms", e - s));
-        }
+        KeyAgreement bobKeyAgreement = KeyAgreement.getInstance("ECDH", "BC");
+        bobKeyAgreement.init(privateKey);
+        PublicKey alicePublicKey = KeyFactory.getInstance("ECDH", "BC").generatePublic(new X509EncodedKeySpec(publicKeyBytes));
+        bobKeyAgreement.doPhase(alicePublicKey, true);
+        byte[] sharedSecret = bobKeyAgreement.generateSecret();
+        return sharedSecret;
     }
 
     // 生成AES密钥
     public static SecretKey generateAESKey(PrivateKey privateKey, byte[] publicKeyBytes) throws Exception {
-        long s = System.currentTimeMillis();
-        try {
-            byte[] sharedSecret = generateSecret(privateKey, publicKeyBytes);
-            // 使用256位AES密钥
-            KeyGenerator keyGenerator = KeyGenerator.getInstance("AES", "BC");
-            keyGenerator.init(256);
-            return new SecretKeySpec(sharedSecret, "AES");
-        } finally {
-            long e = System.currentTimeMillis();
-//            System.out.println(String.format("Ecdh:generateAESKey: %s ms", e - s));
-        }
+        byte[] sharedSecret = generateSecret(privateKey, publicKeyBytes);
+        // 使用256位AES密钥
+        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES", "BC");
+        keyGenerator.init(256);
+        return new SecretKeySpec(sharedSecret, "AES");
     }
 
     // 使用AES加密数据

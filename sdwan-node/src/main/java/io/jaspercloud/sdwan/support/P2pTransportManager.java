@@ -1,5 +1,6 @@
 package io.jaspercloud.sdwan.support;
 
+import io.jaspercloud.sdwan.tranport.DataTransport;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Iterator;
@@ -18,30 +19,30 @@ public class P2pTransportManager implements Runnable {
     private long heartTime;
 
     private ScheduledExecutorService scheduledExecutorService;
-    private Map<String, AtomicReference<IceClient.Transport>> transportMap = new ConcurrentHashMap<>();
+    private Map<String, AtomicReference<DataTransport>> transportMap = new ConcurrentHashMap<>();
 
     public void clear() {
         transportMap.clear();
     }
 
-    public IceClient.Transport get(String ip) {
-        AtomicReference<IceClient.Transport> ref = transportMap.get(ip);
+    public DataTransport get(String ip) {
+        AtomicReference<DataTransport> ref = transportMap.get(ip);
         if (null == ref) {
             return null;
         }
-        IceClient.Transport transport = ref.get();
+        DataTransport transport = ref.get();
         return transport;
     }
 
-    public AtomicReference<IceClient.Transport> getOrCreate(String ip, Consumer<String> consumer) {
+    public AtomicReference<DataTransport> getOrCreate(String ip, Consumer<String> consumer) {
         return transportMap.computeIfAbsent(ip, key -> {
-            AtomicReference<IceClient.Transport> ref = new AtomicReference<>();
+            AtomicReference<DataTransport> ref = new AtomicReference<>();
             consumer.accept(key);
             return ref;
         });
     }
 
-    public void addTransport(String ip, IceClient.Transport transport) {
+    public void addTransport(String ip, DataTransport transport) {
         transportMap.put(ip, new AtomicReference<>(transport));
     }
 
@@ -58,7 +59,7 @@ public class P2pTransportManager implements Runnable {
         Iterator<String> iterator = transportMap.keySet().iterator();
         while (iterator.hasNext()) {
             String key = iterator.next();
-            IceClient.Transport transport = transportMap.get(key).get();
+            DataTransport transport = transportMap.get(key).get();
             if (null == transport) {
                 continue;
             }
@@ -70,9 +71,11 @@ public class P2pTransportManager implements Runnable {
                 } else {
                     log.error(e.getMessage(), e);
                 }
+                log.debug("remove transport: {}", key);
                 iterator.remove();
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 log.error(e.getMessage(), e);
+                log.debug("remove transport: {}", key);
                 iterator.remove();
             }
         }

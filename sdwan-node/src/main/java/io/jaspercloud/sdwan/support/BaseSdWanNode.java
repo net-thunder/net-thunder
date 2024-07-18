@@ -47,7 +47,7 @@ public class BaseSdWanNode implements InitializingBean, DisposableBean, Runnable
     private Condition condition = lock.newCondition();
     private Map<String, SDWanProtos.NodeInfo> nodeInfoMap = new ConcurrentHashMap<>();
 
-    public NatAddress getMappingAddress() {
+    public NatAddress getNatAddress() {
         return natAddress;
     }
 
@@ -97,10 +97,7 @@ public class BaseSdWanNode implements InitializingBean, DisposableBean, Runnable
                         switch (msg.getType().getNumber()) {
                             case SDWanProtos.MessageTypeCode.P2pOfferType_VALUE: {
                                 SDWanProtos.P2pOffer p2pOffer = SDWanProtos.P2pOffer.parseFrom(msg.getData());
-                                iceClient.processOffer(p2pOffer)
-                                        .thenAccept(p2pAnswer -> {
-                                            sdWanClient.answer(msg.getReqId(), p2pAnswer);
-                                        });
+                                iceClient.processOffer(msg.getReqId(), p2pOffer);
                                 break;
                             }
                             case SDWanProtos.MessageTypeCode.P2pAnswerType_VALUE: {
@@ -188,32 +185,34 @@ public class BaseSdWanNode implements InitializingBean, DisposableBean, Runnable
         SDWanProtos.RegistReq.Builder builder = SDWanProtos.RegistReq.newBuilder()
                 .setNodeType(SDWanProtos.NodeTypeCode.SimpleType)
                 .setMacAddress(processMacAddress(NetworkInterfaceUtil.getHardwareAddress()));
-        List<NetworkInterfaceInfo> interfaceInfoList;
-        if (null != config.getLocalAddress()) {
-            NetworkInterfaceInfo networkInterfaceInfo = NetworkInterfaceUtil.findNetworkInterfaceInfo(config.getLocalAddress());
-            interfaceInfoList = Arrays.asList(networkInterfaceInfo);
-        } else {
-            InetAddress[] inetAddresses = InetAddress.getAllByName(InetAddress.getLocalHost().getHostName());
-            interfaceInfoList = NetworkInterfaceUtil.parseInetAddress(inetAddresses);
+        if (!config.isOnlyRelayTransport()) {
+            List<NetworkInterfaceInfo> interfaceInfoList;
+            if (null != config.getLocalAddress()) {
+                NetworkInterfaceInfo networkInterfaceInfo = NetworkInterfaceUtil.findNetworkInterfaceInfo(config.getLocalAddress());
+                interfaceInfoList = Arrays.asList(networkInterfaceInfo);
+            } else {
+                InetAddress[] inetAddresses = InetAddress.getAllByName(InetAddress.getLocalHost().getHostName());
+                interfaceInfoList = NetworkInterfaceUtil.parseInetAddress(inetAddresses);
+            }
+            interfaceInfoList.forEach(e -> {
+                String address = e.getInterfaceAddress().getAddress().getHostAddress();
+                String host = UriComponentsBuilder.fromUriString(String.format("%s://%s:%d", AddressType.HOST, address, iceClient.getP2pClient().getLocalPort())).build().toString();
+                builder.addAddressUri(host);
+            });
+            natAddress = processNatAddress(iceClient.parseNatAddress(3000));
+            log.info("parseNatAddress: type={}, address={}",
+                    natAddress.getMappingType().name(), SocketAddressUtil.toAddress(natAddress.getMappingAddress()));
+            String srflx = UriComponentsBuilder.fromUriString(String.format("%s://%s:%d", AddressType.SRFLX,
+                    natAddress.getMappingAddress().getHostString(), natAddress.getMappingAddress().getPort()))
+                    .queryParam("mappingType", natAddress.getMappingType().name()).build().toString();
+            builder.addAddressUri(srflx);
         }
-        interfaceInfoList.forEach(e -> {
-            String address = e.getInterfaceAddress().getAddress().getHostAddress();
-            String host = UriComponentsBuilder.fromUriString(String.format("%s://%s:%d", AddressType.HOST, address, iceClient.getP2pClient().getLocalPort())).build().toString();
-            builder.addAddressUri(host);
-        });
-        natAddress = processNatAddress(iceClient.parseNatAddress(3000));
-        log.info("parseNatAddress: type={}, address={}",
-                natAddress.getMappingType().name(), SocketAddressUtil.toAddress(natAddress.getMappingAddress()));
         String token = iceClient.registRelay(3000);
         log.info("registRelay: token={}", token);
-        String srflx = UriComponentsBuilder.fromUriString(String.format("%s://%s:%d", AddressType.SRFLX,
-                natAddress.getMappingAddress().getHostString(), natAddress.getMappingAddress().getPort()))
-                .queryParam("mappingType", natAddress.getMappingType().name()).build().toString();
         InetSocketAddress relayAddress = SocketAddressUtil.parse(config.getRelayServer());
         String relay = UriComponentsBuilder.fromUriString(String.format("%s://%s:%d", AddressType.RELAY,
                 relayAddress.getHostString(), relayAddress.getPort()))
                 .queryParam("token", token).build().toString();
-        builder.addAddressUri(srflx);
         builder.addAddressUri(relay);
         SDWanProtos.RegistResp regResp = sdWanClient.regist(builder.build(), 3000).get();
         log.info("registSdwan: vip={}", regResp.getVip());
