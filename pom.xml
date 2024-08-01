@@ -18,6 +18,7 @@
         <module>sdwan-controller</module>
         <module>sdwan-node</module>
         <module>sdwan-tun</module>
+        <module>sdwan-npcap</module>
         <module>sdwan-test</module>
         <module>sdwan-test-server</module>
     </modules>
