@@ -251,10 +251,10 @@ public class TcpPacket {
     }
 
     public ByteBuf encode(Ipv4Packet ipv4Packet) {
-        return encode(ipv4Packet, false);
+        return encode(ipv4Packet, true, false);
     }
 
-    public ByteBuf encode(Ipv4Packet ipv4Packet, boolean checksum) {
+    public ByteBuf encode(Ipv4Packet ipv4Packet, boolean calcSum, boolean checksum) {
         ByteBuf byteBuf = ByteBufUtil.newPacketBuf();
         byteBuf.writeShort(srcPort);
         byteBuf.writeShort(dstPort);
@@ -262,9 +262,14 @@ public class TcpPacket {
         byteBuf.writeInt((int) ack);
         byteBuf.writeShort(flags);
         byteBuf.writeShort(window);
-        int calcChecksum = calcChecksum(ipv4Packet);
-        if (checksum) {
-            Assert.isTrue(calcChecksum == getChecksum(), "checksum error");
+        int calcChecksum;
+        if (calcSum) {
+            calcChecksum = calcChecksum(ipv4Packet);
+            if (checksum) {
+                Assert.isTrue(calcChecksum == getChecksum(), "checksum error");
+            }
+        } else {
+            calcChecksum = 0;
         }
         byteBuf.writeShort(calcChecksum);
         byteBuf.writeShort(urgentPointer);
@@ -273,7 +278,7 @@ public class TcpPacket {
         return byteBuf;
     }
 
-    private int calcChecksum(Ipv4Packet ipv4Packet) {
+    public int calcChecksum(Ipv4Packet ipv4Packet) {
         ByteBuf byteBuf = ByteBufUtil.newPacketBuf();
         try {
             //ipHeader

@@ -16,8 +16,8 @@ public class TcpTest {
             data += "e4863ffbd877a6b600000000a00272100c9b0000020405b40402080a001aa3480000000001030307";
             Ipv4Packet ipv4Packet = Ipv4Packet.decode(Unpooled.wrappedBuffer(toBytes(data)));
             TcpPacket tcpPacket = TcpPacket.decode(ipv4Packet.getPayload());
-            ipv4Packet.setPayload(tcpPacket.encode(ipv4Packet, true));
-            ByteBuf encode = ipv4Packet.encode(true);
+            ipv4Packet.setPayload(tcpPacket.encode(ipv4Packet, true, true));
+            ByteBuf encode = ipv4Packet.encode(true, true);
             System.out.println();
         }
         {
@@ -27,8 +27,8 @@ public class TcpTest {
             data += "746573740d0a";
             Ipv4Packet ipv4Packet = Ipv4Packet.decode(Unpooled.wrappedBuffer(toBytes(data)));
             TcpPacket tcpPacket = TcpPacket.decode(ipv4Packet.getPayload());
-            ipv4Packet.setPayload(tcpPacket.encode(ipv4Packet, true));
-            ByteBuf encode = ipv4Packet.encode(true);
+            ipv4Packet.setPayload(tcpPacket.encode(ipv4Packet, true, true));
+            ByteBuf encode = ipv4Packet.encode(true, true);
             System.out.println();
         }
         System.out.println();

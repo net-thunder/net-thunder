@@ -164,10 +164,10 @@ public class Ipv4Packet implements IpPacket {
     }
 
     public ByteBuf encode() {
-        return encode(false);
+        return encode(true, false);
     }
 
-    public ByteBuf encode(boolean checksum) {
+    public ByteBuf encode(boolean calcSum, boolean checksum) {
         ByteBuf byteBuf = ByteBufUtil.newPacketBuf();
         byte head = (byte) ((version << 4) | (headerLen / 4));
         byteBuf.writeByte(head);
@@ -177,9 +177,14 @@ public class Ipv4Packet implements IpPacket {
         byteBuf.writeShort(flags);
         byteBuf.writeByte(liveTime);
         byteBuf.writeByte(protocol);
-        int calcChecksum = calcChecksum();
-        if (checksum) {
-            Assert.isTrue(calcChecksum == getChecksum(), "checksum error");
+        int calcChecksum;
+        if (calcSum) {
+            calcChecksum = calcChecksum();
+            if (checksum) {
+                Assert.isTrue(calcChecksum == getChecksum(), "checksum error");
+            }
+        } else {
+            calcChecksum = 0;
         }
         byteBuf.writeShort(calcChecksum);
         byteBuf.writeBytes(IPUtil.ip2bytes(srcIP));
@@ -188,7 +193,7 @@ public class Ipv4Packet implements IpPacket {
         return byteBuf;
     }
 
-    private int calcChecksum() {
+    public int calcChecksum() {
         ByteBuf byteBuf = ByteBufUtil.newPacketBuf();
         try {
             byte head = (byte) ((version << 4) | (headerLen / 4));

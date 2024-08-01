@@ -17,7 +17,7 @@ public class UdpTest {
         Ipv4Packet ipv4Packet = Ipv4Packet.decode(byteBuf);
         UdpPacket udpPacket = UdpPacket.decode(ipv4Packet.getPayload());
         ipv4Packet.setPayload(udpPacket.encode(ipv4Packet, true));
-        ByteBuf encode = ipv4Packet.encode(true);
+        ByteBuf encode = ipv4Packet.encode(true, true);
         System.out.println();
     }
 
