@@ -12,13 +12,13 @@ public class TcpTest {
     public static void main(String[] args) throws Exception {
         {
             //SYN
-            String data = "4510003c05fe40004006b26cc0de0043c0de0042";
-            data += "e4863ffbd877a6b600000000a00272100c9b0000020405b40402080a001aa3480000000001030307";
+            String data = "45000028009100007f06b8e6c0de0042c0de005a";
+            data += "8675049c000000e4000000005002faf0a6a30000";
             Ipv4Packet ipv4Packet = Ipv4Packet.decode(Unpooled.wrappedBuffer(toBytes(data)));
             TcpPacket tcpPacket = TcpPacket.decode(ipv4Packet.getPayload());
             ipv4Packet.setPayload(tcpPacket.encode(ipv4Packet, true, true));
             ByteBuf encode = ipv4Packet.encode(true, true);
-            System.out.println();
+            System.out.println("pass");
         }
         {
             //PUSH
