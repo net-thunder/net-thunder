@@ -3,7 +3,7 @@ package io.jaspercloud.sdwan.support;
 import com.google.protobuf.ByteString;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.route.RouteManager;
-import io.jaspercloud.sdwan.route.WindowsRouteManager;
+import io.jaspercloud.sdwan.route.RouteManagerFactory;
 import io.jaspercloud.sdwan.stun.*;
 import io.jaspercloud.sdwan.tranport.TunTransport;
 import io.jaspercloud.sdwan.tranport.TunTransportConfig;
@@ -83,7 +83,7 @@ public class TunSdWanNode extends BaseSdWanNode {
         });
         tunTransport.start();
         TunChannel tunChannel = tunTransport.getChannel();
-        routeManager = new WindowsRouteManager(tunChannel, getVirtualRouter());
+        routeManager = RouteManagerFactory.create(tunChannel, getVirtualRouter());
         routeManager.start();
     }
 

@@ -2,9 +2,13 @@ package io.jaspercloud.sdwan.route;
 
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.tranport.VirtualRouter;
+import io.jaspercloud.sdwan.tun.TunAddress;
 import io.jaspercloud.sdwan.tun.TunChannel;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
+import java.net.SocketAddress;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -37,10 +41,16 @@ public abstract class AbstractRouteManager implements RouteManager, Consumer<Lis
         try {
             status.set(true);
             virtualRouter.addListener(this);
+            TunAddress tunAddress = (TunAddress) tunChannel.localAddress();
+            List<SDWanProtos.Route> apply = new ArrayList<>();
             for (SDWanProtos.Route route : virtualRouter.getRouteList()) {
+                if (route.getNexthopList().contains(tunAddress.getIp())) {
+                    continue;
+                }
                 addRoute(tunChannel, route);
+                apply.add(route);
             }
-            cache.set(virtualRouter.getRouteList());
+            cache.set(apply);
         } finally {
             lock.unlock();
         }

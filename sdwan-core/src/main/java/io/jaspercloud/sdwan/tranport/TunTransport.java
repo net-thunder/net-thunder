@@ -24,6 +24,10 @@ public class TunTransport implements TransportLifecycle {
 
     private TunChannel localChannel;
 
+    public TunTransportConfig getConfig() {
+        return config;
+    }
+
     public TunChannel getChannel() {
         return localChannel;
     }
