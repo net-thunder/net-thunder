@@ -8,6 +8,8 @@ import io.jaspercloud.sdwan.tun.TunChannel;
 import io.jaspercloud.sdwan.tun.osx.OsxTunDevice;
 
 /**
+ * query: netstat -nr
+ *
  * @author jasper
  * @create 2024/7/9
  */
