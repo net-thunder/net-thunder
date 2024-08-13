@@ -20,7 +20,6 @@ public class SdWanNodeApplication {
 
     public static void main(String[] args) throws Exception {
         Options options = new Options();
-        options.addOption("n", "name", true, "name");
         options.addOption("c", "config", true, "config");
         options.addOption("log", "logFile", true, "logFile");
         CommandLineParser parser = new DefaultParser();
