@@ -1,19 +1,15 @@
 package io.jaspercloud.sdwan;
 
-import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
-import ch.qos.logback.core.FileAppender;
-import cn.hutool.setting.yaml.YamlUtil;
+import io.jaspercloud.sdwan.support.ConfigSystem;
+import io.jaspercloud.sdwan.support.LoggerSystem;
 import io.jaspercloud.sdwan.support.SdWanNodeConfig;
 import io.jaspercloud.sdwan.support.TunSdWanNode;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.impl.StaticLoggerBinder;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Options;
 
-import java.io.File;
-import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -23,41 +19,19 @@ import java.util.concurrent.CountDownLatch;
 public class SdWanNodeApplication {
 
     public static void main(String[] args) throws Exception {
+        Options options = new Options();
+        options.addOption("n", "name", true, "name");
+        options.addOption("c", "config", true, "config");
+        options.addOption("log", "logFile", true, "logFile");
+        options.addOption("d", "damon", false, "damon");
+        CommandLineParser parser = new DefaultParser();
+        CommandLine cmd = parser.parse(options, args);
+        SdWanNodeConfig config = new ConfigSystem().init(cmd.getOptionValue("c"));
+        Logger logger = new LoggerSystem().init(cmd.getOptionValue("log"));
         System.setProperty("io.netty.leakDetection.level", "PARANOID");
-        initLogger(null);
-        SdWanNodeConfig config = loadConfig();
         TunSdWanNode tunSdWanNode = new TunSdWanNode(config);
         tunSdWanNode.start();
         CountDownLatch latch = new CountDownLatch(1);
         latch.await();
-    }
-
-    private static void initLogger(String logFile) {
-        LoggerContext loggerContext = (LoggerContext) StaticLoggerBinder.getSingleton().getLoggerFactory();
-        Logger logger = loggerContext.getLogger("ROOT");
-        logger.setLevel(Level.INFO);
-
-        PatternLayoutEncoder encoder = new PatternLayoutEncoder();
-        encoder.setContext(loggerContext);
-        encoder.setCharset(Charset.forName("utf-8"));
-        encoder.setPattern("%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n");
-        encoder.start();
-
-        FileAppender appender = new FileAppender();
-        appender.setContext(loggerContext);
-        appender.setName("file");
-        appender.setEncoder(encoder);
-        if (StringUtils.isEmpty(logFile)) {
-            logFile = new File(System.getProperty("user.dir"), "out.log").getAbsolutePath();
-        }
-        appender.setFile(logFile);
-        appender.start();
-        logger.addAppender(appender);
-    }
-
-    private static SdWanNodeConfig loadConfig() throws Exception {
-        try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("application.yaml")) {
-            return YamlUtil.load(in, SdWanNodeConfig.class);
-        }
     }
 }
