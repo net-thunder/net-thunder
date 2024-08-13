@@ -15,4 +15,10 @@ public class ConfigSystem {
             return YamlUtil.load(in, SdWanNodeConfig.class);
         }
     }
+
+    public SdWanNodeConfig initStaticResource() throws Exception {
+        try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("application.yaml")) {
+            return YamlUtil.load(in, SdWanNodeConfig.class);
+        }
+    }
 }

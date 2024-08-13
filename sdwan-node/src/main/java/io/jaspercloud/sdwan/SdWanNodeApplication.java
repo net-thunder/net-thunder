@@ -5,10 +5,6 @@ import io.jaspercloud.sdwan.support.ConfigSystem;
 import io.jaspercloud.sdwan.support.LoggerSystem;
 import io.jaspercloud.sdwan.support.SdWanNodeConfig;
 import io.jaspercloud.sdwan.support.TunSdWanNode;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.Options;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -19,13 +15,8 @@ import java.util.concurrent.CountDownLatch;
 public class SdWanNodeApplication {
 
     public static void main(String[] args) throws Exception {
-        Options options = new Options();
-        options.addOption("c", "config", true, "config");
-        options.addOption("log", "logFile", true, "logFile");
-        CommandLineParser parser = new DefaultParser();
-        CommandLine cmd = parser.parse(options, args);
-        SdWanNodeConfig config = new ConfigSystem().init(cmd.getOptionValue("c"));
-        Logger logger = new LoggerSystem().init(cmd.getOptionValue("log"));
+        Logger logger = new LoggerSystem().initUserDir();
+        SdWanNodeConfig config = new ConfigSystem().initStaticResource();
         System.setProperty("io.netty.leakDetection.level", "PARANOID");
         TunSdWanNode tunSdWanNode = new TunSdWanNode(config);
         tunSdWanNode.start();
