@@ -85,6 +85,10 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         this.config = config;
     }
 
+    static {
+        System.setProperty("io.netty.leakDetection.level", "PARANOID");
+    }
+
     @Override
     public void start() throws Exception {
         sdWanClient = new SdWanClient(SdWanClientConfig.builder()

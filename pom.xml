@@ -18,6 +18,7 @@
         <module>sdwan-controller</module>
         <module>sdwan-node</module>
         <module>sdwan-tun</module>
+        <module>sdwan-winservice</module>
         <module>sdwan-test</module>
         <module>sdwan-test-server</module>
     </modules>
@@ -61,6 +62,11 @@
             <dependency>
                 <groupId>io.jaspercloud</groupId>
                 <artifactId>sdwan-node</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jaspercloud</groupId>
+                <artifactId>sdwan-winservice</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>

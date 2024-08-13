@@ -17,7 +17,6 @@ public class SdWanNodeApplication {
     public static void main(String[] args) throws Exception {
         Logger logger = new LoggerSystem().initUserDir();
         SdWanNodeConfig config = new ConfigSystem().initStaticResource();
-        System.setProperty("io.netty.leakDetection.level", "PARANOID");
         TunSdWanNode tunSdWanNode = new TunSdWanNode(config);
         tunSdWanNode.start();
         CountDownLatch latch = new CountDownLatch(1);
