@@ -23,7 +23,6 @@ public class SdWanNodeApplication {
         options.addOption("n", "name", true, "name");
         options.addOption("c", "config", true, "config");
         options.addOption("log", "logFile", true, "logFile");
-        options.addOption("d", "damon", false, "damon");
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
         SdWanNodeConfig config = new ConfigSystem().init(cmd.getOptionValue("c"));
