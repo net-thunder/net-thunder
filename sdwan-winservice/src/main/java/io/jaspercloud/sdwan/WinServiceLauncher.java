@@ -19,65 +19,104 @@ import java.util.List;
 @SpringBootApplication
 public class WinServiceLauncher {
 
-    private Logger logger;
-
     public static void main(String[] args) throws Exception {
         new WinServiceLauncher().run(args);
     }
 
     private void run(String[] args) throws Exception {
         Options options = new Options();
+        options.addOption("t", "type", true, "type");
         options.addOption("n", "name", true, "name");
         options.addOption("c", "config", true, "config");
         options.addOption("log", "logFile", true, "logFile");
-        options.addOption("d", "damon", false, "damon");
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
-        logger = new LoggerSystem().init(cmd.getOptionValue("log"));
-        if (cmd.hasOption("d")) {
-            logger.info("run damon");
-            boolean dispatcher = WinServiceManager.startServiceCtrlDispatcher(cmd, new WinServiceManager.ServiceProcHandler() {
-
-                private TunSdWanNode tunSdWanNode;
-
-                @Override
-                public void start() throws Exception {
-                    logger.info("start service proc");
-                    SdWanNodeConfig config = new ConfigSystem().init(cmd.getOptionValue("c"));
-                    tunSdWanNode = new TunSdWanNode(config);
-                    tunSdWanNode.start();
-                }
-
-                @Override
-                public void stop() throws Exception {
-                    logger.info("stop service proc");
-                    tunSdWanNode.stop();
-                }
-            });
-            logger.info("startServiceCtrlDispatcher result: {}", dispatcher);
-            logger.info("exit WinServiceLauncher");
-            System.exit(0);
-        } else {
-            logger.info("run launcher");
-            String name = cmd.getOptionValue("n");
-            try (WinServiceManager scm = WinServiceManager.openExecute()) {
-                WinServiceManager.WinService winService = scm.openService(name);
-                if (null == winService) {
-                    createService(cmd);
-                    winService = scm.openService(name);
-                }
-                winService.start();
-                winService.close();
-            }
+        if (!cmd.hasOption("t")) {
+            mainProcess(cmd);
+        } else if ("start".equals(cmd.getOptionValue("t"))) {
+            startService(cmd);
+        } else if ("stop".equals(cmd.getOptionValue("t"))) {
+            stopService(cmd);
+        } else if ("service".equals(cmd.getOptionValue("t"))) {
+            runService(cmd);
         }
     }
 
-    private void createService(CommandLine cmd) throws Exception {
+    private void mainProcess(CommandLine cmd) throws Exception {
+        String javaPath = getJavaPath();
         List<String> argList = new ArrayList<>();
+        argList.add("-jar");
+        String executeJarPath = getExecuteJarPath();
+        String parentPath = new File(executeJarPath).getParent();
+        argList.add(executeJarPath);
+        argList.add("-t");
+        argList.add("start");
+        argList.add("-n");
+        String name = "sdwan-test14";
+        argList.add(name);
+        argList.add("-c");
+        String configPath = new File(parentPath, "application.yaml").getAbsolutePath();
+        argList.add(new File(configPath).getAbsolutePath());
+        argList.add("-log");
+        String logPath = new File(parentPath, "app.log").getAbsolutePath();
+        argList.add(new File(logPath).getAbsolutePath());
+        String args = StringUtils.join(argList, " ");
+        System.out.println(String.format("ShellExecuteW %s %s", javaPath, args));
+        WinShell.ShellExecuteW(javaPath, args, null, WinShell.SW_HIDE);
+    }
+
+    private void startService(CommandLine cmd) throws Exception {
+        Logger logger = new LoggerSystem().init(cmd.getOptionValue("log"));
+        logger.info("startService");
+        String name = cmd.getOptionValue("n");
+        try (WinServiceManager scm = WinServiceManager.openExecute()) {
+            WinServiceManager.WinService winService = scm.openService(name);
+            if (null == winService) {
+                createService(logger, cmd);
+                winService = scm.openService(name);
+            }
+            winService.start();
+            winService.close();
+        }
+    }
+
+    private void stopService(CommandLine cmd) throws Exception {
+        Logger logger = new LoggerSystem().init(cmd.getOptionValue("log"));
+        logger.info("stopService");
+    }
+
+    private void runService(CommandLine cmd) throws Exception {
+        Logger logger = new LoggerSystem().init(cmd.getOptionValue("log"));
+        logger.info("runService");
+        boolean dispatcher = WinServiceManager.startServiceCtrlDispatcher(cmd, new WinServiceManager.ServiceProcHandler() {
+
+            private TunSdWanNode tunSdWanNode;
+
+            @Override
+            public void start() throws Exception {
+                logger.info("start service proc");
+                SdWanNodeConfig config = new ConfigSystem().init(cmd.getOptionValue("c"));
+                tunSdWanNode = new TunSdWanNode(config);
+                tunSdWanNode.start();
+            }
+
+            @Override
+            public void stop() throws Exception {
+                logger.info("stop service proc");
+                tunSdWanNode.stop();
+            }
+        });
+        logger.info("startServiceCtrlDispatcher result: {}", dispatcher);
+        System.exit(0);
+    }
+
+    private String getJavaPath() throws Exception {
         String javaHome = System.getProperty("java.home");
         String java = new File(new File(javaHome, "bin"), "java").getAbsolutePath();
-        argList.add(java);
-        argList.add("-jar");
+        return java;
+    }
+
+    private String getExecuteJarPath() throws Exception {
         Class<?> jarLauncher = Class.forName("org.springframework.boot.loader.JarLauncher");
         ProtectionDomain protectionDomain = jarLauncher.getProtectionDomain();
         CodeSource codeSource = protectionDomain.getCodeSource();
@@ -86,7 +125,17 @@ public class WinServiceLauncher {
         if (!jarPath.endsWith(".jar")) {
             throw new IllegalArgumentException("jar path error");
         }
-        argList.add(new File(jarPath).getAbsolutePath());
+        String path = new File(jarPath).getAbsolutePath();
+        return path;
+    }
+
+    private void createService(Logger logger, CommandLine cmd) throws Exception {
+        List<String> argList = new ArrayList<>();
+        argList.add(getJavaPath());
+        argList.add("-jar");
+        argList.add(getExecuteJarPath());
+        argList.add("-t");
+        argList.add("service");
         argList.add("-n");
         String name = cmd.getOptionValue("n");
         argList.add(name);
@@ -96,7 +145,6 @@ public class WinServiceLauncher {
         String logPath = cmd.getOptionValue("log");
         argList.add("-log");
         argList.add(new File(logPath).getAbsolutePath());
-        argList.add("-d");
         String path = StringUtils.join(argList, " ");
         logger.info("createService: {}", path);
         try (WinServiceManager scm = WinServiceManager.openManager()) {
