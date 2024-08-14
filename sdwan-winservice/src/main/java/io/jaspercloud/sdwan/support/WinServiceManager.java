@@ -35,15 +35,20 @@ public class WinServiceManager implements Closeable {
 
     @Override
     public void close() {
-        Advapi32.INSTANCE.CloseServiceHandle(handle);
+        boolean ret = Advapi32.INSTANCE.CloseServiceHandle(handle);
+        if (!ret) {
+            throw new Win32Exception(Kernel32.INSTANCE.GetLastError());
+        }
     }
 
-    public static boolean startServiceCtrlDispatcher(CommandLine cmd, ServiceProcHandler procHandler) {
+    public static void startServiceCtrlDispatcher(CommandLine cmd, ServiceProcHandler procHandler) {
         Winsvc.SERVICE_TABLE_ENTRY entry = new Winsvc.SERVICE_TABLE_ENTRY();
         entry.lpServiceName = cmd.getOptionValue("n");
         entry.lpServiceProc = new WinServiceProc(cmd, procHandler);
-        boolean status = Advapi32.INSTANCE.StartServiceCtrlDispatcher((Winsvc.SERVICE_TABLE_ENTRY[]) entry.toArray(2));
-        return status;
+        boolean ret = Advapi32.INSTANCE.StartServiceCtrlDispatcher((Winsvc.SERVICE_TABLE_ENTRY[]) entry.toArray(2));
+        if (!ret) {
+            throw new Win32Exception(Kernel32.INSTANCE.GetLastError());
+        }
     }
 
     public WinService openService(String serviceName) {
@@ -72,7 +77,10 @@ public class WinServiceManager implements Closeable {
         if (serviceHandler == null) {
             throw new IllegalStateException("Failed to install service ");
         }
-        Advapi32.INSTANCE.CloseServiceHandle(serviceHandler);
+        boolean ret = Advapi32.INSTANCE.CloseServiceHandle(serviceHandler);
+        if (!ret) {
+            throw new Win32Exception(Kernel32.INSTANCE.GetLastError());
+        }
     }
 
     @Slf4j
@@ -152,7 +160,10 @@ public class WinServiceManager implements Closeable {
             serviceStatus.dwWin32ExitCode = win32ExitCode;
             serviceStatus.dwWaitHint = waitHint;
             serviceStatus.dwCurrentState = status;
-            Advapi32.INSTANCE.SetServiceStatus(handle, serviceStatus);
+            boolean ret = Advapi32.INSTANCE.SetServiceStatus(handle, serviceStatus);
+            if (!ret) {
+                throw new Win32Exception(Kernel32.INSTANCE.GetLastError());
+            }
         }
     }
 
@@ -164,25 +175,43 @@ public class WinServiceManager implements Closeable {
             this.handle = handle;
         }
 
-        public boolean start() {
-            boolean status = Advapi32.INSTANCE.StartService(handle, 0, null);
-            return status;
+        public int status() {
+            Winsvc.SERVICE_STATUS status = new Winsvc.SERVICE_STATUS();
+            boolean ret = Advapi32.INSTANCE.QueryServiceStatus(handle, status);
+            if (!ret) {
+                throw new Win32Exception(Kernel32.INSTANCE.GetLastError());
+            }
+            return status.dwCurrentState;
         }
 
-        public boolean stop() {
+        public void start() {
+            boolean ret = Advapi32.INSTANCE.StartService(handle, 0, null);
+            if (!ret) {
+                throw new Win32Exception(Kernel32.INSTANCE.GetLastError());
+            }
+        }
+
+        public void stop() {
             Winsvc.SERVICE_STATUS serviceStatus = new Winsvc.SERVICE_STATUS();
-            boolean status = Advapi32.INSTANCE.ControlService(handle, Winsvc.SERVICE_CONTROL_STOP, serviceStatus);
-            return status;
+            boolean ret = Advapi32.INSTANCE.ControlService(handle, Winsvc.SERVICE_CONTROL_STOP, serviceStatus);
+            if (!ret) {
+                throw new Win32Exception(Kernel32.INSTANCE.GetLastError());
+            }
         }
 
-        public boolean deleteService() {
-            boolean status = Advapi32.INSTANCE.DeleteService(handle);
-            return status;
+        public void deleteService() {
+            boolean ret = Advapi32.INSTANCE.DeleteService(handle);
+            if (!ret) {
+                throw new Win32Exception(Kernel32.INSTANCE.GetLastError());
+            }
         }
 
         @Override
         public void close() {
-            Advapi32.INSTANCE.CloseServiceHandle(handle);
+            boolean ret = Advapi32.INSTANCE.CloseServiceHandle(handle);
+            if (!ret) {
+                throw new Win32Exception(Kernel32.INSTANCE.GetLastError());
+            }
         }
     }
 }

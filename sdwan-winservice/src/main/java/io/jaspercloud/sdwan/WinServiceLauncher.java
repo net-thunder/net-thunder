@@ -1,6 +1,7 @@
 package io.jaspercloud.sdwan;
 
 import ch.qos.logback.classic.Logger;
+import com.sun.jna.platform.win32.Winsvc;
 import io.jaspercloud.sdwan.support.*;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -72,24 +73,49 @@ public class WinServiceLauncher {
         String name = cmd.getOptionValue("n");
         try (WinServiceManager scm = WinServiceManager.openExecute()) {
             WinServiceManager.WinService winService = scm.openService(name);
-            if (null == winService) {
-                createService(logger, cmd);
-                winService = scm.openService(name);
+            try {
+                if (null == winService) {
+                    createService(logger, cmd);
+                    winService = scm.openService(name);
+                }
+                int status = winService.status();
+                logger.info("service status={}", status);
+                if (Winsvc.SERVICE_RUNNING == status) {
+                    return;
+                }
+                winService.start();
+            } finally {
+                if (null != winService) {
+                    winService.close();
+                }
             }
-            winService.start();
-            winService.close();
         }
     }
 
     private void stopService(CommandLine cmd) throws Exception {
         Logger logger = new LoggerSystem().init(cmd.getOptionValue("log"));
         logger.info("stopService");
+        String name = cmd.getOptionValue("n");
+        try (WinServiceManager scm = WinServiceManager.openExecute()) {
+            WinServiceManager.WinService winService = scm.openService(name);
+            if (null == winService) {
+                return;
+            }
+            try {
+                winService.stop();
+            } finally {
+                if (null != winService) {
+                    winService.close();
+                }
+            }
+        }
     }
 
     private void runService(CommandLine cmd) throws Exception {
         Logger logger = new LoggerSystem().init(cmd.getOptionValue("log"));
         logger.info("runService");
-        boolean dispatcher = WinServiceManager.startServiceCtrlDispatcher(cmd, new WinServiceManager.ServiceProcHandler() {
+        logger.info("startServiceCtrlDispatcher");
+        WinServiceManager.startServiceCtrlDispatcher(cmd, new WinServiceManager.ServiceProcHandler() {
 
             private TunSdWanNode tunSdWanNode;
 
@@ -107,7 +133,7 @@ public class WinServiceLauncher {
                 tunSdWanNode.stop();
             }
         });
-        logger.info("startServiceCtrlDispatcher result: {}", dispatcher);
+        logger.info("stopServiceCtrlDispatcher");
         System.exit(0);
     }
 
