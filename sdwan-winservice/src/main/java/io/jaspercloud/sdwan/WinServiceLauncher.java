@@ -52,7 +52,7 @@ public class WinServiceLauncher {
         argList.add("-t");
         argList.add("start");
         argList.add("-n");
-        String name = "sdwan-test14";
+        String name = "net-thunder-test";
         argList.add(name);
         argList.add("-c");
         String configPath = new File(parentPath, "application.yaml").getAbsolutePath();
