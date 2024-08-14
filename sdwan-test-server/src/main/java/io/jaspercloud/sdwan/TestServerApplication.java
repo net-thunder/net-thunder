@@ -1,6 +1,6 @@
 package io.jaspercloud.sdwan;
 
-import io.jaspercloud.sdwan.adapter.server.SdWanControllerProperties;
+import io.jaspercloud.sdwan.config.TestSdWanControllerProperties;
 import io.jaspercloud.sdwan.tranport.RelayServer;
 import io.jaspercloud.sdwan.tranport.SdWanServer;
 import io.jaspercloud.sdwan.tranport.StunServer;
@@ -17,7 +17,7 @@ import org.springframework.context.annotation.Configuration;
  * @author jasper
  * @create 2024/7/2
  */
-@EnableConfigurationProperties(SdWanControllerProperties.class)
+@EnableConfigurationProperties(TestSdWanControllerProperties.class)
 @Configuration
 @SpringBootApplication
 public class TestServerApplication {
@@ -30,18 +30,18 @@ public class TestServerApplication {
     }
 
     @Bean
-    public SdWanServer sdWanServer(SdWanControllerProperties properties) {
+    public SdWanServer sdWanServer(TestSdWanControllerProperties properties) {
         SdWanServer sdWanServer = new SdWanServer(properties.getSdwan(), () -> new ChannelInboundHandlerAdapter());
         return sdWanServer;
     }
 
     @Bean
-    public RelayServer relayServer(SdWanControllerProperties properties) {
+    public RelayServer relayServer(TestSdWanControllerProperties properties) {
         return new RelayServer(properties.getRelay(), () -> new ChannelInboundHandlerAdapter());
     }
 
     @Bean
-    public StunServer stunServer(SdWanControllerProperties properties) {
+    public StunServer stunServer(TestSdWanControllerProperties properties) {
         return new StunServer(properties.getStun(), () -> new ChannelInboundHandlerAdapter());
     }
 }

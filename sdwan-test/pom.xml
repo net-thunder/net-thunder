@@ -21,10 +21,6 @@
         </dependency>
         <dependency>
             <groupId>io.jaspercloud</groupId>
-            <artifactId>sdwan-controller</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.jaspercloud</groupId>
             <artifactId>sdwan-node</artifactId>
         </dependency>
     </dependencies>
