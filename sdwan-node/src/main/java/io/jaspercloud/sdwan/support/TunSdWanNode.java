@@ -69,6 +69,8 @@ public class TunSdWanNode extends BaseSdWanNode {
                 .ip(getLocalVip())
                 .maskBits(getMaskBits())
                 .mtu(config.getMtu())
+                .localAddress(config.getLocalAddress())
+                .icsEnable(config.getIcsEnable())
                 .build();
         tunTransport = new TunTransport(tunConfig, () -> new SimpleChannelInboundHandler<ByteBuf>() {
             @Override

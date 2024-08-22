@@ -38,11 +38,15 @@ public final class NetworkInterfaceUtil {
     }
 
     public static List<NetworkInterfaceInfo> findUpIpv4NetworkInterfaceInfo() throws SocketException {
+        return findIpv4NetworkInterfaceInfo(true);
+    }
+
+    public static List<NetworkInterfaceInfo> findIpv4NetworkInterfaceInfo(boolean findActive) throws SocketException {
         Enumeration<NetworkInterface> enumeration = NetworkInterface.getNetworkInterfaces();
         List<NetworkInterfaceInfo> list = new ArrayList<>();
         while (enumeration.hasMoreElements()) {
             NetworkInterface networkInterface = enumeration.nextElement();
-            if (!networkInterface.isUp()) {
+            if (findActive && !networkInterface.isUp()) {
                 continue;
             }
             for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {

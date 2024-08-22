@@ -28,4 +28,5 @@ public class SdWanNodeConfig {
 
     private String tunName = "net-thunder";
     private int mtu = 1440;
+    private Boolean icsEnable = false;
 }

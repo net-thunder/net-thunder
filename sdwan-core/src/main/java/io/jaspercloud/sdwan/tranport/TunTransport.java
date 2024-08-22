@@ -1,13 +1,13 @@
 package io.jaspercloud.sdwan.tranport;
 
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
-import io.jaspercloud.sdwan.tun.TunAddress;
-import io.jaspercloud.sdwan.tun.TunChannel;
-import io.jaspercloud.sdwan.tun.TunChannelConfig;
+import io.jaspercloud.sdwan.tun.*;
+import io.jaspercloud.sdwan.tun.windows.Ics;
 import io.jaspercloud.sdwan.util.ByteBufUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.*;
+import io.netty.util.internal.PlatformDependent;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.function.Supplier;
@@ -61,6 +61,26 @@ public class TunTransport implements TransportLifecycle {
             TunAddress tunAddress = new TunAddress(config.getTunName(), config.getIp(), config.getMaskBits());
             localChannel = (TunChannel) bootstrap.bind(tunAddress).syncUninterruptibly().channel();
             log.info("tunTransport started address={}", config.getIp());
+            if (PlatformDependent.isWindows() && config.getIcsEnable()) {
+                Ics.enable(config.getLocalAddress(), tunAddress.getIp(), true);
+                Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                    try {
+                        Ics.enable(config.getLocalAddress(), tunAddress.getIp(), false);
+                    } catch (Exception e) {
+                        log.error(e.getMessage(), e);
+                    }
+                }));
+                {
+                    String cmd = String.format("netsh interface ipv4 set address name=\"%s\" static %s/%s", tunAddress.getTunName(), tunAddress.getIp(), tunAddress.getMaskBits());
+                    int code = ProcessUtil.exec(cmd);
+                    CheckInvoke.check(code, 0);
+                }
+                {
+                    String cmd = String.format("netsh interface ipv4 add address name=\"%s\" 192.168.137.1/24", tunAddress.getTunName());
+                    int code = ProcessUtil.exec(cmd);
+                    CheckInvoke.check(code, 0);
+                }
+            }
             localChannel.closeFuture().addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture future) throws Exception {

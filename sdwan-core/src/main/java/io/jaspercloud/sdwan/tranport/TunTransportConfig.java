@@ -17,4 +17,6 @@ public class TunTransportConfig {
     private String ip;
     private int maskBits;
     private int mtu;
+    private String localAddress;
+    private Boolean icsEnable;
 }
