@@ -30,7 +30,7 @@ public final class WinShell {
                 null,
                 new WString("runas"),
                 new WString(lpFile),
-                new WString(lpParameters),
+                null != lpParameters ? new WString(lpParameters) : null,
                 null != lpDirectory ? new WString(lpDirectory) : null,
                 nShowCmd
         );
