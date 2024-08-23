@@ -1,4 +1,4 @@
-package io.jaspercloud.sdwan.ui;
+package io.jaspercloud.sdwan.platform.ui;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;

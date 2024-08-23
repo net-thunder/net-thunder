@@ -1,4 +1,4 @@
-package io.jaspercloud.sdwan.ui;
+package io.jaspercloud.sdwan.platform.ui;
 
 import com.sun.jna.platform.win32.Winsvc;
 import io.jaspercloud.sdwan.node.ConfigSystem;

@@ -6,7 +6,7 @@ import io.jaspercloud.sdwan.node.LoggerSystem;
 import io.jaspercloud.sdwan.node.SdWanNodeConfig;
 import io.jaspercloud.sdwan.node.TunSdWanNode;
 import io.jaspercloud.sdwan.support.WinServiceManager;
-import io.jaspercloud.sdwan.ui.MainWindow;
+import io.jaspercloud.sdwan.platform.ui.MainWindow;
 import javafx.application.Application;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
