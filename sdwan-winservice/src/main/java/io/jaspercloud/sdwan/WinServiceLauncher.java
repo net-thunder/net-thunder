@@ -11,9 +11,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.io.File;
-import java.net.URL;
-import java.security.CodeSource;
-import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,10 +18,6 @@ import java.util.List;
 public class WinServiceLauncher {
 
     public static void main(String[] args) throws Exception {
-        new WinServiceLauncher().run(args);
-    }
-
-    private void run(String[] args) throws Exception {
         Options options = new Options();
         options.addOption("t", "type", true, "type");
         options.addOption("n", "name", true, "name");
@@ -32,6 +25,10 @@ public class WinServiceLauncher {
         options.addOption("log", "logFile", true, "logFile");
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
+        new WinServiceLauncher().run(cmd);
+    }
+
+    private void run(CommandLine cmd) throws Exception {
         if (!cmd.hasOption("t")) {
             mainProcess(cmd);
         } else if ("start".equals(cmd.getOptionValue("t"))) {
@@ -68,17 +65,18 @@ public class WinServiceLauncher {
     }
 
     private void startService(CommandLine cmd) throws Exception {
-        Logger logger = new LoggerSystem().init(cmd.getOptionValue("log"));
-        logger.info("startService");
-        String name = cmd.getOptionValue("n");
+        String logPath = cmd.getOptionValue("log");
+        String serviceName = cmd.getOptionValue("n");
+        Logger logger = new LoggerSystem().init(logPath);
+        logger.info("startService: {}", serviceName);
         try (WinServiceManager scm = WinServiceManager.openExecute()) {
-            WinServiceManager.WinService winService = scm.openService(name);
+            WinServiceManager.WinService winService = scm.openService(serviceName);
             try {
                 if (null == winService) {
                     createService(logger, cmd);
-                    winService = scm.openService(name);
+                    winService = scm.openService(serviceName);
                 }
-                int status = winService.status();
+                int status = queryServiceStatus(serviceName);
                 logger.info("service status={}", status);
                 if (Winsvc.SERVICE_RUNNING == status) {
                     return;
@@ -92,12 +90,21 @@ public class WinServiceLauncher {
         }
     }
 
+    private int queryServiceStatus(String serviceName) {
+        try (WinServiceManager scm = WinServiceManager.openManager()) {
+            try (WinServiceManager.WinService winService = scm.openService(serviceName)) {
+                return winService.status();
+            }
+        }
+    }
+
     private void stopService(CommandLine cmd) throws Exception {
-        Logger logger = new LoggerSystem().init(cmd.getOptionValue("log"));
+        String logPath = cmd.getOptionValue("log");
+        String serviceName = cmd.getOptionValue("n");
+        Logger logger = new LoggerSystem().init(logPath);
         logger.info("stopService");
-        String name = cmd.getOptionValue("n");
         try (WinServiceManager scm = WinServiceManager.openExecute()) {
-            WinServiceManager.WinService winService = scm.openService(name);
+            WinServiceManager.WinService winService = scm.openService(serviceName);
             if (null == winService) {
                 return;
             }
@@ -112,25 +119,30 @@ public class WinServiceLauncher {
     }
 
     private void runService(CommandLine cmd) throws Exception {
-        Logger logger = new LoggerSystem().init(cmd.getOptionValue("log"));
+        String serviceName = cmd.getOptionValue("n");
+        String logPath = cmd.getOptionValue("log");
+        String configPath = cmd.getOptionValue("c");
+        Logger logger = new LoggerSystem().init(logPath);
         logger.info("runService");
         logger.info("startServiceCtrlDispatcher");
-        WinServiceManager.startServiceCtrlDispatcher(cmd, new WinServiceManager.ServiceProcHandler() {
+        SdWanNodeConfig config = new ConfigSystem().init(configPath);
+        WinServiceManager.startServiceCtrlDispatcher(serviceName, new WinServiceManager.ServiceProcHandler() {
 
             private TunSdWanNode tunSdWanNode;
 
             @Override
             public void start() throws Exception {
-                logger.info("start service proc");
-                SdWanNodeConfig config = new ConfigSystem().init(cmd.getOptionValue("c"));
+                logger.info("start service process");
                 tunSdWanNode = new TunSdWanNode(config);
                 tunSdWanNode.start();
+                logger.info("service started");
             }
 
             @Override
             public void stop() throws Exception {
-                logger.info("stop service proc");
+                logger.info("stop service process");
                 tunSdWanNode.stop();
+                logger.info("service stopped");
             }
         });
         logger.info("stopServiceCtrlDispatcher");
@@ -144,15 +156,8 @@ public class WinServiceLauncher {
     }
 
     private String getExecuteJarPath() throws Exception {
-        Class<?> jarLauncher = Class.forName("org.springframework.boot.loader.JarLauncher");
-        ProtectionDomain protectionDomain = jarLauncher.getProtectionDomain();
-        CodeSource codeSource = protectionDomain.getCodeSource();
-        URL location = codeSource.getLocation();
-        String jarPath = location.toURI().getPath().replaceAll("^/", "");
-        if (!jarPath.endsWith(".jar")) {
-            throw new IllegalArgumentException("jar path error");
-        }
-        String path = new File(jarPath).getAbsolutePath();
+        String userDir = System.getProperty("user.dir");
+        String path = new File(userDir, "sdwan-winservice.jar").getAbsolutePath();
         return path;
     }
 
