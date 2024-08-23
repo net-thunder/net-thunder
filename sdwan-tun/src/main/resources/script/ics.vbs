@@ -3,7 +3,7 @@ option explicit
 Main( )
 
 sub Main( )
-    dim objArgs, con, endis,con2
+    dim objArgs, con, endis, con2
 
     Set objArgs = WScript.Arguments
 
