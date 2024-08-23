@@ -171,7 +171,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
     }
 
     private void sendTo(String srcVip, String dstIp, byte[] bytes) {
-        String dstVip = virtualRouter.route(dstIp);
+        String dstVip = virtualRouter.route(srcVip, dstIp);
         if (null == dstVip) {
             return;
         }

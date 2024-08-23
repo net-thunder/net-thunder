@@ -3,7 +3,6 @@ package io.jaspercloud.sdwan.tranport;
 import com.google.protobuf.ProtocolStringList;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.support.Cidr;
-import org.apache.commons.lang3.RandomUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -55,7 +54,7 @@ public class VirtualRouter {
         listenerMap.forEach((k, v) -> v.accept(routeList));
     }
 
-    public String route(String ip) {
+    public String route(String srcVip, String dstIp) {
         List<SDWanProtos.Route> list;
         lock.readLock().lock();
         try {
@@ -63,16 +62,16 @@ public class VirtualRouter {
         } finally {
             lock.readLock().unlock();
         }
-        if (Cidr.contains(cidr, ip)) {
-            return ip;
+        if (Cidr.contains(cidr, dstIp)) {
+            return dstIp;
         }
         for (SDWanProtos.Route route : list) {
-            if (Cidr.contains(route.getDestination(), ip)) {
+            if (Cidr.contains(route.getDestination(), dstIp)) {
                 ProtocolStringList nexthopList = route.getNexthopList();
                 if (nexthopList.isEmpty()) {
                     return null;
                 }
-                int rand = RandomUtils.nextInt(0, nexthopList.size());
+                int rand = Math.abs(srcVip.hashCode()) % nexthopList.size();
                 String nexthop = nexthopList.get(rand);
                 return nexthop;
             }
