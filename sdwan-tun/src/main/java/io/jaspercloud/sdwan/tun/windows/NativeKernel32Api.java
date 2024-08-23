@@ -1,7 +1,7 @@
 package io.jaspercloud.sdwan.tun.windows;
 
 import com.sun.jna.Native;
-import com.sun.jna.Pointer;
+import com.sun.jna.platform.win32.WinNT;
 import com.sun.jna.win32.StdCallLibrary;
 
 public interface NativeKernel32Api extends StdCallLibrary {
@@ -10,5 +10,5 @@ public interface NativeKernel32Api extends StdCallLibrary {
 
     int INFINITE = 0xFFFFFFFF;
 
-    int WaitForSingleObject(Pointer hHandle, int dwMilliseconds);
+    int WaitForSingleObject(WinNT.HANDLE hHandle, int dwMilliseconds);
 }

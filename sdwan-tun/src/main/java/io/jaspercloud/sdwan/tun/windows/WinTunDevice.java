@@ -1,6 +1,7 @@
 package io.jaspercloud.sdwan.tun.windows;
 
 import com.sun.jna.*;
+import com.sun.jna.platform.win32.WinNT;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.tun.CheckInvoke;
 import io.jaspercloud.sdwan.tun.ProcessUtil;
@@ -10,8 +11,8 @@ import io.netty.buffer.ByteBufAllocator;
 
 public class WinTunDevice extends TunDevice {
 
-    private Pointer adapter;
-    private Pointer session;
+    private WinNT.HANDLE adapter;
+    private WinNT.HANDLE session;
     private boolean closing = false;
 
     public WinTunDevice(String name, String type, String guid) {

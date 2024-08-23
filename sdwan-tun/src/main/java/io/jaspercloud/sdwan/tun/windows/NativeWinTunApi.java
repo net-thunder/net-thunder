@@ -4,6 +4,7 @@ import com.sun.jna.LastErrorException;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.WString;
+import com.sun.jna.platform.win32.WinNT;
 
 public class NativeWinTunApi {
 
@@ -21,23 +22,25 @@ public class NativeWinTunApi {
 
     public static native int WintunGetRunningDriverVersion() throws LastErrorException;
 
-    public static native Pointer WintunCreateAdapter(WString Name, WString TunnelType, String RequestedGUID) throws LastErrorException;
+    public static native WinNT.HANDLE WintunOpenAdapter(WString Name, WString TunnelType) throws LastErrorException;
 
-    public static native void WintunCloseAdapter(Pointer Adapter) throws LastErrorException;
+    public static native WinNT.HANDLE WintunCreateAdapter(WString Name, WString TunnelType, String RequestedGUID) throws LastErrorException;
 
-    public static native Pointer WintunStartSession(Pointer Adapter, int Capacity) throws LastErrorException;
+    public static native void WintunCloseAdapter(WinNT.HANDLE Adapter) throws LastErrorException;
 
-    public static native void WintunEndSession(Pointer Session) throws LastErrorException;
+    public static native WinNT.HANDLE WintunStartSession(WinNT.HANDLE Adapter, int Capacity) throws LastErrorException;
 
-    public static native Pointer WintunReceivePacket(Pointer Session, Pointer PacketSize) throws LastErrorException;
+    public static native void WintunEndSession(WinNT.HANDLE Session) throws LastErrorException;
 
-    public static native void WintunReleaseReceivePacket(Pointer Session, Pointer Packet) throws LastErrorException;
+    public static native Pointer WintunReceivePacket(WinNT.HANDLE Session, Pointer PacketSize) throws LastErrorException;
 
-    public static native Pointer WintunAllocateSendPacket(Pointer Session, long PacketSize) throws LastErrorException;
+    public static native void WintunReleaseReceivePacket(WinNT.HANDLE Session, Pointer Packet) throws LastErrorException;
 
-    public static native void WintunSendPacket(Pointer Session, Pointer Packet) throws LastErrorException;
+    public static native Pointer WintunAllocateSendPacket(WinNT.HANDLE Session, long PacketSize) throws LastErrorException;
 
-    public static native Pointer WintunGetReadWaitEvent(Pointer Session) throws LastErrorException;
+    public static native void WintunSendPacket(WinNT.HANDLE Session, Pointer Packet) throws LastErrorException;
 
-    public static native void WintunGetAdapterLUID(Pointer Adapter, Pointer Luid) throws LastErrorException;
+    public static native WinNT.HANDLE WintunGetReadWaitEvent(WinNT.HANDLE Session) throws LastErrorException;
+
+    public static native void WintunGetAdapterLUID(WinNT.HANDLE Adapter, Pointer Luid) throws LastErrorException;
 }

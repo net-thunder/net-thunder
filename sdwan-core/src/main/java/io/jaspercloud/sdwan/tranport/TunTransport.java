@@ -85,8 +85,6 @@ public class TunTransport implements TransportLifecycle {
                             }
                         }
                     };
-                    //fix debug stop
-                    Runtime.getRuntime().addShutdownHook(new Thread(icsDisable));
                     {
                         String cmd = String.format("netsh interface ipv4 set address name=\"%s\" static %s/%s", tunAddress.getTunName(), tunAddress.getIp(), tunAddress.getMaskBits());
                         log.info("cmd: {}", cmd);

@@ -10,6 +10,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.util.internal.PlatformDependent;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 
 import java.io.IOException;
 import java.net.SocketAddress;
@@ -66,7 +67,7 @@ public class TunChannel extends AbstractChannel {
         tunAddress = (TunAddress) localAddress;
         String tunName = tunAddress.getTunName();
         String type = "jaspercloud";
-        String guid = UUID.randomUUID().toString();
+        String guid = DigestUtils.md5Hex(tunName);
         if (PlatformDependent.isOsx()) {
             tunDevice = new OsxTunDevice(tunName, type, guid);
         } else if (PlatformDependent.isWindows()) {
