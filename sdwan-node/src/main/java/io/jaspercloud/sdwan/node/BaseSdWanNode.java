@@ -10,10 +10,7 @@ import io.jaspercloud.sdwan.tranport.Lifecycle;
 import io.jaspercloud.sdwan.tranport.SdWanClient;
 import io.jaspercloud.sdwan.tranport.SdWanClientConfig;
 import io.jaspercloud.sdwan.tranport.VirtualRouter;
-import io.jaspercloud.sdwan.util.AddressType;
-import io.jaspercloud.sdwan.util.NetworkInterfaceInfo;
-import io.jaspercloud.sdwan.util.NetworkInterfaceUtil;
-import io.jaspercloud.sdwan.util.SocketAddressUtil;
+import io.jaspercloud.sdwan.util.*;
 import io.netty.channel.*;
 import lombok.extern.slf4j.Slf4j;
 
@@ -94,6 +91,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
 
     @Override
     public void start() throws Exception {
+        CheckAdmin.check();
         sdWanClient = new SdWanClient(SdWanClientConfig.builder()
                 .controllerServer(config.getControllerServer())
                 .connectTimeout(config.getConnectTimeout())
