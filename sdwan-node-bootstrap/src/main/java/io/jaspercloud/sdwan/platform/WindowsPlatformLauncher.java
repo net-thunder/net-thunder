@@ -1,23 +1,25 @@
-package io.jaspercloud.sdwan;
+package io.jaspercloud.sdwan.platform;
 
 import ch.qos.logback.classic.Logger;
 import com.sun.jna.platform.win32.Winsvc;
+import io.jaspercloud.sdwan.node.ConfigSystem;
+import io.jaspercloud.sdwan.node.LoggerSystem;
+import io.jaspercloud.sdwan.node.SdWanNodeConfig;
+import io.jaspercloud.sdwan.node.TunSdWanNode;
 import io.jaspercloud.sdwan.support.*;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-@SpringBootApplication
-public class WinServiceLauncher {
+public class WindowsPlatformLauncher {
 
-    public static void main(String[] args) throws Exception {
+    public static void startup(String[] args) throws Exception {
         Options options = new Options();
         options.addOption("t", "type", true, "type");
         options.addOption("n", "name", true, "name");
@@ -25,7 +27,7 @@ public class WinServiceLauncher {
         options.addOption("log", "logFile", true, "logFile");
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
-        new WinServiceLauncher().run(cmd);
+        new WindowsPlatformLauncher().run(cmd);
     }
 
     private void run(CommandLine cmd) throws Exception {

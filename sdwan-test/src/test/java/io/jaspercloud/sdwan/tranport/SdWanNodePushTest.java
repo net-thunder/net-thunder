@@ -1,8 +1,8 @@
 package io.jaspercloud.sdwan.tranport;
 
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
-import io.jaspercloud.sdwan.support.SdWanNodeConfig;
-import io.jaspercloud.sdwan.support.TunSdWanNode;
+import io.jaspercloud.sdwan.node.SdWanNodeConfig;
+import io.jaspercloud.sdwan.node.TunSdWanNode;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.junit.jupiter.api.Test;
 

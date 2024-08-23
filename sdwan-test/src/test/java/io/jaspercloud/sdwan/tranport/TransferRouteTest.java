@@ -3,7 +3,7 @@ package io.jaspercloud.sdwan.tranport;
 import com.google.protobuf.ByteString;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.stun.*;
-import io.jaspercloud.sdwan.support.SdWanNodeConfig;
+import io.jaspercloud.sdwan.node.SdWanNodeConfig;
 import io.jaspercloud.sdwan.tranport.support.TestSdWanNode;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;
 import io.netty.channel.ChannelHandler;
@@ -11,7 +11,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.InitializingBean;
 
 import java.net.InetSocketAddress;
 import java.util.*;

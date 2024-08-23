@@ -1,7 +1,7 @@
 package io.jaspercloud.sdwan.tranport;
 
 import com.google.protobuf.ByteString;
-import io.jaspercloud.sdwan.support.SdWanNodeConfig;
+import io.jaspercloud.sdwan.node.SdWanNodeConfig;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.tranport.support.TestSdWanNode;
 import io.netty.channel.ChannelInboundHandlerAdapter;

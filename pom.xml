@@ -18,7 +18,7 @@
         <module>sdwan-controller</module>
         <module>sdwan-node</module>
         <module>sdwan-tun</module>
-        <module>sdwan-winservice</module>
+        <module>sdwan-node-bootstrap</module>
         <module>sdwan-test</module>
         <module>sdwan-test-server</module>
     </modules>
