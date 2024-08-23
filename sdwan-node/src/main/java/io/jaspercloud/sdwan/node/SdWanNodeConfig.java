@@ -1,6 +1,9 @@
 package io.jaspercloud.sdwan.node;
 
+import io.jaspercloud.sdwan.exception.ProcessException;
 import lombok.*;
+
+import java.net.InetAddress;
 
 /**
  * @author jasper
@@ -29,4 +32,13 @@ public class SdWanNodeConfig {
     private String tunName = "net-thunder";
     private int mtu = 1440;
     private Boolean icsEnable = false;
+
+    public String getHostAddress() {
+        try {
+            String hostAddress = InetAddress.getLocalHost().getHostAddress();
+            return hostAddress;
+        } catch (Exception e) {
+            throw new ProcessException(e.getMessage(), e);
+        }
+    }
 }

@@ -64,12 +64,16 @@ public class TunSdWanNode extends BaseSdWanNode {
     @Override
     protected void install() throws Exception {
         super.install();
+        String localAddress = config.getLocalAddress();
+        if (null == localAddress) {
+            localAddress = config.getHostAddress();
+        }
         TunTransportConfig tunConfig = TunTransportConfig.builder()
                 .tunName(config.getTunName())
                 .ip(getLocalVip())
                 .maskBits(getMaskBits())
                 .mtu(config.getMtu())
-                .localAddress(config.getLocalAddress())
+                .localAddress(localAddress)
                 .icsEnable(config.getIcsEnable())
                 .build();
         tunTransport = new TunTransport(tunConfig, () -> new SimpleChannelInboundHandler<ByteBuf>() {

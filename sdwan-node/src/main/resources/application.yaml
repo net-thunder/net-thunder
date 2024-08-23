@@ -9,3 +9,5 @@ p2pHeartTime: 10000
 #
 tunName: net-thunder
 mtu: 1440
+#network share
+icsEnable: true

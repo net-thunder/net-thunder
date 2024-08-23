@@ -198,12 +198,12 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                 .setMacAddress(processMacAddress(NetworkInterfaceUtil.getHardwareAddress()));
         if (!config.isOnlyRelayTransport()) {
             List<NetworkInterfaceInfo> interfaceInfoList;
-            if (null != config.getLocalAddress()) {
-                NetworkInterfaceInfo networkInterfaceInfo = NetworkInterfaceUtil.findNetworkInterfaceInfo(config.getLocalAddress());
-                interfaceInfoList = Arrays.asList(networkInterfaceInfo);
-            } else {
+            if (null == config.getLocalAddress()) {
                 InetAddress[] inetAddresses = InetAddress.getAllByName(InetAddress.getLocalHost().getHostName());
                 interfaceInfoList = NetworkInterfaceUtil.parseInetAddress(inetAddresses);
+            } else {
+                NetworkInterfaceInfo networkInterfaceInfo = NetworkInterfaceUtil.findNetworkInterfaceInfo(config.getLocalAddress());
+                interfaceInfoList = Arrays.asList(networkInterfaceInfo);
             }
             interfaceInfoList.forEach(e -> {
                 String address = e.getInterfaceAddress().getAddress().getHostAddress();
