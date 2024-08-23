@@ -10,6 +10,7 @@ import io.netty.channel.*;
 import io.netty.util.internal.PlatformDependent;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 /**
@@ -66,15 +67,25 @@ public class TunTransport implements TransportLifecycle {
                 try {
                     log.info("Ics.enable");
                     Ics.enable(config.getLocalAddress(), tunAddress.getIp(), true);
-                    icsDisable = () -> {
-                        try {
-                            log.info("Ics.disable");
-                            Ics.enable(config.getLocalAddress(), tunAddress.getIp(), false);
-                            log.info("Ics.disabled");
-                        } catch (Exception e) {
-                            log.error(e.getMessage(), e);
+                    icsDisable = new Runnable() {
+
+                        private AtomicBoolean status = new AtomicBoolean(true);
+
+                        @Override
+                        public void run() {
+                            if (!status.compareAndSet(true, false)) {
+                                return;
+                            }
+                            try {
+                                log.info("Ics.disable");
+                                Ics.enable(config.getLocalAddress(), tunAddress.getIp(), false);
+                                log.info("Ics.disabled");
+                            } catch (Exception e) {
+                                log.error(e.getMessage(), e);
+                            }
                         }
                     };
+                    Runtime.getRuntime().addShutdownHook(new Thread(icsDisable));
                     {
                         String cmd = String.format("netsh interface ipv4 set address name=\"%s\" static %s/%s", tunAddress.getTunName(), tunAddress.getIp(), tunAddress.getMaskBits());
                         log.info("cmd: {}", cmd);
