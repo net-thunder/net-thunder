@@ -87,13 +87,13 @@ public class TunTransport implements TransportLifecycle {
                     };
                     {
                         String cmd = String.format("netsh interface ipv4 set address name=\"%s\" static %s/%s", tunAddress.getTunName(), tunAddress.getIp(), tunAddress.getMaskBits());
-                        log.info("cmd: {}", cmd);
+                        log.debug("cmd: {}", cmd);
                         int code = ProcessUtil.exec(cmd);
                         CheckInvoke.check(code, 0);
                     }
                     {
                         String cmd = String.format("netsh interface ipv4 add address name=\"%s\" 192.168.137.1/24", tunAddress.getTunName());
-                        log.info("cmd: {}", cmd);
+                        log.debug("cmd: {}", cmd);
                         int code = ProcessUtil.exec(cmd);
                         CheckInvoke.check(code, 0);
                     }

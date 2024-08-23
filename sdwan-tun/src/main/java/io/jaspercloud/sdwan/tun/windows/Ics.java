@@ -22,7 +22,7 @@ public final class Ics {
         String publicGuid = getGuid(hostName, publicIp);
         String privateGuid = getGuid(hostName, privateIp);
         String cmd = String.format("%s %s \"%s\" \"%s\" %s", wscript.getAbsoluteFile(), vbs.getAbsoluteFile(), publicGuid, privateGuid, status);
-        log.info("cmd: {}", cmd);
+        log.debug("cmd: {}", cmd);
         int code = ProcessUtil.exec(cmd);
         CheckInvoke.check(code, 0);
     }
