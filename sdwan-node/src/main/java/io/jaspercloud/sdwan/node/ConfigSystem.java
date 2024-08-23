@@ -19,12 +19,7 @@ public class ConfigSystem {
 
     public SdWanNodeConfig initUserDir() throws Exception {
         File file = new File(System.getProperty("user.dir"), "application.yaml");
-        if (file.exists()) {
-            try (InputStream in = new FileInputStream(file)) {
-                return YamlUtil.load(in, SdWanNodeConfig.class);
-            }
-        }
-        try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("application.yaml")) {
+        try (InputStream in = new FileInputStream(file)) {
             return YamlUtil.load(in, SdWanNodeConfig.class);
         }
     }
