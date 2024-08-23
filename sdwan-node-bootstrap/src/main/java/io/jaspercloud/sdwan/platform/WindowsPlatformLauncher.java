@@ -159,7 +159,7 @@ public class WindowsPlatformLauncher {
 
     private String getExecuteJarPath() throws Exception {
         String userDir = System.getProperty("user.dir");
-        String path = new File(userDir, "sdwan-winservice.jar").getAbsolutePath();
+        String path = new File(userDir, "sdwan-node-bootstrap.jar").getAbsolutePath();
         return path;
     }
 
