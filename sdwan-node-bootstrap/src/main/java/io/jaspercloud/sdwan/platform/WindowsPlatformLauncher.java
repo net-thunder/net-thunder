@@ -6,6 +6,8 @@ import io.jaspercloud.sdwan.node.LoggerSystem;
 import io.jaspercloud.sdwan.node.SdWanNodeConfig;
 import io.jaspercloud.sdwan.node.TunSdWanNode;
 import io.jaspercloud.sdwan.support.WinServiceManager;
+import io.jaspercloud.sdwan.ui.MainWindow;
+import javafx.application.Application;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -39,8 +41,7 @@ public class WindowsPlatformLauncher {
     }
 
     private void mainProcess(CommandLine cmd) throws Exception {
-        MainWindow mainWindow = new MainWindow();
-        mainWindow.setVisible(true);
+        Application.launch(MainWindow.class, new String[0]);
     }
 
     private void startService(CommandLine cmd) throws Exception {
