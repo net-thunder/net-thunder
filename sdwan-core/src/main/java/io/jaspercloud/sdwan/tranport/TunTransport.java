@@ -23,6 +23,7 @@ public class TunTransport implements TransportLifecycle {
     private Supplier<ChannelHandler> handler;
 
     private TunChannel localChannel;
+    private Runnable icsDisable;
 
     public TunTransportConfig getConfig() {
         return config;
@@ -62,23 +63,33 @@ public class TunTransport implements TransportLifecycle {
             localChannel = (TunChannel) bootstrap.bind(tunAddress).syncUninterruptibly().channel();
             log.info("tunTransport started address={}", config.getIp());
             if (PlatformDependent.isWindows() && config.getIcsEnable()) {
-                Ics.enable(config.getLocalAddress(), tunAddress.getIp(), true);
-                Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                    try {
-                        Ics.enable(config.getLocalAddress(), tunAddress.getIp(), false);
-                    } catch (Exception e) {
-                        log.error(e.getMessage(), e);
+                try {
+                    log.info("Ics.enable");
+                    Ics.enable(config.getLocalAddress(), tunAddress.getIp(), true);
+                    icsDisable = () -> {
+                        try {
+                            log.info("Ics.disable");
+                            Ics.enable(config.getLocalAddress(), tunAddress.getIp(), false);
+                            log.info("Ics.disabled");
+                        } catch (Exception e) {
+                            log.error(e.getMessage(), e);
+                        }
+                    };
+                    {
+                        String cmd = String.format("netsh interface ipv4 set address name=\"%s\" static %s/%s", tunAddress.getTunName(), tunAddress.getIp(), tunAddress.getMaskBits());
+                        log.info("cmd: {}", cmd);
+                        int code = ProcessUtil.exec(cmd);
+                        CheckInvoke.check(code, 0);
                     }
-                }));
-                {
-                    String cmd = String.format("netsh interface ipv4 set address name=\"%s\" static %s/%s", tunAddress.getTunName(), tunAddress.getIp(), tunAddress.getMaskBits());
-                    int code = ProcessUtil.exec(cmd);
-                    CheckInvoke.check(code, 0);
-                }
-                {
-                    String cmd = String.format("netsh interface ipv4 add address name=\"%s\" 192.168.137.1/24", tunAddress.getTunName());
-                    int code = ProcessUtil.exec(cmd);
-                    CheckInvoke.check(code, 0);
+                    {
+                        String cmd = String.format("netsh interface ipv4 add address name=\"%s\" 192.168.137.1/24", tunAddress.getTunName());
+                        log.info("cmd: {}", cmd);
+                        int code = ProcessUtil.exec(cmd);
+                        CheckInvoke.check(code, 0);
+                    }
+                    log.info("Ics.enabled");
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
                 }
             }
             localChannel.closeFuture().addListener(new ChannelFutureListener() {
@@ -97,6 +108,9 @@ public class TunTransport implements TransportLifecycle {
     public void stop() throws Exception {
         if (null == localChannel) {
             return;
+        }
+        if (null != icsDisable) {
+            icsDisable.run();
         }
         localChannel.close();
     }

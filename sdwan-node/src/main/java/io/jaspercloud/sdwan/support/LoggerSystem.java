@@ -47,7 +47,7 @@ public class LoggerSystem {
         appender.setContext(loggerContext);
         appender.setName("file");
         appender.setEncoder(encoder);
-        String logFile = new File(System.getProperty("user.dir"), "out.log").getAbsolutePath();
+        String logFile = new File(System.getProperty("user.dir"), "app.log").getAbsolutePath();
         appender.setFile(logFile);
         appender.start();
         logger.addAppender(appender);

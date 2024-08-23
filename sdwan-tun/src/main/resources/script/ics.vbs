@@ -12,7 +12,7 @@ sub Main( )
         con2 = objArgs(1)
         endis = objArgs(2)
         
-        EnableDisableICS con,con2, endis  'true enables, false disables
+        EnableDisableICS con, con2, endis  'true enables, false disables
         
     else
         DIM szMsg
@@ -33,12 +33,12 @@ function EnableDisableICS(sPublicConnectionName, sPrivateConnectionName, bEnable
     
     set oNetSharingManager = Wscript.CreateObject("HNetCfg.HNetShare.1")
      if (IsObject(oNetSharingManager)) = FALSE then
-        Wscript.Echo("Unable to get the HNetCfg.HnetShare.1 object.")
+'         Wscript.Echo("Unable to get the HNetCfg.HnetShare.1 object.")
         Exit function
     End if
     
     if (IsNull(oNetSharingManager.SharingInstalled) = TRUE) then
-        Wscript.Echo( "Sharing is not available on this platform.")
+'         Wscript.Echo( "Sharing is not available on this platform.")
         Exit function
     End if
 
@@ -70,9 +70,9 @@ function EnableDisableICS(sPublicConnectionName, sPrivateConnectionName, bEnable
             End if
         End if
     next
-    
-    If Not bFound Then
-       Wscript.Echo("Unable to find the connection " & sPublicConnectionName)
-    End if
+
+'     If Not bFound Then
+'        Wscript.Echo("Unable to find the connection " & sPublicConnectionName)
+'     End if
 
 end function

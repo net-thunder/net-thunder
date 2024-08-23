@@ -3,7 +3,6 @@ package io.jaspercloud.sdwan.support;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.*;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.cli.CommandLine;
 
 import java.io.Closeable;
 
@@ -41,10 +40,10 @@ public class WinServiceManager implements Closeable {
         }
     }
 
-    public static void startServiceCtrlDispatcher(CommandLine cmd, ServiceProcHandler procHandler) {
+    public static void startServiceCtrlDispatcher(String serviceName, ServiceProcHandler procHandler) {
         Winsvc.SERVICE_TABLE_ENTRY entry = new Winsvc.SERVICE_TABLE_ENTRY();
-        entry.lpServiceName = cmd.getOptionValue("n");
-        entry.lpServiceProc = new WinServiceProc(cmd, procHandler);
+        entry.lpServiceName = serviceName;
+        entry.lpServiceProc = new WinServiceProc(serviceName, procHandler);
         boolean ret = Advapi32.INSTANCE.StartServiceCtrlDispatcher((Winsvc.SERVICE_TABLE_ENTRY[]) entry.toArray(2));
         if (!ret) {
             throw new Win32Exception(Kernel32.INSTANCE.GetLastError());
@@ -86,19 +85,18 @@ public class WinServiceManager implements Closeable {
     @Slf4j
     public static class WinServiceProc implements Winsvc.SERVICE_MAIN_FUNCTION {
 
-        private CommandLine cmd;
+        private String serviceName;
         private ServiceProcHandler serviceProcHandler;
         private Winsvc.SERVICE_STATUS_HANDLE handle;
 
-        public WinServiceProc(CommandLine cmd, ServiceProcHandler serviceProcHandler) {
-            this.cmd = cmd;
+        public WinServiceProc(String serviceName, ServiceProcHandler serviceProcHandler) {
+            this.serviceName = serviceName;
             this.serviceProcHandler = serviceProcHandler;
         }
 
         @Override
         public void callback(int dwArgc, Pointer lpszArgv) {
             log.info("WinServiceProc: {}", dwArgc);
-            String serviceName = cmd.getOptionValue("n");
             log.info("WinServiceProc: RegisterServiceCtrlHandlerEx={}", serviceName);
             handle = Advapi32.INSTANCE.RegisterServiceCtrlHandlerEx(serviceName, serviceProcHandler, null);
             if (null == handle) {
