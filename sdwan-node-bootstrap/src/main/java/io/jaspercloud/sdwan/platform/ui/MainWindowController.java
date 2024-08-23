@@ -130,7 +130,7 @@ public class MainWindowController implements EventHandler<ActionEvent> {
         argList.add("-log");
         argList.add(new File(logPath).getAbsolutePath());
         String args = StringUtils.join(argList, " ");
-        System.out.println(String.format("ShellExecuteW %s %s", javaPath, args));
+        log.debug("ShellExecuteW: {} {}", javaPath, args);
         WinShell.ShellExecuteW(javaPath, args, null, WinShell.SW_HIDE);
     }
 }
