@@ -32,7 +32,6 @@ public class WinSvcRpcImpl implements WinSvcRpc {
 
     @Override
     public int queryServiceStatus(String serviceName) {
-        log.info("queryServiceStatus {}", serviceName);
         return WinSvcUtil.queryServiceStatus(serviceName);
     }
 }
