@@ -40,7 +40,7 @@ public final class RpcInvoker {
                     return clazz.equals(args[0]);
                 }
                 String id = UUID.randomUUID().toString();
-                CompletableFuture<SDWanProtos.RpcMessage> task = AsyncTask.waitTask(id, 3000);
+                CompletableFuture<SDWanProtos.RpcMessage> task = AsyncTask.waitTask(id, 5000);
                 getChannel().writeAndFlush(RpcMessageBuilder.encodeRequest(id, method, args));
                 RpcResponse rpcResp = RpcMessageBuilder.decodeRpcResponse(task.get());
                 return rpcResp.getResult();

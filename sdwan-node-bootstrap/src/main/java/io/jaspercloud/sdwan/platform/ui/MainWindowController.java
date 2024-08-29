@@ -56,6 +56,9 @@ public class MainWindowController implements EventHandler<ActionEvent> {
         String configPath = new File(parentPath, "application.yaml").getAbsolutePath();
         config = new ConfigSystem().init(configPath);
         scheduled.scheduleAtFixedRate(() -> {
+            if (!status) {
+                return;
+            }
             try {
                 int status = winSvcRpc.queryServiceStatus(config.getTunName());
                 Platform.runLater(() -> {
@@ -91,6 +94,7 @@ public class MainWindowController implements EventHandler<ActionEvent> {
     }
 
     public void handleWindowClose(WindowEvent event) {
+        status = false;
         scheduled.shutdown();
         ManagerService.executeUnInstall();
         System.exit(0);
