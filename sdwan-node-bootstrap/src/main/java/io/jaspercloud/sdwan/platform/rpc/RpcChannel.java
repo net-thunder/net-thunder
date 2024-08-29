@@ -1,6 +1,7 @@
 package io.jaspercloud.sdwan.platform.rpc;
 
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
+import io.jaspercloud.sdwan.exception.ProcessException;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.UnpooledByteBufAllocator;
@@ -28,6 +29,7 @@ public final class RpcChannel {
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(new NioEventLoopGroup())
                 .channel(NioSocketChannel.class)
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 3000)
                 .option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
                 .handler(new ChannelInitializer<io.netty.channel.Channel>() {
                     @Override
@@ -40,8 +42,12 @@ public final class RpcChannel {
                         pipeline.addLast(handler);
                     }
                 });
-        Channel channel = bootstrap.connect(new InetSocketAddress(host, port)).sync().channel();
-        return channel;
+        try {
+            Channel channel = bootstrap.connect(new InetSocketAddress(host, port)).sync().channel();
+            return channel;
+        } catch (Exception e) {
+            throw new ProcessException("connect exception: " + e.getMessage(), e);
+        }
     }
 
     public static Channel serverChannel(int port, RpcMessageHandler handler) throws Exception {

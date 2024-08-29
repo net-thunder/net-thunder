@@ -1,6 +1,7 @@
 package io.jaspercloud.sdwan.platform.rpc;
 
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
+import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.support.AsyncTask;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -17,11 +18,11 @@ public final class RpcInvoker {
 
     private static final int PORT = 45785;
 
+    private static Channel channel;
+
     public static <T> T buildClient(Class<T> clazz) throws Exception {
+        getChannel();
         Object proxy = Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class[]{clazz}, new InvocationHandler() {
-
-            private Channel channel;
-
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 if (method.getDeclaringClass() == Object.class) {
@@ -39,20 +40,27 @@ public final class RpcInvoker {
                     return clazz.equals(args[0]);
                 }
                 String id = UUID.randomUUID().toString();
-                CompletableFuture<SDWanProtos.RpcMessage> task = AsyncTask.waitTask(id, 30000);
+                CompletableFuture<SDWanProtos.RpcMessage> task = AsyncTask.waitTask(id, 3000);
                 getChannel().writeAndFlush(RpcMessageBuilder.encodeRequest(id, method, args));
                 RpcResponse rpcResp = RpcMessageBuilder.decodeRpcResponse(task.get());
                 return rpcResp.getResult();
             }
+        });
+        return (T) proxy;
+    }
 
-            private synchronized Channel getChannel() throws Exception {
-                if (null != channel) {
-                    if (channel.isActive()) {
-                        return channel;
-                    } else {
-                        channel.close();
-                    }
-                }
+    private static synchronized Channel getChannel() throws Exception {
+        if (null != channel) {
+            if (channel.isActive()) {
+                return channel;
+            } else {
+                channel.close();
+            }
+        }
+        int tryCount = 15;
+        ProcessException ex;
+        while (tryCount > 0) {
+            try {
                 channel = RpcChannel.clientChannel("localhost", PORT, new RpcMessageHandler() {
                     @Override
                     protected void channelRead0(ChannelHandlerContext ctx, SDWanProtos.RpcMessage msg) throws Exception {
@@ -60,9 +68,15 @@ public final class RpcInvoker {
                     }
                 });
                 return channel;
+            } catch (ProcessException e) {
+                tryCount--;
+                ex = e;
             }
-        });
-        return (T) proxy;
+            if (0 == tryCount) {
+                throw ex;
+            }
+        }
+        throw new ProcessException();
     }
 
     public static <T> Channel exportServer(Class<T> clazz, T target) throws Exception {
