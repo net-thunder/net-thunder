@@ -46,12 +46,17 @@ public class TunnelService {
     }
 
     public static void run(CommandLine cmd) throws Exception {
-        String serviceName = cmd.getOptionValue("n");
-        String configPath = cmd.getOptionValue("c");
         String logPath = cmd.getOptionValue("log");
         Logger logger = new LoggerSystem().init(logPath);
+        logger.info("TunnelService run");
+        new TunnelService().runService(cmd);
+    }
+
+    private void runService(CommandLine cmd) throws Exception {
         logger.info("runService");
         logger.info("startServiceCtrlDispatcher");
+        String serviceName = cmd.getOptionValue("n");
+        String configPath = cmd.getOptionValue("c");
         SdWanNodeConfig config = new ConfigSystem().init(configPath);
         WinServiceManager.startServiceCtrlDispatcher(serviceName, new WinServiceManager.ServiceProcHandler() {
 
