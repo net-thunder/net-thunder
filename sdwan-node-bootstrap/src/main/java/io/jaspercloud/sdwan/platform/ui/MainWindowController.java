@@ -19,6 +19,7 @@ import javafx.stage.WindowEvent;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -111,10 +112,10 @@ public class MainWindowController implements EventHandler<ActionEvent> {
                 String serviceName = config.getTunName();
                 int status = winSvcRpc.queryServiceStatus(serviceName);
                 if (target == startBtn) {
-                    if (Winsvc.SERVICE_RUNNING == status) {
+                    if (Arrays.asList(Winsvc.SERVICE_START_PENDING, Winsvc.SERVICE_RUNNING).contains(status)) {
                         winSvcRpc.stopService(serviceName);
                         winSvcRpc.deleteService(serviceName);
-                    } else if (Winsvc.SERVICE_STOPPED == status) {
+                    } else if (Arrays.asList(Winsvc.SERVICE_STOP_PENDING, Winsvc.SERVICE_STOPPED).contains(status)) {
                         winSvcRpc.deleteService(serviceName);
                     }
                     String path = TunnelService.getTunnelServiceArgs();
