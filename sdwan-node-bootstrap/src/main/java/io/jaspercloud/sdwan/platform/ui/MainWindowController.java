@@ -55,7 +55,7 @@ public class MainWindowController implements EventHandler<ActionEvent> {
         config = new ConfigSystem().init(configPath);
         scheduled.scheduleAtFixedRate(() -> {
             try {
-                int status = WinSvcUtil.queryServiceStatus(config.getTunName());
+                int status = winSvcRpc.queryServiceStatus(config.getTunName());
                 Platform.runLater(() -> {
                     switch (status) {
                         case -1: {

@@ -2,6 +2,7 @@ package io.jaspercloud.sdwan.support;
 
 import com.sun.jna.platform.win32.Winsvc;
 import io.jaspercloud.sdwan.exception.ProcessException;
+import io.jaspercloud.sdwan.util.CheckAdmin;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -44,12 +45,14 @@ public final class WinSvcUtil {
     }
 
     public static void createService(String serviceName, String path) {
+        CheckAdmin.check();
         try (WinServiceManager scm = WinServiceManager.openManager()) {
             scm.createService(serviceName, path);
         }
     }
 
     public static void startService(String serviceName) {
+        CheckAdmin.check();
         try (WinServiceManager scm = WinServiceManager.openExecute()) {
             try (WinServiceManager.WinService winService = scm.openService(serviceName)) {
                 if (null == winService) {
@@ -65,6 +68,7 @@ public final class WinSvcUtil {
     }
 
     public static void stopService(String serviceName) {
+        CheckAdmin.check();
         try (WinServiceManager scm = WinServiceManager.openExecute()) {
             try (WinServiceManager.WinService winService = scm.openService(serviceName)) {
                 if (null == winService) {
@@ -80,6 +84,7 @@ public final class WinSvcUtil {
     }
 
     public static void deleteService(String serviceName) {
+        CheckAdmin.check();
         try (WinServiceManager scm = WinServiceManager.openManager()) {
             try (WinServiceManager.WinService winService = scm.openService(serviceName)) {
                 if (null == winService) {
@@ -91,6 +96,7 @@ public final class WinSvcUtil {
     }
 
     public static int queryServiceStatus(String serviceName) {
+        CheckAdmin.check();
         try (WinServiceManager scm = WinServiceManager.openManager()) {
             try (WinServiceManager.WinService winService = scm.openService(serviceName)) {
                 if (null == winService) {
