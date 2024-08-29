@@ -107,3 +107,7 @@ message P2pAnswer {
   required bytes publicKey = 4;
 }
 
+message RpcMessage {
+  required string id = 1;
+  required bytes data = 2;
+}

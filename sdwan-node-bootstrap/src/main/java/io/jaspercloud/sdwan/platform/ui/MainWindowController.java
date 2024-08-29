@@ -3,8 +3,11 @@ package io.jaspercloud.sdwan.platform.ui;
 import com.sun.jna.platform.win32.Winsvc;
 import io.jaspercloud.sdwan.node.ConfigSystem;
 import io.jaspercloud.sdwan.node.SdWanNodeConfig;
-import io.jaspercloud.sdwan.platform.WinSvcUtil;
-import io.jaspercloud.sdwan.support.WinShell;
+import io.jaspercloud.sdwan.platform.rpc.RpcInvoker;
+import io.jaspercloud.sdwan.platform.rpc.WinSvcRpc;
+import io.jaspercloud.sdwan.service.ManagerService;
+import io.jaspercloud.sdwan.service.TunnelService;
+import io.jaspercloud.sdwan.support.WinSvcUtil;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -14,11 +17,9 @@ import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.stage.WindowEvent;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -35,33 +36,30 @@ public class MainWindowController implements EventHandler<ActionEvent> {
     @FXML
     private Button stopBtn;
 
-    @FXML
-    private Button uninstallBtn;
-
+    private ExecutorService executor;
     private ScheduledExecutorService scheduled;
     private SdWanNodeConfig config;
+    private WinSvcRpc winSvcRpc;
 
     public void initialize() throws Exception {
+        ManagerService.executeUnInstall();
+        ManagerService.executeInstall();
+        executor = Executors.newSingleThreadExecutor();
         scheduled = Executors.newSingleThreadScheduledExecutor();
+        winSvcRpc = RpcInvoker.buildClient(WinSvcRpc.class);
         startBtn.setOnAction(this);
         stopBtn.setOnAction(this);
-        uninstallBtn.setOnAction(this);
         String executeJarPath = WinSvcUtil.getExecuteJarPath();
         String parentPath = new File(executeJarPath).getParent();
         String configPath = new File(parentPath, "application.yaml").getAbsolutePath();
-        SdWanNodeConfig config = new ConfigSystem().init(configPath);
+        config = new ConfigSystem().init(configPath);
         scheduled.scheduleAtFixedRate(() -> {
             try {
                 int status = WinSvcUtil.queryServiceStatus(config.getTunName());
                 Platform.runLater(() -> {
-                    if (Winsvc.SERVICE_STOPPED == status) {
-                        uninstallBtn.setDisable(false);
-                    } else {
-                        uninstallBtn.setDisable(true);
-                    }
                     switch (status) {
                         case -1: {
-                            statusLab.setText("status: not install");
+                            statusLab.setText("status: stopped");
                             break;
                         }
                         case Winsvc.SERVICE_RUNNING: {
@@ -92,45 +90,36 @@ public class MainWindowController implements EventHandler<ActionEvent> {
 
     public void handleWindowClose(WindowEvent event) {
         scheduled.shutdown();
+        ManagerService.executeUnInstall();
+        System.exit(0);
     }
 
     @Override
     public void handle(ActionEvent event) {
-        try {
-            Control target = (Control) event.getTarget();
-            if (target == startBtn) {
-                shellExecuteService("start");
-            } else if (target == stopBtn) {
-                shellExecuteService("stop");
-            } else if (target == uninstallBtn) {
-                shellExecuteService("uninstall");
+        executor.execute(() -> {
+            try {
+                Control target = (Control) event.getTarget();
+                String serviceName = config.getTunName();
+                int status = winSvcRpc.queryServiceStatus(serviceName);
+                if (target == startBtn) {
+                    if (Winsvc.SERVICE_RUNNING == status) {
+                        winSvcRpc.stopService(serviceName);
+                        winSvcRpc.deleteService(serviceName);
+                    } else if (Winsvc.SERVICE_STOPPED == status) {
+                        winSvcRpc.deleteService(serviceName);
+                    }
+                    String path = TunnelService.getTunnelServiceArgs();
+                    winSvcRpc.createService(serviceName, path);
+                    winSvcRpc.startService(serviceName);
+                } else if (target == stopBtn) {
+                    if (Winsvc.SERVICE_RUNNING == status) {
+                        winSvcRpc.stopService(serviceName);
+                    }
+                    winSvcRpc.deleteService(serviceName);
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
             }
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
-    }
-
-    private void shellExecuteService(String action) throws Exception {
-        String javaPath = WinSvcUtil.getJavaPath();
-        List<String> argList = new ArrayList<>();
-        argList.add("-jar");
-        String executeJarPath = WinSvcUtil.getExecuteJarPath();
-        String parentPath = new File(executeJarPath).getParent();
-        String configPath = new File(parentPath, "application.yaml").getAbsolutePath();
-        String logPath = new File(parentPath, "app.log").getAbsolutePath();
-        argList.add(executeJarPath);
-        argList.add("-t");
-        argList.add(action);
-        argList.add("-n");
-        SdWanNodeConfig config = new ConfigSystem().init(configPath);
-        String name = config.getTunName();
-        argList.add(name);
-        argList.add("-c");
-        argList.add(new File(configPath).getAbsolutePath());
-        argList.add("-log");
-        argList.add(new File(logPath).getAbsolutePath());
-        String args = StringUtils.join(argList, " ");
-        log.debug("ShellExecuteW: {} {}", javaPath, args);
-        WinShell.ShellExecuteW(javaPath, args, null, WinShell.SW_HIDE);
+        });
     }
 }

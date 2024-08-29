@@ -18,10 +18,5 @@
                 <Insets top="20.0"/>
             </FlowPane.margin>
         </Button>
-        <Button fx:id="uninstallBtn" prefHeight="30" prefWidth="120" text="uninstall" disable="true">
-            <FlowPane.margin>
-                <Insets top="20.0"/>
-            </FlowPane.margin>
-        </Button>
     </children>
 </FlowPane>

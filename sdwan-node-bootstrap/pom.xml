@@ -59,6 +59,11 @@
             <artifactId>javafx-fxml</artifactId>
             <version>20</version>
         </dependency>
+        <dependency>
+            <groupId>com.caucho</groupId>
+            <artifactId>hessian</artifactId>
+            <version>4.0.60</version>
+        </dependency>
     </dependencies>
 
     <build>
