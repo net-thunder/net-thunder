@@ -4,7 +4,6 @@ import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.support.AsyncTask;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -54,7 +53,7 @@ public final class RpcInvoker {
                         channel.close();
                     }
                 }
-                channel = RpcChannel.clientChannel("localhost", PORT, new SimpleChannelInboundHandler<SDWanProtos.RpcMessage>() {
+                channel = RpcChannel.clientChannel("localhost", PORT, new RpcMessageHandler() {
                     @Override
                     protected void channelRead0(ChannelHandlerContext ctx, SDWanProtos.RpcMessage msg) throws Exception {
                         AsyncTask.completeTask(msg.getId(), msg);
@@ -71,7 +70,7 @@ public final class RpcInvoker {
         for (Method method : clazz.getDeclaredMethods()) {
             methodMap.put(method.toString(), method);
         }
-        Channel channel = RpcChannel.serverChannel(PORT, new SimpleChannelInboundHandler<SDWanProtos.RpcMessage>() {
+        Channel channel = RpcChannel.serverChannel(PORT, new RpcMessageHandler() {
             @Override
             protected void channelRead0(ChannelHandlerContext ctx, SDWanProtos.RpcMessage msg) throws Exception {
                 RpcResponse response = new RpcResponse();

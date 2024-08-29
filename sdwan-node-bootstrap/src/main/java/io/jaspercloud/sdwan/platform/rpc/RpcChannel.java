@@ -4,7 +4,10 @@ import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.UnpooledByteBufAllocator;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -21,7 +24,7 @@ public final class RpcChannel {
 
     }
 
-    public static Channel clientChannel(String host, int port, SimpleChannelInboundHandler<SDWanProtos.RpcMessage> handler) throws Exception {
+    public static Channel clientChannel(String host, int port, RpcMessageHandler handler) throws Exception {
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(new NioEventLoopGroup())
                 .channel(NioSocketChannel.class)
@@ -41,7 +44,7 @@ public final class RpcChannel {
         return channel;
     }
 
-    public static Channel serverChannel(int port, SimpleChannelInboundHandler<SDWanProtos.RpcMessage> handler) throws Exception {
+    public static Channel serverChannel(int port, RpcMessageHandler handler) throws Exception {
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         serverBootstrap.group(new NioEventLoopGroup(), new NioEventLoopGroup())
                 .channel(NioServerSocketChannel.class)
