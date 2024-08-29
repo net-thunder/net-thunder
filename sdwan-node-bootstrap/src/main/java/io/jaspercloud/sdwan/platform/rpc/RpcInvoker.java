@@ -45,7 +45,7 @@ public final class RpcInvoker {
                 return rpcResp.getResult();
             }
 
-            private Channel getChannel() throws Exception {
+            private synchronized Channel getChannel() throws Exception {
                 if (null != channel) {
                     if (channel.isActive()) {
                         return channel;
