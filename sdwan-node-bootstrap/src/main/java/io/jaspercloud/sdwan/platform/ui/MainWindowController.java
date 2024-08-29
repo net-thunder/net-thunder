@@ -59,7 +59,7 @@ public class MainWindowController implements EventHandler<ActionEvent> {
                 Platform.runLater(() -> {
                     switch (status) {
                         case -1: {
-                            statusLab.setText("status: stopped");
+                            statusLab.setText("status: not started");
                             break;
                         }
                         case Winsvc.SERVICE_RUNNING: {
