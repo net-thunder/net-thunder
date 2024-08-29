@@ -1,6 +1,5 @@
 package io.jaspercloud.sdwan.platform.rpc;
 
-import com.google.protobuf.ByteString;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.support.AsyncTask;
 import io.netty.channel.Channel;
@@ -41,12 +40,10 @@ public final class RpcInvoker {
                     return clazz.equals(args[0]);
                 }
                 String id = UUID.randomUUID().toString();
-                SDWanProtos.RpcMessage rpcReq = buildRpcRequest(id, method, args);
                 CompletableFuture<SDWanProtos.RpcMessage> task = AsyncTask.waitTask(id, 30000);
-                getChannel().writeAndFlush(rpcReq);
-                SDWanProtos.RpcMessage rpcResp = task.get();
-                RpcResponse response = HessianCodec.codec(RpcResponse.class).decode(rpcResp.getData().toByteArray());
-                return response.getResult();
+                getChannel().writeAndFlush(RpcMessageBuilder.encodeRequest(id, method, args));
+                RpcResponse rpcResp = RpcMessageBuilder.decodeRpcResponse(task.get());
+                return rpcResp.getResult();
             }
 
             private Channel getChannel() throws Exception {
@@ -65,20 +62,6 @@ public final class RpcInvoker {
                 });
                 return channel;
             }
-
-            private SDWanProtos.RpcMessage buildRpcRequest(String id, Method method, Object[] args) throws Exception {
-                RpcRequest request = new RpcRequest();
-                request.setKey(method.toString());
-                request.setInterfaceName(method.getDeclaringClass().getName());
-                request.setMethodName(method.getName());
-                request.setParameterTypes(method.getParameterTypes());
-                request.setParameters(args);
-                SDWanProtos.RpcMessage rpcReq = SDWanProtos.RpcMessage.newBuilder()
-                        .setId(id)
-                        .setData(ByteString.copyFrom(HessianCodec.codec(RpcRequest.class).encode(request)))
-                        .build();
-                return rpcReq;
-            }
         });
         return (T) proxy;
     }
@@ -93,16 +76,14 @@ public final class RpcInvoker {
             protected void channelRead0(ChannelHandlerContext ctx, SDWanProtos.RpcMessage msg) throws Exception {
                 RpcResponse response = new RpcResponse();
                 try {
-                    RpcRequest request = HessianCodec.codec(RpcRequest.class).decode(msg.getData().toByteArray());
+                    RpcRequest request = RpcMessageBuilder.decodeRequest(msg);
                     Method method = methodMap.get(request.getKey());
                     Object result = method.invoke(target, request.getParameters());
                     response.setResult(result);
                 } catch (Throwable e) {
                     response.setThrowable(e);
                 } finally {
-                    byte[] encode = HessianCodec.codec(RpcResponse.class).encode(response);
-                    SDWanProtos.RpcMessage rpcMessage = msg.toBuilder().setData(ByteString.copyFrom(encode)).build();
-                    ctx.writeAndFlush(rpcMessage);
+                    ctx.writeAndFlush(RpcMessageBuilder.encodeResponse(msg, response));
                 }
             }
         });
