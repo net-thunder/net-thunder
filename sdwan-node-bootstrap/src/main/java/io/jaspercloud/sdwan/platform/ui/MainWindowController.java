@@ -40,6 +40,7 @@ public class MainWindowController implements EventHandler<ActionEvent> {
     private ScheduledExecutorService scheduled;
     private SdWanNodeConfig config;
     private WinSvcRpc winSvcRpc;
+    private boolean status;
 
     public void initialize() throws Exception {
         ManagerService.executeUnInstall();
@@ -49,6 +50,7 @@ public class MainWindowController implements EventHandler<ActionEvent> {
         winSvcRpc = RpcInvoker.buildClient(WinSvcRpc.class);
         startBtn.setOnAction(this);
         stopBtn.setOnAction(this);
+        status = true;
         String executeJarPath = WinSvcUtil.getExecuteJarPath();
         String parentPath = new File(executeJarPath).getParent();
         String configPath = new File(parentPath, "application.yaml").getAbsolutePath();
@@ -97,6 +99,9 @@ public class MainWindowController implements EventHandler<ActionEvent> {
     @Override
     public void handle(ActionEvent event) {
         executor.execute(() -> {
+            if (!status) {
+                return;
+            }
             try {
                 Control target = (Control) event.getTarget();
                 String serviceName = config.getTunName();
