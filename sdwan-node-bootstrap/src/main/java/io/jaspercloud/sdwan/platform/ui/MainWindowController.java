@@ -108,7 +108,9 @@ public class MainWindowController implements EventHandler<ActionEvent> {
                 int status = winSvcRpc.queryServiceStatus(serviceName);
                 if (target == startBtn) {
                     String path = TunnelService.getTunnelServiceArgs();
-                    if (-1 == status) {
+                    if (Winsvc.SERVICE_RUNNING == status) {
+                        return;
+                    } else if (-1 == status) {
                         winSvcRpc.createService(serviceName, path);
                     }
                     winSvcRpc.startService(serviceName);
