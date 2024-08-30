@@ -67,7 +67,7 @@ public class TunChannel extends AbstractChannel {
         tunAddress = (TunAddress) localAddress;
         String tunName = tunAddress.getTunName();
         String type = "jaspercloud";
-        String guid = DigestUtils.md5Hex(type);
+        String guid = DigestUtils.md5Hex(tunName);
         if (PlatformDependent.isOsx()) {
             tunDevice = new OsxTunDevice(tunName, type, guid);
         } else if (PlatformDependent.isWindows()) {
