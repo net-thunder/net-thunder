@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
 @Slf4j
@@ -84,10 +83,10 @@ public class TunChannel extends AbstractChannel {
     public void applyLocalAddress() throws Exception {
         String ip = tunAddress.getIp();
         tunDevice.setIP(ip, tunAddress.getMaskBits());
-        waitAddress(ip, 30 * 1000);
+        TunChannel.waitAddress(ip, 30 * 1000);
     }
 
-    private void waitAddress(String vip, int timeout) throws Exception {
+    public static void waitAddress(String vip, int timeout) throws Exception {
         long s = System.currentTimeMillis();
         while (true) {
             NetworkInterfaceInfo networkInterfaceInfo = NetworkInterfaceUtil.findNetworkInterfaceInfo(vip);

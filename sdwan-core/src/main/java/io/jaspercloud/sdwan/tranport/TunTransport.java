@@ -90,6 +90,7 @@ public class TunTransport implements TransportLifecycle {
                         log.debug("cmd: {}", cmd);
                         int code = ProcessUtil.exec(cmd);
                         CheckInvoke.check(code, 0);
+                        TunChannel.waitAddress(tunAddress.getIp(), 30 * 1000);
                     }
                     {
                         String cmd = String.format("netsh interface ipv4 add address name=\"%s\" 192.168.137.1/24", tunAddress.getTunName());
