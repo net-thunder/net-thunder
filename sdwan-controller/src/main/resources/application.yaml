@@ -2,7 +2,9 @@ controller:
   sdwan:
     port: 1800
     heartTimeout: 30000
-    vipCidr: 10.5.0.0/24
+    tenantConfig:
+      tenant1:
+        vipCidr: 10.5.0.0/24
   relay:
     bindPort: 2478
     heartTimeout: 15000
