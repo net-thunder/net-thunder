@@ -21,6 +21,8 @@ public class TunnelRpcImpl implements TunnelRpc {
         tunnelInfo.setRelayServer(relayServer);
         String vipCidr = tunSdWanNode.getVipCidr();
         tunnelInfo.setVipCidr(vipCidr);
+        String localVip = tunSdWanNode.getLocalVip();
+        tunnelInfo.setLocalVip(localVip);
         int sdwanLocalPort = tunSdWanNode.getSdWanClient().getLocalPort();
         tunnelInfo.setSdwanLocalPort(sdwanLocalPort);
         int p2pLocalPort = tunSdWanNode.getIceClient().getP2pClient().getLocalPort();

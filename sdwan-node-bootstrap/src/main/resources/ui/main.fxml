@@ -25,6 +25,7 @@
                 <RowConstraints/>
                 <RowConstraints/>
                 <RowConstraints/>
+                <RowConstraints/>
             </rowConstraints>
             <Label text="controllerServer:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="0"/>
             <Label fx:id="controllerServer" text="-" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
@@ -34,12 +35,14 @@
             <Label fx:id="relayServer" text="-" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
             <Label text="vipCidr:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="3"/>
             <Label fx:id="vipCidr" text="-" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-            <Label text="sdwanLocalPort:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="4"/>
-            <Label fx:id="sdwanLocalPort" text="-" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
-            <Label text="p2pLocalPort:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="5"/>
-            <Label fx:id="p2pLocalPort" text="-" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
-            <Label text="relayLocalPort:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="6"/>
-            <Label fx:id="relayLocalPort" text="-" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+            <Label text="localVip:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="4"/>
+            <Label fx:id="localVip" text="-" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+            <Label text="sdwanLocalPort:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="5"/>
+            <Label fx:id="sdwanLocalPort" text="-" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+            <Label text="p2pLocalPort:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="6"/>
+            <Label fx:id="p2pLocalPort" text="-" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+            <Label text="relayLocalPort:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="7"/>
+            <Label fx:id="relayLocalPort" text="-" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
         </GridPane>
         <FlowPane.margin>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>

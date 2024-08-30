@@ -13,6 +13,7 @@ public class TunnelInfo implements Serializable {
     private String stunServer;
     private String relayServer;
     private String vipCidr;
+    private String localVip;
     private int sdwanLocalPort;
     private int p2pLocalPort;
     private int relayLocalPort;

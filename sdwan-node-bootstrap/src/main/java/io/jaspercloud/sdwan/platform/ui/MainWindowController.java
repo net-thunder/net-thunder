@@ -53,6 +53,9 @@ public class MainWindowController implements EventHandler<ActionEvent> {
     private Label vipCidr;
 
     @FXML
+    private Label localVip;
+
+    @FXML
     private Label sdwanLocalPort;
 
     @FXML
@@ -171,6 +174,7 @@ public class MainWindowController implements EventHandler<ActionEvent> {
                         stunServer.setText(tunnelInfo.getStunServer());
                         relayServer.setText(tunnelInfo.getRelayServer());
                         vipCidr.setText(tunnelInfo.getVipCidr());
+                        localVip.setText(tunnelInfo.getLocalVip());
                         sdwanLocalPort.setText(String.valueOf(tunnelInfo.getSdwanLocalPort()));
                         p2pLocalPort.setText(String.valueOf(tunnelInfo.getP2pLocalPort()));
                         relayLocalPort.setText(String.valueOf(tunnelInfo.getRelayLocalPort()));
@@ -181,6 +185,7 @@ public class MainWindowController implements EventHandler<ActionEvent> {
                         stunServer.setText("-");
                         relayServer.setText("-");
                         vipCidr.setText("-");
+                        localVip.setText("-");
                         sdwanLocalPort.setText("-");
                         p2pLocalPort.setText("-");
                         relayLocalPort.setText("-");
