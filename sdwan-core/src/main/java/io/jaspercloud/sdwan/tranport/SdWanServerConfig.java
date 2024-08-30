@@ -4,6 +4,7 @@ import lombok.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author jasper
@@ -17,10 +18,20 @@ import java.util.List;
 public class SdWanServerConfig {
 
     private int port = 1800;
-    private String vipCidr = "10.1.0.0/24";
-    private List<FixVip> fixedVipList = Collections.emptyList();
     private long heartTimeout = 30 * 1000;
-    private List<Route> routeList = Collections.emptyList();
+    private Map<String, TenantConfig> tenantConfig;
+
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
+    @Setter
+    public static class TenantConfig {
+
+        private String vipCidr = "10.1.0.0/24";
+        private List<FixVip> fixedVipList = Collections.emptyList();
+        private List<Route> routeList = Collections.emptyList();
+    }
 
     @Builder
     @AllArgsConstructor

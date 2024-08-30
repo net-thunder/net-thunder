@@ -127,9 +127,11 @@ public class ChaosNodeTest {
                     SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
                             .port(1800)
                             .heartTimeout(30 * 1000)
-                            .vipCidr("10.5.0.0/24")
-                            .fixedVipList(Collections.emptyList())
-                            .routeList(routeList)
+                            .tenantConfig(Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
+                                    .vipCidr("10.5.0.0/24")
+                                    .fixedVipList(Collections.emptyList())
+                                    .routeList(routeList)
+                                    .build()))
                             .build(), () -> new ChannelInboundHandlerAdapter());
                     sdWanServer.start();
                     countDownLatch.countDown();
@@ -144,7 +146,6 @@ public class ChaosNodeTest {
     }
 
     private static void applyLog() {
-        System.setProperty("io.netty.leakDetection.level", "PARANOID");
         LoggerContext loggerContext = (LoggerContext) StaticLoggerBinder.getSingleton().getLoggerFactory();
         Logger logger = loggerContext.getLogger("ROOT");
         logger.setLevel(Level.INFO);

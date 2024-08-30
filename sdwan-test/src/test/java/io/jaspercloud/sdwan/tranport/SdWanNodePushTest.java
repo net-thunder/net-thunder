@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -27,8 +28,10 @@ public class SdWanNodePushTest {
         SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
                 .port(1800)
                 .heartTimeout(30 * 1000)
-                .vipCidr("10.5.0.0/24")
-                .routeList(routeList)
+                .tenantConfig(Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
+                        .vipCidr("10.5.0.0/24")
+                        .routeList(routeList)
+                        .build()))
                 .build(), () -> new ChannelInboundHandlerAdapter());
         sdWanServer.start();
         RelayServer relayServer = new RelayServer(RelayServerConfig.builder()
@@ -118,8 +121,10 @@ public class SdWanNodePushTest {
         SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
                 .port(1800)
                 .heartTimeout(30 * 1000)
-                .vipCidr("10.5.0.0/24")
-                .routeList(routeList)
+                .tenantConfig(Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
+                        .vipCidr("10.5.0.0/24")
+                        .routeList(routeList)
+                        .build()))
                 .build(), () -> new ChannelInboundHandlerAdapter());
         sdWanServer.start();
         RelayServer relayServer = new RelayServer(RelayServerConfig.builder()

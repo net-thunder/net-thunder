@@ -9,10 +9,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -23,7 +20,6 @@ public class SdWanNodeTransferTest {
 
     @Test
     public void test() throws Exception {
-        System.setProperty("io.netty.leakDetection.level", "PARANOID");
         String address = InetAddress.getLocalHost().getHostAddress();
         Map<String, String> fixedVipMap = new HashMap<String, String>() {
             {
@@ -38,9 +34,11 @@ public class SdWanNodeTransferTest {
         SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
                 .port(1800)
                 .heartTimeout(30 * 1000)
-                .vipCidr("10.5.0.0/24")
-                .fixedVipList(fixVipList)
-                .routeList(routeList)
+                .tenantConfig(Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
+                        .vipCidr("10.5.0.0/24")
+                        .fixedVipList(fixVipList)
+                        .routeList(routeList)
+                        .build()))
                 .build(), () -> new ChannelInboundHandlerAdapter());
         sdWanServer.start();
         RelayServer relayServer = new RelayServer(RelayServerConfig.builder()

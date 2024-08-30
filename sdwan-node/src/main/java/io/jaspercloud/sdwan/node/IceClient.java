@@ -145,7 +145,7 @@ public class IceClient implements TransportLifecycle {
                 () -> createStunPacketHandler());
         relayClient = new RelayClient(config.getRelayServer(), config.getRelayPort(), config.getP2pHeartTime(),
                 () -> createStunPacketHandler());
-        electionProtocol = new ElectionProtocol(p2pClient, relayClient, encryptionKeyPair) {
+        electionProtocol = new ElectionProtocol(config.getTenantId(), p2pClient, relayClient, encryptionKeyPair) {
             @Override
             protected CompletableFuture<SDWanProtos.P2pAnswer> sendOffer(SDWanProtos.P2pOffer p2pOffer) {
                 return sdWanNode.getSdWanClient().offer(p2pOffer, 3000);

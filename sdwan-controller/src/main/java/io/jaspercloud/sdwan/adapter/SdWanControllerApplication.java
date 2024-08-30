@@ -24,7 +24,6 @@ import org.springframework.context.annotation.Configuration;
 public class SdWanControllerApplication {
 
     public static void main(String[] args) throws Exception {
-        System.setProperty("io.netty.leakDetection.level", "PARANOID");
         ConfigurableApplicationContext context = new SpringApplicationBuilder(SdWanControllerApplication.class)
                 .web(WebApplicationType.NONE)
                 .run(args);

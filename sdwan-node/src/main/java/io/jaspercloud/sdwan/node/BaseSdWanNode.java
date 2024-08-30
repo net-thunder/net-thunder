@@ -194,6 +194,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         sdWanClient.start();
         log.info("SdWanNode install");
         SDWanProtos.RegistReq.Builder builder = SDWanProtos.RegistReq.newBuilder()
+                .setTenantId(config.getTenantId())
                 .setNodeType(SDWanProtos.NodeTypeCode.SimpleType)
                 .setMacAddress(processMacAddress(NetworkInterfaceUtil.getHardwareAddress()));
         if (!config.isOnlyRelayTransport()) {

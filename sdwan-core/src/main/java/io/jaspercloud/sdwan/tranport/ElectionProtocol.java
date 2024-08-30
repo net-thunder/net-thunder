@@ -32,11 +32,13 @@ import java.util.stream.Collectors;
 @Slf4j
 public abstract class ElectionProtocol {
 
+    private String tenantId;
     private P2pClient p2pClient;
     private RelayClient relayClient;
     private KeyPair encryptionKeyPair;
 
-    public ElectionProtocol(P2pClient p2pClient, RelayClient relayClient, KeyPair encryptionKeyPair) {
+    public ElectionProtocol(String tenantId, P2pClient p2pClient, RelayClient relayClient, KeyPair encryptionKeyPair) {
+        this.tenantId = tenantId;
         this.p2pClient = p2pClient;
         this.relayClient = relayClient;
         this.encryptionKeyPair = encryptionKeyPair;
@@ -77,6 +79,7 @@ public abstract class ElectionProtocol {
             });
         });
         SDWanProtos.P2pOffer p2pOfferReq = SDWanProtos.P2pOffer.newBuilder()
+                .setTenantId(tenantId)
                 .setSrcVIP(getLocalVip())
                 .setDstVIP(nodeInfo.getVip())
                 .addAllAddressUri(getLocalAddressUriList())
@@ -150,6 +153,7 @@ public abstract class ElectionProtocol {
                 DataTransport transport = selectDataTransport(transportList);
                 transport.setSecretKey(secretKey);
                 SDWanProtos.P2pAnswer p2pAnswer = SDWanProtos.P2pAnswer.newBuilder()
+                        .setTenantId(tenantId)
                         .setCode(SDWanProtos.MessageCode.Success)
                         .setSrcVIP(p2pOffer.getDstVIP())
                         .setDstVIP(p2pOffer.getSrcVIP())
@@ -159,6 +163,7 @@ public abstract class ElectionProtocol {
                 return transport;
             } catch (Exception e) {
                 SDWanProtos.P2pAnswer p2pAnswer = SDWanProtos.P2pAnswer.newBuilder()
+                        .setTenantId(tenantId)
                         .setCode(SDWanProtos.MessageCode.SysError)
                         .build();
                 sendAnswer(reqId, p2pAnswer);

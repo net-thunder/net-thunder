@@ -6,10 +6,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -24,7 +21,9 @@ public class SDClientTest {
         SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
                 .port(1800)
                 .heartTimeout(30 * 1000)
-                .vipCidr("10.5.0.0/24")
+                .tenantConfig(Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
+                        .vipCidr("10.5.0.0/24")
+                        .build()))
                 .build(), () -> new ChannelInboundHandlerAdapter());
         sdWanServer.start();
         SdWanClient sdWanClient = new SdWanClient(SdWanClientConfig.builder()
@@ -62,8 +61,10 @@ public class SDClientTest {
         SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
                 .port(1800)
                 .heartTimeout(30 * 1000)
-                .vipCidr("10.5.0.0/24")
-                .fixedVipList(fixVipList)
+                .tenantConfig(Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
+                        .vipCidr("10.5.0.0/24")
+                        .fixedVipList(Collections.emptyList())
+                        .build()))
                 .build(), () -> new ChannelInboundHandlerAdapter());
         sdWanServer.start();
         SdWanClient sdWanClient = new SdWanClient(SdWanClientConfig.builder()
@@ -93,7 +94,9 @@ public class SDClientTest {
         SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
                 .port(1800)
                 .heartTimeout(30 * 1000)
-                .vipCidr("10.5.0.0/24")
+                .tenantConfig(Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
+                        .vipCidr("10.5.0.0/24")
+                        .build()))
                 .build(), () -> new SimpleChannelInboundHandler<SDWanProtos.Message>() {
             @Override
             public void channelActive(ChannelHandlerContext ctx) throws Exception {

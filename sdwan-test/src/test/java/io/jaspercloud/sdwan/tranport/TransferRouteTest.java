@@ -42,9 +42,11 @@ public class TransferRouteTest {
         SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
                 .port(1800)
                 .heartTimeout(30 * 1000)
-                .vipCidr("10.5.0.0/24")
-                .fixedVipList(fixVipList)
-                .routeList(routeList)
+                .tenantConfig(Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
+                        .vipCidr("10.5.0.0/24")
+                        .fixedVipList(fixVipList)
+                        .routeList(routeList)
+                        .build()))
                 .build(), () -> new ChannelInboundHandlerAdapter());
         sdWanServer.start();
         RelayServer relayServer = new RelayServer(RelayServerConfig.builder()
@@ -119,9 +121,11 @@ public class TransferRouteTest {
         SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
                 .port(1800)
                 .heartTimeout(30 * 1000)
-                .vipCidr("10.5.0.0/24")
-                .fixedVipList(fixVipList)
-                .routeList(routeList)
+                .tenantConfig(Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
+                        .vipCidr("10.5.0.0/24")
+                        .fixedVipList(fixVipList)
+                        .routeList(routeList)
+                        .build()))
                 .build(), () -> new ChannelInboundHandlerAdapter());
         sdWanServer.start();
         RelayServer relayServer = new RelayServer(RelayServerConfig.builder()
@@ -207,9 +211,11 @@ public class TransferRouteTest {
                 SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
                         .port(1800)
                         .heartTimeout(30 * 1000)
-                        .vipCidr("10.5.0.0/24")
-                        .fixedVipList(fixVipList)
-                        .routeList(routeList)
+                        .tenantConfig(Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
+                                .vipCidr("10.5.0.0/24")
+                                .fixedVipList(fixVipList)
+                                .routeList(routeList)
+                                .build()))
                         .build(), () -> new ChannelInboundHandlerAdapter());
                 sdWanServer.start();
                 RelayServer relayServer = new RelayServer(RelayServerConfig.builder()

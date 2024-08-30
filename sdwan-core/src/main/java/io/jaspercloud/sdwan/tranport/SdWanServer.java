@@ -1,9 +1,10 @@
 package io.jaspercloud.sdwan.tranport;
 
-import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import com.google.protobuf.AbstractMessageLite;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.exception.ProcessCodeException;
+import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.support.ChannelAttributes;
 import io.jaspercloud.sdwan.support.Cidr;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;
@@ -19,6 +20,7 @@ import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,9 +40,7 @@ public class SdWanServer implements Lifecycle, Runnable {
     private Supplier<ChannelHandler> handler;
 
     private Channel localChannel;
-    private Cidr ipPool;
-    private Map<String, AtomicReference<Channel>> bindIPMap = new ConcurrentHashMap<>();
-    private Map<String, String> fixedVipMap = new ConcurrentHashMap<>();
+    private Map<String, TenantSpace> tenantSpaceMap = new ConcurrentHashMap<>();
     private Map<String, Channel> channelMap = new ConcurrentHashMap<>();
     private Map<Channel, String> registChannelMap = new ConcurrentHashMap<>();
 
@@ -49,7 +49,7 @@ public class SdWanServer implements Lifecycle, Runnable {
         this.handler = handler;
     }
 
-    private void processMsg(ChannelHandlerContext ctx, SDWanProtos.Message msg) throws Exception {
+    private void processMsg(ChannelHandlerContext ctx, SDWanProtos.Message msg) {
         switch (msg.getType().getNumber()) {
             case SDWanProtos.MessageTypeCode.HeartType_VALUE: {
                 log.debug("update heart: {}", SocketAddressUtil.toAddress(ctx.channel().remoteAddress()));
@@ -72,19 +72,41 @@ public class SdWanServer implements Lifecycle, Runnable {
         }
     }
 
-    private void processP2pAnswer(ChannelHandlerContext ctx, SDWanProtos.Message msg) throws Exception {
-        SDWanProtos.P2pAnswer p2pAnswer = SDWanProtos.P2pAnswer.parseFrom(msg.getData());
-        Channel channel = bindIPMap.get(p2pAnswer.getDstVIP()).get();
-        if (null != channel) {
-            SdWanServer.push(channel, msg.getReqId(), SDWanProtos.MessageTypeCode.P2pAnswerType, p2pAnswer);
+    private void processP2pOffer(ChannelHandlerContext ctx, SDWanProtos.Message msg) {
+        try {
+            SDWanProtos.P2pOffer p2pOffer = SDWanProtos.P2pOffer.parseFrom(msg.getData());
+            TenantSpace tenantSpace = tenantSpaceMap.get(p2pOffer.getTenantId());
+            if (null == tenantSpace) {
+                throw new ProcessException("not found tenant");
+            }
+            Channel channel = tenantSpace.getBindIPMap().get(p2pOffer.getDstVIP()).get();
+            if (null != channel) {
+                SdWanServer.push(channel, msg.getReqId(), SDWanProtos.MessageTypeCode.P2pOfferType, p2pOffer);
+            }
+        } catch (Exception e) {
+            SDWanProtos.RegistResp regResp = SDWanProtos.RegistResp.newBuilder()
+                    .setCode(SDWanProtos.MessageCode.SysError)
+                    .build();
+            SdWanServer.reply(ctx.channel(), msg, SDWanProtos.MessageTypeCode.P2pOfferType, regResp);
         }
     }
 
-    private void processP2pOffer(ChannelHandlerContext ctx, SDWanProtos.Message msg) throws Exception {
-        SDWanProtos.P2pOffer p2pOffer = SDWanProtos.P2pOffer.parseFrom(msg.getData());
-        Channel channel = bindIPMap.get(p2pOffer.getDstVIP()).get();
-        if (null != channel) {
-            SdWanServer.push(channel, msg.getReqId(), SDWanProtos.MessageTypeCode.P2pOfferType, p2pOffer);
+    private void processP2pAnswer(ChannelHandlerContext ctx, SDWanProtos.Message msg) {
+        try {
+            SDWanProtos.P2pAnswer p2pAnswer = SDWanProtos.P2pAnswer.parseFrom(msg.getData());
+            TenantSpace tenantSpace = tenantSpaceMap.get(p2pAnswer.getTenantId());
+            if (null == tenantSpace) {
+                throw new ProcessException("not found tenant");
+            }
+            Channel channel = tenantSpace.getBindIPMap().get(p2pAnswer.getDstVIP()).get();
+            if (null != channel) {
+                SdWanServer.push(channel, msg.getReqId(), SDWanProtos.MessageTypeCode.P2pAnswerType, p2pAnswer);
+            }
+        } catch (Exception e) {
+            SDWanProtos.RegistResp regResp = SDWanProtos.RegistResp.newBuilder()
+                    .setCode(SDWanProtos.MessageCode.SysError)
+                    .build();
+            SdWanServer.reply(ctx.channel(), msg, SDWanProtos.MessageTypeCode.P2pAnswerType, regResp);
         }
     }
 
@@ -116,15 +138,21 @@ public class SdWanServer implements Lifecycle, Runnable {
                                         .build();
                             }).collect(Collectors.toList()))
                     .build();
+            TenantSpace tenantSpace = tenantSpaceMap.get(registReq.getTenantId());
+            if (null == tenantSpace) {
+                throw new ProcessException("not found tenant");
+            }
             SDWanProtos.RouteList.Builder routeBuilder = SDWanProtos.RouteList.newBuilder();
-            if (!CollUtil.isEmpty(config.getRouteList())) {
-                config.getRouteList().forEach(e -> {
+            List<SdWanServerConfig.Route> routeList = tenantSpace.getRouteList();
+            if (!CollectionUtil.isEmpty(routeList)) {
+                routeList.forEach(e -> {
                     routeBuilder.addRoute(SDWanProtos.Route.newBuilder()
                             .setDestination(e.getDestination())
                             .addAllNexthop(e.getNexthop())
                             .build());
                 });
             }
+            Cidr ipPool = tenantSpace.getIpPool();
             SDWanProtos.RegistResp regResp = SDWanProtos.RegistResp.newBuilder()
                     .setCode(SDWanProtos.MessageCode.Success)
                     .setVip(vip)
@@ -187,25 +215,31 @@ public class SdWanServer implements Lifecycle, Runnable {
     }
 
     private String applyVip(Channel channel, SDWanProtos.RegistReq registReq, ChannelAttributes attr) {
+        TenantSpace tenantSpace = tenantSpaceMap.get(registReq.getTenantId());
+        if (null == tenantSpace) {
+            throw new ProcessException("not found tenant");
+        }
+        Map<String, String> fixedVipMap = tenantSpace.getFixedVipMap();
+        Map<String, AtomicReference<Channel>> bindIPMap = tenantSpace.getBindIPMap();
         String fixedIp = fixedVipMap.get(registReq.getMacAddress());
         if (null != fixedIp) {
             if (!bindIPMap.get(fixedIp).compareAndSet(null, channel)) {
                 throw new ProcessCodeException(SDWanProtos.MessageCode.VipBound_VALUE);
             }
-            bindVip(channel, attr, fixedIp);
+            bindVip(channel, attr, bindIPMap, fixedIp);
             return fixedIp;
         }
         for (Map.Entry<String, AtomicReference<Channel>> entry : bindIPMap.entrySet()) {
             if (entry.getValue().compareAndSet(null, channel)) {
                 String vip = entry.getKey();
-                bindVip(channel, attr, vip);
+                bindVip(channel, attr, bindIPMap, vip);
                 return vip;
             }
         }
         throw new ProcessCodeException(SDWanProtos.MessageCode.NotEnough_VALUE);
     }
 
-    private void bindVip(Channel channel, ChannelAttributes attr, String vip) {
+    private void bindVip(Channel channel, ChannelAttributes attr, Map<String, AtomicReference<Channel>> bindIPMap, String vip) {
         attr.setVip(vip);
         channel.closeFuture().addListener(new ChannelFutureListener() {
             @Override
@@ -245,16 +279,23 @@ public class SdWanServer implements Lifecycle, Runnable {
 
     @Override
     public void start() throws Exception {
-        if (!CollUtil.isEmpty(config.getFixedVipList())) {
-            config.getFixedVipList().forEach(e -> {
-                fixedVipMap.put(e.getMac(), e.getVip());
+        config.getTenantConfig().forEach((k, config) -> {
+            TenantSpace tenantSpace = new TenantSpace();
+            Cidr ipPool = Cidr.parseCidr(config.getVipCidr());
+            tenantSpace.setIpPool(ipPool);
+            Map<String, AtomicReference<Channel>> bindIPMap = tenantSpace.getBindIPMap();
+            ipPool.getAvailableIpList().forEach(vip -> {
+                bindIPMap.put(vip, new AtomicReference<>());
             });
-        }
-        ipPool = Cidr.parseCidr(config.getVipCidr());
-        ipPool.getAvailableIpList()
-                .forEach(vip -> {
-                    bindIPMap.put(vip, new AtomicReference<>());
+            if (!CollectionUtil.isEmpty(config.getFixedVipList())) {
+                Map<String, String> fixedVipMap = tenantSpace.getFixedVipMap();
+                config.getFixedVipList().forEach(e -> {
+                    fixedVipMap.put(e.getMac(), e.getVip());
                 });
+            }
+            tenantSpace.setRouteList(config.getRouteList());
+            tenantSpaceMap.put(k, tenantSpace);
+        });
         NioEventLoopGroup bossGroup = NioEventLoopFactory.createBossGroup();
         NioEventLoopGroup workerGroup = NioEventLoopFactory.createWorkerGroup();
         ServerBootstrap serverBootstrap = new ServerBootstrap();

@@ -2,18 +2,15 @@ package io.jaspercloud.sdwan.tranport;
 
 import com.google.protobuf.ByteString;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
-import io.jaspercloud.sdwan.stun.NatAddress;
 import io.jaspercloud.sdwan.node.SdWanNodeConfig;
+import io.jaspercloud.sdwan.stun.NatAddress;
 import io.jaspercloud.sdwan.tranport.support.TestSdWanNode;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.junit.jupiter.api.Test;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -39,9 +36,11 @@ public class TransferReElectionTest {
         SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
                 .port(1800)
                 .heartTimeout(30 * 1000)
-                .vipCidr("10.5.0.0/24")
-                .fixedVipList(fixVipList)
-                .routeList(routeList)
+                .tenantConfig(Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
+                        .vipCidr("10.5.0.0/24")
+                        .fixedVipList(fixVipList)
+                        .routeList(routeList)
+                        .build()))
                 .build(), () -> new ChannelInboundHandlerAdapter());
         sdWanServer.start();
         RelayServer relayServer = new RelayServer(RelayServerConfig.builder()
@@ -123,9 +122,11 @@ public class TransferReElectionTest {
         SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
                 .port(1800)
                 .heartTimeout(30 * 1000)
-                .vipCidr("10.5.0.0/24")
-                .fixedVipList(fixVipList)
-                .routeList(routeList)
+                .tenantConfig(Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
+                        .vipCidr("10.5.0.0/24")
+                        .fixedVipList(fixVipList)
+                        .routeList(routeList)
+                        .build()))
                 .build(), () -> new ChannelInboundHandlerAdapter());
         sdWanServer.start();
         RelayServer relayServer = new RelayServer(RelayServerConfig.builder()
@@ -195,9 +196,11 @@ public class TransferReElectionTest {
         SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
                 .port(1800)
                 .heartTimeout(30 * 1000)
-                .vipCidr("10.5.0.0/24")
-                .fixedVipList(fixVipList)
-                .routeList(routeList)
+                .tenantConfig(Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
+                        .vipCidr("10.5.0.0/24")
+                        .fixedVipList(fixVipList)
+                        .routeList(routeList)
+                        .build()))
                 .build(), () -> new ChannelInboundHandlerAdapter());
         sdWanServer.start();
         RelayServer relayServer = new RelayServer(RelayServerConfig.builder()

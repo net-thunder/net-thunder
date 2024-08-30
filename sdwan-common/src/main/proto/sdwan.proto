@@ -56,9 +56,10 @@ message SocketAddress {
 }
 
 message RegistReq {
-  required NodeTypeCode nodeType = 1;
-  required string macAddress = 2;
-  repeated string addressUri = 3;
+  required string tenantId = 1;
+  required NodeTypeCode nodeType = 2;
+  required string macAddress = 3;
+  repeated string addressUri = 4;
 }
 
 message RegistResp {
@@ -94,6 +95,7 @@ message IpPacket {
 }
 
 message P2pOffer {
+  required string tenantId = 1;
   required string srcVIP = 2;
   required string dstVIP = 3;
   repeated string addressUri = 4;
@@ -101,10 +103,11 @@ message P2pOffer {
 }
 
 message P2pAnswer {
-  required MessageCode code = 1;
-  required string srcVIP = 2;
-  required string dstVIP = 3;
-  required bytes publicKey = 4;
+  required string tenantId = 1;
+  required MessageCode code = 2;
+  required string srcVIP = 3;
+  required string dstVIP = 4;
+  required bytes publicKey = 5;
 }
 
 message RpcMessage {
