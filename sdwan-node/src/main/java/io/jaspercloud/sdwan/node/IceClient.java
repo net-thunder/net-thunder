@@ -38,6 +38,10 @@ public class IceClient implements TransportLifecycle {
         return p2pClient;
     }
 
+    public RelayClient getRelayClient() {
+        return relayClient;
+    }
+
     public P2pTransportManager getP2pTransportManager() {
         return p2pTransportManager;
     }

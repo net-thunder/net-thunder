@@ -31,6 +31,10 @@ public class TunSdWanNode extends BaseSdWanNode {
     private TunTransport tunTransport;
     private RouteManager routeManager;
 
+    public SdWanNodeConfig getConfig() {
+        return config;
+    }
+
     public TunSdWanNode(SdWanNodeConfig config) {
         super(config);
         this.config = config;

@@ -4,8 +4,12 @@ import io.jaspercloud.sdwan.node.ConfigSystem;
 import io.jaspercloud.sdwan.node.LoggerSystem;
 import io.jaspercloud.sdwan.node.SdWanNodeConfig;
 import io.jaspercloud.sdwan.node.TunSdWanNode;
+import io.jaspercloud.sdwan.platform.rpc.RpcInvoker;
+import io.jaspercloud.sdwan.platform.rpc.TunnelRpc;
+import io.jaspercloud.sdwan.platform.rpc.TunnelRpcImpl;
 import io.jaspercloud.sdwan.support.WinServiceManager;
 import io.jaspercloud.sdwan.support.WinSvcUtil;
+import io.netty.channel.Channel;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -61,12 +65,14 @@ public class TunnelService {
         WinServiceManager.startServiceCtrlDispatcher(serviceName, new WinServiceManager.ServiceProcHandler() {
 
             private TunSdWanNode tunSdWanNode;
+            private Channel channel;
 
             @Override
             public void start() throws Exception {
                 logger.info("start service process");
                 tunSdWanNode = new TunSdWanNode(config);
                 tunSdWanNode.start();
+                channel = RpcInvoker.exportServer(TunnelRpc.class, new TunnelRpcImpl(tunSdWanNode), TunnelRpc.PORT);
                 logger.info("service started");
             }
 
@@ -74,6 +80,7 @@ public class TunnelService {
             public void stop() throws Exception {
                 logger.info("stop service process");
                 tunSdWanNode.stop();
+                channel.close().sync();
                 logger.info("service stopped");
             }
         });

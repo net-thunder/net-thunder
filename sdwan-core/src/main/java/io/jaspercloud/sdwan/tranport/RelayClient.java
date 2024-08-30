@@ -36,6 +36,11 @@ public class RelayClient implements TransportLifecycle, Runnable {
         return curToken;
     }
 
+    public int getLocalPort() {
+        InetSocketAddress address = (InetSocketAddress) localChannel.localAddress();
+        return address.getPort();
+    }
+
     public RelayClient(String relayServer, long heartTime, Supplier<ChannelHandler> handler) {
         this(relayServer, 0, heartTime, handler);
     }

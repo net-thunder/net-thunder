@@ -18,7 +18,8 @@ public class MainWindow extends Application {
         MainWindowController controller = loader.getController();
         primaryStage.setOnCloseRequest(controller::handleWindowClose);
         primaryStage.setTitle("SD-WAN UI");
-        primaryStage.setScene(new Scene(root, 300, 275));
+        primaryStage.setResizable(false);
+        primaryStage.setScene(new Scene(root, 400, 350));
         primaryStage.show();
     }
 

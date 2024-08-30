@@ -94,7 +94,7 @@ public class ManagerService {
             @Override
             public void start() throws Exception {
                 logger.info("start service process");
-                channel = RpcInvoker.exportServer(WinSvcRpc.class, new WinSvcRpcImpl());
+                channel = RpcInvoker.exportServer(WinSvcRpc.class, new WinSvcRpcImpl(), WinSvcRpc.PORT);
                 logger.info("service started");
             }
 
