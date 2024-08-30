@@ -52,9 +52,10 @@ public class SdWanServer implements Lifecycle, Runnable {
     private void processMsg(ChannelHandlerContext ctx, SDWanProtos.Message msg) {
         switch (msg.getType().getNumber()) {
             case SDWanProtos.MessageTypeCode.HeartType_VALUE: {
-                log.debug("update heart: {}", SocketAddressUtil.toAddress(ctx.channel().remoteAddress()));
-                ChannelAttributes.attr(ctx.channel()).setLastHeartTime(System.currentTimeMillis());
-                SdWanServer.reply(ctx.channel(), msg, SDWanProtos.MessageTypeCode.HeartType, null);
+                Channel channel = ctx.channel();
+                log.debug("update heart: {}", SocketAddressUtil.toAddress(channel.remoteAddress()));
+                ChannelAttributes.attr(channel).setLastHeartTime(System.currentTimeMillis());
+                SdWanServer.reply(channel, msg, SDWanProtos.MessageTypeCode.HeartType, null);
                 break;
             }
             case SDWanProtos.MessageTypeCode.RegistReqType_VALUE: {
