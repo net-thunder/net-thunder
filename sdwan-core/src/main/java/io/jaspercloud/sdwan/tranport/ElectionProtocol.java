@@ -52,9 +52,9 @@ public abstract class ElectionProtocol {
                 .collect(Collectors.toList());
         List<PingRequest> pingRequestList = uriList.stream().map(uri -> {
             if (AddressType.HOST.equals(uri.getScheme()) || AddressType.SRFLX.equals(uri.getScheme())) {
-                return parseP2pPing(uri);
+                return parseP2pPing(uri, electionTimeout);
             } else if (AddressType.RELAY.equals(uri.getScheme())) {
-                return parseRelayPing(uri);
+                return parseRelayPing(uri, electionTimeout);
             } else {
                 throw new UnsupportedOperationException();
             }
@@ -108,9 +108,9 @@ public abstract class ElectionProtocol {
                 .collect(Collectors.toList());
         List<PingRequest> pingRequestList = uriList.stream().map(uri -> {
             if (AddressType.HOST.equals(uri.getScheme()) || AddressType.SRFLX.equals(uri.getScheme())) {
-                return parseP2pPing(uri);
+                return parseP2pPing(uri, electionTimeout);
             } else if (AddressType.RELAY.equals(uri.getScheme())) {
-                return parseRelayPing(uri);
+                return parseRelayPing(uri, electionTimeout);
             } else {
                 throw new UnsupportedOperationException();
             }
@@ -196,20 +196,20 @@ public abstract class ElectionProtocol {
         return transport;
     }
 
-    private PingRequest parseP2pPing(AddressUri uri) {
+    private PingRequest parseP2pPing(AddressUri uri, long timeout) {
         log.info("pingP2p uri: {}", uri.toString());
         InetSocketAddress addr = new InetSocketAddress(uri.getHost(), uri.getPort());
         PingRequest pingRequest = new PingRequest();
-        pingRequest.setSupplier(() -> p2pClient.ping(addr, 3000));
+        pingRequest.setSupplier(() -> p2pClient.ping(addr, timeout));
         pingRequest.setAddressUri(uri);
         return pingRequest;
     }
 
-    private PingRequest parseRelayPing(AddressUri uri) {
+    private PingRequest parseRelayPing(AddressUri uri, long timeout) {
         log.info("pingRelay uri: {}", uri.toString());
         String token = uri.getParams().get("token");
         PingRequest pingRequest = new PingRequest();
-        pingRequest.setSupplier(() -> relayClient.ping(token, 3000));
+        pingRequest.setSupplier(() -> relayClient.ping(token, timeout));
         pingRequest.setAddressUri(uri);
         return pingRequest;
     }
