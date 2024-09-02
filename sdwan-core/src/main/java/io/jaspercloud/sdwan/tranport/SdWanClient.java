@@ -82,6 +82,7 @@ public class SdWanClient implements TransportLifecycle, Runnable {
 
     public CompletableFuture<SDWanProtos.P2pAnswer> offer(SDWanProtos.P2pOffer req, long timeout) {
         String id = UUID.randomUUID().toString();
+        log.info("offer: srcVIP={}, dstVIP={}, id={}", req.getSrcVIP(), req.getDstVIP(), id);
         SDWanProtos.Message message = SDWanProtos.Message.newBuilder()
                 .setReqId(id)
                 .setMode(SDWanProtos.MessageMode.ReqResp)
@@ -101,6 +102,7 @@ public class SdWanClient implements TransportLifecycle, Runnable {
     }
 
     public void answer(String id, SDWanProtos.P2pAnswer req) {
+        log.info("answer: srcVIP={}, dstVIP={}, id={}", req.getSrcVIP(), req.getDstVIP(), id);
         SDWanProtos.Message message = SDWanProtos.Message.newBuilder()
                 .setReqId(id)
                 .setMode(SDWanProtos.MessageMode.ReqResp)

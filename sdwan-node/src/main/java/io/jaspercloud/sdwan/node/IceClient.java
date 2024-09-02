@@ -66,11 +66,11 @@ public class IceClient implements TransportLifecycle {
             electionProtocol.offer(nodeInfo)
                     .whenComplete((transport, ex) -> {
                         if (null != ex) {
-                            log.debug("offer deleteTransport: vip={}", nodeInfo.getVip());
+                            log.info("offer deleteTransport: vip={}, error={}", nodeInfo.getVip(), ex.getMessage());
                             p2pTransportManager.deleteTransport(nodeInfo.getVip());
                             return;
                         }
-                        log.debug("offer addTransport: vip={}", nodeInfo.getVip());
+                        log.info("offer addTransport: vip={}", nodeInfo.getVip());
                         p2pTransportManager.addTransport(nodeInfo.getVip(), transport);
                         transport.transfer(srcVip, bytes);
                     });
@@ -84,6 +84,7 @@ public class IceClient implements TransportLifecycle {
     }
 
     public void processOffer(String reqId, SDWanProtos.P2pOffer p2pOffer) {
+        log.info("processOffer: id={}", reqId);
         electionProtocol.answer(reqId, p2pOffer)
                 .thenAccept(transport -> {
                     log.debug("answer addTransport: vip={}", p2pOffer.getSrcVIP());
@@ -151,8 +152,8 @@ public class IceClient implements TransportLifecycle {
                 () -> createStunPacketHandler());
         electionProtocol = new ElectionProtocol(config.getTenantId(), p2pClient, relayClient, encryptionKeyPair) {
             @Override
-            protected CompletableFuture<SDWanProtos.P2pAnswer> sendOffer(SDWanProtos.P2pOffer p2pOffer) {
-                return sdWanNode.getSdWanClient().offer(p2pOffer, 3000);
+            protected CompletableFuture<SDWanProtos.P2pAnswer> sendOffer(SDWanProtos.P2pOffer p2pOffer, long timeout) {
+                return sdWanNode.getSdWanClient().offer(p2pOffer, timeout);
             }
 
             @Override

@@ -21,7 +21,11 @@ public class WinTunDevice extends TunDevice {
 
     @Override
     public void open() throws Exception {
-        adapter = NativeWinTunApi.WintunCreateAdapter(new WString(getName()), new WString(getType()), getGuid());
+        try {
+            adapter = NativeWinTunApi.WintunOpenAdapter(new WString(getName()), new WString(getType()));
+        } catch (LastErrorException e) {
+            adapter = NativeWinTunApi.WintunCreateAdapter(new WString(getName()), new WString(getType()), getGuid());
+        }
         session = NativeWinTunApi.WintunStartSession(adapter, NativeWinTunApi.WINTUN_MAX_RING_CAPACITY);
         setActive(true);
     }

@@ -6,6 +6,8 @@ public interface DataTransport {
 
     long order();
 
+    String type();
+
     void ping(long timeout) throws Exception;
 
     void setSecretKey(SecretKey secretKey);

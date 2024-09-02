@@ -36,6 +36,7 @@ public class P2pTransportManager implements Runnable {
 
     public AtomicReference<DataTransport> getOrCreate(String ip, Consumer<String> consumer) {
         return transportMap.computeIfAbsent(ip, key -> {
+            log.info("getOrCreate ip: {}", ip);
             AtomicReference<DataTransport> ref = new AtomicReference<>();
             consumer.accept(key);
             return ref;
@@ -43,10 +44,12 @@ public class P2pTransportManager implements Runnable {
     }
 
     public void addTransport(String ip, DataTransport transport) {
+        log.info("add ip: {}", ip);
         transportMap.put(ip, new AtomicReference<>(transport));
     }
 
     public void deleteTransport(String ip) {
+        log.info("del ip: {}", ip);
         transportMap.remove(ip);
     }
 

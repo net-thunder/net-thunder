@@ -29,20 +29,23 @@ public class SdWanNodeLauncher {
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
         if (cmd.hasOption("debug")) {
-            mainRun();
+            startTunSdWanNode();
+            CountDownLatch latch = new CountDownLatch(1);
+            latch.await();
         } else if (PlatformDependent.isWindows()) {
             WindowsPlatformLauncher.startup(cmd);
         } else {
-            mainRun();
+            startTunSdWanNode();
+            CountDownLatch latch = new CountDownLatch(1);
+            latch.await();
         }
     }
 
-    private static void mainRun() throws Exception {
+    private static TunSdWanNode startTunSdWanNode() throws Exception {
         Logger logger = new LoggerSystem().initUserDir();
         SdWanNodeConfig config = new ConfigSystem().initUserDir();
         TunSdWanNode tunSdWanNode = new TunSdWanNode(config);
         tunSdWanNode.start();
-        CountDownLatch latch = new CountDownLatch(1);
-        latch.await();
+        return tunSdWanNode;
     }
 }

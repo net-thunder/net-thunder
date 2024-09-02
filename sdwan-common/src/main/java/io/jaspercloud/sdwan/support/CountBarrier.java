@@ -22,6 +22,11 @@ public class CountBarrier<T> {
         queue.add(item);
     }
 
+    public List<T> toList() {
+        List<T> list = queue.stream().collect(Collectors.toList());
+        return list;
+    }
+
     public void countDown() {
         int ret = count.decrementAndGet();
         if (ret <= 0) {

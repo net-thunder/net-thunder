@@ -82,6 +82,7 @@ public class SdWanServer implements Lifecycle, Runnable {
             }
             Channel channel = tenantSpace.getBindIPMap().get(p2pOffer.getDstVIP()).get();
             if (null != channel) {
+                log.info("push processP2pOffer: srcVIP={}, dstVIP={}, id={}", p2pOffer.getSrcVIP(), p2pOffer.getDstVIP(), msg.getReqId());
                 SdWanServer.push(channel, msg.getReqId(), SDWanProtos.MessageTypeCode.P2pOfferType, p2pOffer);
             }
         } catch (Exception e) {
@@ -101,6 +102,7 @@ public class SdWanServer implements Lifecycle, Runnable {
             }
             Channel channel = tenantSpace.getBindIPMap().get(p2pAnswer.getDstVIP()).get();
             if (null != channel) {
+                log.info("push processP2pAnswer: srcVIP={}, dstVIP={}, id={}", p2pAnswer.getSrcVIP(), p2pAnswer.getDstVIP(), msg.getReqId());
                 SdWanServer.push(channel, msg.getReqId(), SDWanProtos.MessageTypeCode.P2pAnswerType, p2pAnswer);
             }
         } catch (Exception e) {
