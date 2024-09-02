@@ -61,7 +61,7 @@ public abstract class ElectionProtocol {
         }).collect(Collectors.toList());
         //wait ping resp
         BlockingQueue<DataTransport> queue = new LinkedBlockingQueue<>();
-        pingRequestList.stream().forEach(e -> {
+        pingRequestList.forEach(e -> {
             e.execute().thenAccept(pingResp -> {
                 AddressUri uri = e.getAddressUri();
                 log.info("offer pong: uri={}", uri.toString());
@@ -130,7 +130,7 @@ public abstract class ElectionProtocol {
                 return list;
             }
         });
-        pingRequestList.stream().forEach(req -> {
+        pingRequestList.forEach(req -> {
             req.execute().thenAccept(pingResp -> {
                 try {
                     AddressUri uri = req.getAddressUri();
