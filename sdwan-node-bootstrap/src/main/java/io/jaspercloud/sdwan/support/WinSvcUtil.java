@@ -51,6 +51,13 @@ public final class WinSvcUtil {
         }
     }
 
+    public static void createService(String serviceName, String path, int dwStartType) {
+        CheckAdmin.check();
+        try (WinServiceManager scm = WinServiceManager.openManager()) {
+            scm.createService(serviceName, path, dwStartType);
+        }
+    }
+
     public static void startService(String serviceName) {
         CheckAdmin.check();
         try (WinServiceManager scm = WinServiceManager.openExecute()) {

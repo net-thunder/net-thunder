@@ -59,13 +59,17 @@ public class WinServiceManager implements Closeable {
     }
 
     public void createService(String serviceName, String path) {
+        createService(serviceName, path, WinNT.SERVICE_DEMAND_START);
+    }
+
+    public void createService(String serviceName, String path, int dwStartType) {
         Winsvc.SC_HANDLE serviceHandler = Advapi32.INSTANCE.CreateService(
                 handle,
                 serviceName,
                 serviceName,
                 Winsvc.SERVICE_ALL_ACCESS,
                 WinNT.SERVICE_WIN32_OWN_PROCESS,
-                WinNT.SERVICE_DEMAND_START,
+                dwStartType,
                 WinNT.SERVICE_ERROR_NORMAL,
                 path,
                 null,

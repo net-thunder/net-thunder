@@ -6,6 +6,8 @@ public interface WinSvcRpc {
 
     void createService(String serviceName, String path);
 
+    void createService(String serviceName, String path, int dwStartType);
+
     void startService(String serviceName);
 
     void stopService(String serviceName);

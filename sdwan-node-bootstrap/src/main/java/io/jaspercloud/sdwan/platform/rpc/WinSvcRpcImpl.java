@@ -8,8 +8,14 @@ public class WinSvcRpcImpl implements WinSvcRpc {
 
     @Override
     public void createService(String serviceName, String path) {
-        log.info("createService: serviceName={}, path={}", path);
+        log.info("createService: serviceName={}, path={}", serviceName, path);
         WinSvcUtil.createService(serviceName, path);
+    }
+
+    @Override
+    public void createService(String serviceName, String path, int dwStartType) {
+        log.info("createService: serviceName={}, path={}, dwStartType={}", serviceName, path, dwStartType);
+        WinSvcUtil.createService(serviceName, path, dwStartType);
     }
 
     @Override
