@@ -24,7 +24,7 @@ public class WindowsRouteManager extends AbstractRouteManager {
     @Override
     protected void addRoute(TunChannel tunChannel, SDWanProtos.Route route) throws Exception {
         TunAddress tunAddress = (TunAddress) tunChannel.localAddress();
-        NetworkInterfaceInfo interfaceInfo = NetworkInterfaceUtil.findNetworkInterfaceInfo(tunAddress.getIp());
+        NetworkInterfaceInfo interfaceInfo = NetworkInterfaceUtil.findIp(tunAddress.getIp());
         String cmd = String.format("route add %s %s if %s", route.getDestination(), tunAddress.getIp(), interfaceInfo.getIndex());
         int code = ProcessUtil.exec(cmd);
         CheckInvoke.check(code, 0);
@@ -33,7 +33,7 @@ public class WindowsRouteManager extends AbstractRouteManager {
     @Override
     protected void deleteRoute(TunChannel tunChannel, SDWanProtos.Route route) throws Exception {
         TunAddress tunAddress = (TunAddress) tunChannel.localAddress();
-        NetworkInterfaceInfo interfaceInfo = NetworkInterfaceUtil.findNetworkInterfaceInfo(tunAddress.getIp());
+        NetworkInterfaceInfo interfaceInfo = NetworkInterfaceUtil.findIp(tunAddress.getIp());
         // TODO: 2023/11/24 路由删除失败: 找不到元素。
 //        String cmd = String.format("route delete %s %s", route.getDestination(), tunAddress.getVip());
         String cmd = String.format("route delete %s", route.getDestination());

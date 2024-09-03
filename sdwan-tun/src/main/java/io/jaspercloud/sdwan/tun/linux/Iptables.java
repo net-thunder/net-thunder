@@ -15,7 +15,7 @@ public final class Iptables {
 
     }
 
-    public static void ipForward(String fromEth, String toEth) throws ProcessException {
+    public static void enableIpForward(String fromEth, String toEth) throws ProcessException {
         try {
             enableIpForward();
             //filter
@@ -28,6 +28,17 @@ public final class Iptables {
                 Iptables.deleteNatRule(toEth);
             }
             Iptables.addNatRule(toEth);
+        } catch (Exception e) {
+            throw new ProcessException(e.getMessage(), e);
+        }
+    }
+
+    public static void disableIpForward(String fromEth, String toEth) throws ProcessException {
+        try {
+            //filter
+            Iptables.deleteFilterRule(fromEth, toEth);
+            //nat
+            Iptables.deleteNatRule(toEth);
         } catch (Exception e) {
             throw new ProcessException(e.getMessage(), e);
         }

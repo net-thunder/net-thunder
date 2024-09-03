@@ -52,4 +52,7 @@ public abstract class TunDevice {
 
     public abstract void writePacket(ByteBufAllocator alloc, ByteBuf msg);
 
+    public abstract void enableShareNetwork(String fromEth, TunAddress tunAddress) throws Exception;
+
+    public abstract void disableShareNetwork(String fromEth, TunAddress tunAddress) throws Exception;
 }

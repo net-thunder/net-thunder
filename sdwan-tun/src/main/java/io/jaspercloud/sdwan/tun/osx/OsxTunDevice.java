@@ -6,6 +6,7 @@ import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.support.Cidr;
 import io.jaspercloud.sdwan.tun.CheckInvoke;
 import io.jaspercloud.sdwan.tun.ProcessUtil;
+import io.jaspercloud.sdwan.tun.TunAddress;
 import io.jaspercloud.sdwan.tun.TunDevice;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -98,6 +99,16 @@ public class OsxTunDevice extends TunDevice {
         //process loopback
         msg.readBytes(bytes, 4, msg.readableBytes());
         NativeOsxApi.write(fd, bytes, bytes.length);
+    }
+
+    @Override
+    public void enableShareNetwork(String fromEth, TunAddress tunAddress) throws Exception {
+
+    }
+
+    @Override
+    public void disableShareNetwork(String fromEth, TunAddress tunAddress) throws Exception {
+
     }
 
     @Override

@@ -18,5 +18,5 @@ public class TunTransportConfig {
     private int maskBits;
     private int mtu;
     private String localAddress;
-    private Boolean icsEnable;
+    private Boolean shareNetwork;
 }

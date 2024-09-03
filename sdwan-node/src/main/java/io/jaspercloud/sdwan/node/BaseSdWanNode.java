@@ -203,7 +203,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                 InetAddress[] inetAddresses = InetAddress.getAllByName(InetAddress.getLocalHost().getHostName());
                 interfaceInfoList = NetworkInterfaceUtil.parseInetAddress(inetAddresses);
             } else {
-                NetworkInterfaceInfo networkInterfaceInfo = NetworkInterfaceUtil.findNetworkInterfaceInfo(config.getLocalAddress());
+                NetworkInterfaceInfo networkInterfaceInfo = NetworkInterfaceUtil.findIp(config.getLocalAddress());
                 interfaceInfoList = Arrays.asList(networkInterfaceInfo);
             }
             interfaceInfoList.forEach(e -> {

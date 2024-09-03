@@ -41,6 +41,7 @@ public class TunChannel extends AbstractChannel {
 
     private TunAddress tunAddress;
     private TunDevice tunDevice;
+    private Integer mtu;
 
     public TunDevice getTunDevice() {
         return tunDevice;
@@ -49,6 +50,7 @@ public class TunChannel extends AbstractChannel {
     public TunChannel() {
         super(null);
         channelConfig = new TunChannelConfig(this);
+        mtu = config().getOption(TunChannelConfig.MTU);
     }
 
     @Override
@@ -75,9 +77,16 @@ public class TunChannel extends AbstractChannel {
             tunDevice = new LinuxTunDevice(tunName, type, guid);
         }
         tunDevice.open();
-        Integer mtu = config().getOption(TunChannelConfig.MTU);
         tunDevice.setMTU(mtu);
         applyLocalAddress();
+    }
+
+    public void enableShareNetwork(String fromEth) throws Exception {
+        tunDevice.enableShareNetwork(fromEth, tunAddress);
+    }
+
+    public void disableShareNetwork(String fromEth) throws Exception {
+        tunDevice.disableShareNetwork(fromEth, tunAddress);
     }
 
     public void applyLocalAddress() throws Exception {
@@ -89,7 +98,7 @@ public class TunChannel extends AbstractChannel {
     public static void waitAddress(String vip, int timeout) throws Exception {
         long s = System.currentTimeMillis();
         while (true) {
-            NetworkInterfaceInfo networkInterfaceInfo = NetworkInterfaceUtil.findNetworkInterfaceInfo(vip);
+            NetworkInterfaceInfo networkInterfaceInfo = NetworkInterfaceUtil.findIp(vip);
             if (null != networkInterfaceInfo) {
                 return;
             }
@@ -98,7 +107,7 @@ public class TunChannel extends AbstractChannel {
             if (diff > timeout) {
                 throw new TimeoutException();
             }
-            Thread.sleep(100);
+            Thread.sleep(10);
         }
     }
 

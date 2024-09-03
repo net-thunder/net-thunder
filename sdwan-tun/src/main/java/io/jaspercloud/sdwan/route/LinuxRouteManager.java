@@ -22,7 +22,7 @@ public class LinuxRouteManager extends AbstractRouteManager {
     @Override
     protected void addRoute(TunChannel tunChannel, SDWanProtos.Route route) throws Exception {
         TunAddress tunAddress = (TunAddress) tunChannel.localAddress();
-        NetworkInterfaceInfo interfaceInfo = NetworkInterfaceUtil.findNetworkInterfaceInfo(tunAddress.getIp());
+        NetworkInterfaceInfo interfaceInfo = NetworkInterfaceUtil.findIp(tunAddress.getIp());
         String cmd = String.format("ip route add %s via %s dev %s", route.getDestination(), tunAddress.getIp(), interfaceInfo.getName());
         int code = ProcessUtil.exec(cmd);
         CheckInvoke.check(code, 0);
@@ -31,7 +31,7 @@ public class LinuxRouteManager extends AbstractRouteManager {
     @Override
     protected void deleteRoute(TunChannel tunChannel, SDWanProtos.Route route) throws Exception {
         TunAddress tunAddress = (TunAddress) tunChannel.localAddress();
-        NetworkInterfaceInfo interfaceInfo = NetworkInterfaceUtil.findNetworkInterfaceInfo(tunAddress.getIp());
+        NetworkInterfaceInfo interfaceInfo = NetworkInterfaceUtil.findIp(tunAddress.getIp());
         String cmd = String.format("ip route delete %s via %s", route.getDestination(), tunAddress.getIp());
         int code = ProcessUtil.exec(cmd);
         CheckInvoke.check(code, 0, 2);

@@ -3,9 +3,9 @@ package io.jaspercloud.sdwan.tun.windows;
 import com.sun.jna.*;
 import com.sun.jna.platform.win32.WinNT;
 import io.jaspercloud.sdwan.exception.ProcessException;
-import io.jaspercloud.sdwan.tun.CheckInvoke;
-import io.jaspercloud.sdwan.tun.ProcessUtil;
-import io.jaspercloud.sdwan.tun.TunDevice;
+import io.jaspercloud.sdwan.tun.*;
+import io.jaspercloud.sdwan.util.NetworkInterfaceInfo;
+import io.jaspercloud.sdwan.util.NetworkInterfaceUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 
@@ -89,6 +89,34 @@ public class WinTunDevice extends TunDevice {
         Pointer packetPointer = NativeWinTunApi.WintunAllocateSendPacket(session, bytes.length);
         packetPointer.write(0, bytes, 0, bytes.length);
         NativeWinTunApi.WintunSendPacket(session, packetPointer);
+    }
+
+    @Override
+    public void enableShareNetwork(String fromEth, TunAddress tunAddress) throws Exception {
+        NetworkInterfaceInfo from = NetworkInterfaceUtil.findEth(fromEth);
+        String fromIp = from.getInterfaceAddress().getAddress().getHostAddress();
+        String toIp = tunAddress.getIp();
+        int maskBits = tunAddress.getMaskBits();
+        Ics.enable(fromIp, toIp, true);
+        {
+            String cmd = String.format("netsh interface ipv4 set address name=\"%s\" static %s/%s", getName(), toIp, maskBits);
+            int code = ProcessUtil.exec(cmd);
+            CheckInvoke.check(code, 0);
+            TunChannel.waitAddress(toIp, 30 * 1000);
+        }
+        {
+            String cmd = String.format("netsh interface ipv4 add address name=\"%s\" 192.168.137.1/24", getName());
+            int code = ProcessUtil.exec(cmd);
+            CheckInvoke.check(code, 0);
+        }
+    }
+
+    @Override
+    public void disableShareNetwork(String fromEth, TunAddress tunAddress) throws Exception {
+        NetworkInterfaceInfo from = NetworkInterfaceUtil.findEth(fromEth);
+        String fromIp = from.getInterfaceAddress().getAddress().getHostAddress();
+        String toIp = tunAddress.getIp();
+        Ics.enable(fromIp, toIp, false);
     }
 
     @Override

@@ -4,6 +4,7 @@ import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.support.Cidr;
 import io.jaspercloud.sdwan.tun.CheckInvoke;
 import io.jaspercloud.sdwan.tun.ProcessUtil;
+import io.jaspercloud.sdwan.tun.TunAddress;
 import io.jaspercloud.sdwan.tun.TunDevice;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -88,6 +89,16 @@ public class LinuxTunDevice extends TunDevice {
         byte[] bytes = new byte[msg.readableBytes()];
         msg.readBytes(bytes);
         NativeLinuxApi.write(fd, bytes, bytes.length);
+    }
+
+    @Override
+    public void enableShareNetwork(String fromEth, TunAddress tunAddress) throws Exception {
+        Iptables.enableIpForward(fromEth, tunAddress.getTunName());
+    }
+
+    @Override
+    public void disableShareNetwork(String fromEth, TunAddress tunAddress) throws Exception {
+        Iptables.disableIpForward(fromEth, tunAddress.getTunName());
     }
 
     @Override

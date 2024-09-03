@@ -67,7 +67,7 @@ public final class NetworkInterfaceUtil {
         return list;
     }
 
-    public static NetworkInterfaceInfo findNetworkInterfaceInfo(String ip) throws SocketException {
+    public static NetworkInterfaceInfo findIp(String ip) throws SocketException {
         Enumeration<NetworkInterface> enumeration = NetworkInterface.getNetworkInterfaces();
         while (enumeration.hasMoreElements()) {
             NetworkInterface networkInterface = enumeration.nextElement();
@@ -79,6 +79,33 @@ public final class NetworkInterfaceUtil {
                     continue;
                 }
                 if (StringUtils.equals(interfaceAddress.getAddress().getHostAddress(), ip)) {
+                    NetworkInterfaceInfo networkInterfaceInfo = new NetworkInterfaceInfo();
+                    networkInterfaceInfo.setName(networkInterface.getName());
+                    networkInterfaceInfo.setIndex(networkInterface.getIndex());
+                    networkInterfaceInfo.setInterfaceAddress(interfaceAddress);
+                    if (null != networkInterface.getHardwareAddress()) {
+                        String hardwareAddress = parseHardwareAddress(networkInterface.getHardwareAddress());
+                        networkInterfaceInfo.setHardwareAddress(hardwareAddress);
+                    }
+                    return networkInterfaceInfo;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static NetworkInterfaceInfo findEth(String eth) throws SocketException {
+        Enumeration<NetworkInterface> enumeration = NetworkInterface.getNetworkInterfaces();
+        while (enumeration.hasMoreElements()) {
+            NetworkInterface networkInterface = enumeration.nextElement();
+            if (!networkInterface.isUp()) {
+                continue;
+            }
+            for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
+                if (!IPUtil.isIPv4(interfaceAddress.getAddress().getHostAddress())) {
+                    continue;
+                }
+                if (StringUtils.equals(networkInterface.getName(), eth)) {
                     NetworkInterfaceInfo networkInterfaceInfo = new NetworkInterfaceInfo();
                     networkInterfaceInfo.setName(networkInterface.getName());
                     networkInterfaceInfo.setIndex(networkInterface.getIndex());

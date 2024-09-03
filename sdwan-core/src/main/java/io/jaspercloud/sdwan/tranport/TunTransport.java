@@ -1,16 +1,17 @@
 package io.jaspercloud.sdwan.tranport;
 
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
-import io.jaspercloud.sdwan.tun.*;
-import io.jaspercloud.sdwan.tun.windows.Ics;
+import io.jaspercloud.sdwan.tun.TunAddress;
+import io.jaspercloud.sdwan.tun.TunChannel;
+import io.jaspercloud.sdwan.tun.TunChannelConfig;
 import io.jaspercloud.sdwan.util.ByteBufUtil;
+import io.jaspercloud.sdwan.util.NetworkInterfaceInfo;
+import io.jaspercloud.sdwan.util.NetworkInterfaceUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.*;
-import io.netty.util.internal.PlatformDependent;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 /**
@@ -24,7 +25,6 @@ public class TunTransport implements TransportLifecycle {
     private Supplier<ChannelHandler> handler;
 
     private TunChannel localChannel;
-    private Runnable icsDisable;
 
     public TunTransportConfig getConfig() {
         return config;
@@ -63,45 +63,9 @@ public class TunTransport implements TransportLifecycle {
             TunAddress tunAddress = new TunAddress(config.getTunName(), config.getIp(), config.getMaskBits());
             localChannel = (TunChannel) bootstrap.bind(tunAddress).syncUninterruptibly().channel();
             log.info("tunTransport started address={}", config.getIp());
-            if (PlatformDependent.isWindows() && config.getIcsEnable()) {
-                try {
-                    log.info("Ics.enable");
-                    Ics.enable(config.getLocalAddress(), tunAddress.getIp(), true);
-                    icsDisable = new Runnable() {
-
-                        private AtomicBoolean status = new AtomicBoolean(true);
-
-                        @Override
-                        public void run() {
-                            if (!status.compareAndSet(true, false)) {
-                                return;
-                            }
-                            try {
-                                log.info("Ics.disable");
-                                Ics.enable(config.getLocalAddress(), tunAddress.getIp(), false);
-                                log.info("Ics.disabled");
-                            } catch (Exception e) {
-                                log.error(e.getMessage(), e);
-                            }
-                        }
-                    };
-                    {
-                        String cmd = String.format("netsh interface ipv4 set address name=\"%s\" static %s/%s", tunAddress.getTunName(), tunAddress.getIp(), tunAddress.getMaskBits());
-                        log.debug("cmd: {}", cmd);
-                        int code = ProcessUtil.exec(cmd);
-                        CheckInvoke.check(code, 0);
-                        TunChannel.waitAddress(tunAddress.getIp(), 30 * 1000);
-                    }
-                    {
-                        String cmd = String.format("netsh interface ipv4 add address name=\"%s\" 192.168.137.1/24", tunAddress.getTunName());
-                        log.debug("cmd: {}", cmd);
-                        int code = ProcessUtil.exec(cmd);
-                        CheckInvoke.check(code, 0);
-                    }
-                    log.info("Ics.enabled");
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                }
+            if (config.getShareNetwork()) {
+                NetworkInterfaceInfo interfaceInfo = NetworkInterfaceUtil.findIp(config.getLocalAddress());
+                localChannel.enableShareNetwork(interfaceInfo.getName());
             }
             localChannel.closeFuture().addListener(new ChannelFutureListener() {
                 @Override
@@ -120,8 +84,9 @@ public class TunTransport implements TransportLifecycle {
         if (null == localChannel) {
             return;
         }
-        if (null != icsDisable) {
-            icsDisable.run();
+        if (config.getShareNetwork()) {
+            NetworkInterfaceInfo interfaceInfo = NetworkInterfaceUtil.findIp(config.getLocalAddress());
+            localChannel.disableShareNetwork(interfaceInfo.getName());
         }
         localChannel.close();
     }
