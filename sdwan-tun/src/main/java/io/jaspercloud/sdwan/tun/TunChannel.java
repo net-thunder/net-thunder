@@ -92,7 +92,6 @@ public class TunChannel extends AbstractChannel {
     public void applyLocalAddress() throws Exception {
         String ip = tunAddress.getIp();
         tunDevice.setIP(ip, tunAddress.getMaskBits());
-        TunChannel.waitAddress(ip, 30 * 1000);
     }
 
     public static void waitAddress(String vip, int timeout) throws Exception {

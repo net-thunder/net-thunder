@@ -62,6 +62,17 @@ public class TunTransport implements TransportLifecycle {
         try {
             TunAddress tunAddress = new TunAddress(config.getTunName(), config.getIp(), config.getMaskBits());
             localChannel = (TunChannel) bootstrap.bind(tunAddress).syncUninterruptibly().channel();
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                try {
+                    if (!localChannel.isActive()) {
+                        return;
+                    }
+                    TunTransport.this.stop();
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                }
+            }));
+            TunChannel.waitAddress(config.getIp(), 30 * 1000);
             log.info("tunTransport started address={}", config.getIp());
             if (config.getShareNetwork()) {
                 NetworkInterfaceInfo interfaceInfo = NetworkInterfaceUtil.findIp(config.getLocalAddress());
