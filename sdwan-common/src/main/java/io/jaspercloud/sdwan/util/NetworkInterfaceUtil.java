@@ -11,11 +11,10 @@ import java.util.stream.Collectors;
 
 public final class NetworkInterfaceUtil {
 
-    public static String getHardwareAddress() throws UnknownHostException, SocketException {
-        String address = InetAddress.getLocalHost().getHostAddress();
+    public static String getHardwareAddress(String ip) throws SocketException {
         Map<String, NetworkInterfaceInfo> map = findUpIpv4NetworkInterfaceInfo()
                 .stream().collect(Collectors.toMap(e -> e.getInterfaceAddress().getAddress().getHostAddress(), e -> e));
-        NetworkInterfaceInfo interfaceInfo = map.get(address);
+        NetworkInterfaceInfo interfaceInfo = map.get(ip);
         if (null == interfaceInfo) {
             return null;
         }

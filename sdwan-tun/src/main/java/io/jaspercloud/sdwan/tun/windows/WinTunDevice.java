@@ -27,6 +27,7 @@ public class WinTunDevice extends TunDevice {
             adapter = NativeWinTunApi.WintunCreateAdapter(new WString(getName()), new WString(getType()), getGuid());
         }
         session = NativeWinTunApi.WintunStartSession(adapter, NativeWinTunApi.WINTUN_MAX_RING_CAPACITY);
+        NativeKernel32Api.INSTANCE.WaitForSingleObject(NativeWinTunApi.WintunGetReadWaitEvent(session), NativeKernel32Api.INFINITE);
         setActive(true);
     }
 
