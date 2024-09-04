@@ -4,6 +4,7 @@ import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
 
+import java.io.ByteArrayOutputStream;
 import java.net.InetSocketAddress;
 
 public class ByteBufUtil {
@@ -27,6 +28,18 @@ public class ByteBufUtil {
     public static byte[] toBytes(ByteBuf byteBuf) {
         byte[] bytes = new byte[byteBuf.readableBytes()];
         byteBuf.readBytes(bytes);
+        return bytes;
+    }
+
+    public static byte[] toBytes(String data) {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        char[] chars = data.toCharArray();
+        for (int i = 0; i < chars.length; i += 2) {
+            String s = String.valueOf(chars[i]) + String.valueOf(chars[i + 1]);
+            byte b = (byte) Integer.parseInt(s, 16);
+            stream.write(b);
+        }
+        byte[] bytes = stream.toByteArray();
         return bytes;
     }
 

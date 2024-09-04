@@ -5,7 +5,7 @@ public enum AttrType {
     MappedAddress(0x0001, AddressAttr.Decode),
     SourceAddress(0x0004, AddressAttr.Decode),
     ChangedAddress(0x0005, AddressAttr.Decode),
-    XorMappedAddress(0x0020, AddressAttr.Decode),
+    XorMappedAddress(0x0020, AddressAttr.XDecode),
     ChangeRequest(0x0003, ChangeRequestAttr.Decode),
 
     //xiaomi

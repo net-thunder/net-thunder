@@ -11,11 +11,16 @@ public class StunDecoder extends MessageToMessageDecoder<DatagramPacket> {
 
     @Override
     protected void decode(ChannelHandlerContext ctx, DatagramPacket msg, List<Object> out) throws Exception {
+        StunPacket packet = StunDecoder.decode(msg);
+        out.add(packet);
+    }
+
+    public static StunPacket decode(DatagramPacket msg) {
         ByteBuf byteBuf = msg.content();
         int type = byteBuf.readUnsignedShort();
         int len = byteBuf.readUnsignedShort();
         //cookie
-        byteBuf.skipBytes(StunMessage.Cookie.length);
+        byteBuf.skipBytes(Integer.BYTES);
         byte[] tranIdBytes = new byte[12];
         byteBuf.readBytes(tranIdBytes);
         String tranId = new String(tranIdBytes);
@@ -36,6 +41,6 @@ public class StunDecoder extends MessageToMessageDecoder<DatagramPacket> {
             message.getAttrs().put(attrType, attr);
         }
         StunPacket packet = new StunPacket(message, msg.recipient(), msg.sender());
-        out.add(packet);
+        return packet;
     }
 }

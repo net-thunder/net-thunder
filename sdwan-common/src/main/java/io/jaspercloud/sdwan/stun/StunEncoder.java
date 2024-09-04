@@ -36,7 +36,7 @@ public class StunEncoder extends MessageToMessageEncoder<StunPacket> {
             }
             byteBuf.writeShort(message.getMessageType().getCode());
             byteBuf.writeShort(attrsByteBuf.readableBytes());
-            byteBuf.writeBytes(StunMessage.Cookie);
+            byteBuf.writeInt(StunMessage.Cookie);
             byteBuf.writeBytes(message.getTranId().getBytes());
             byteBuf.writeBytes(attrsByteBuf);
         } finally {

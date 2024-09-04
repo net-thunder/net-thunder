@@ -9,7 +9,7 @@ import java.util.UUID;
 @Data
 public class StunMessage {
 
-    public static final byte[] Cookie = new byte[]{(byte) 0x21, (byte) 0x12, (byte) 0xa4, (byte) 0x42};
+    public static final int Cookie = 0x2112a442;
 
     private MessageType messageType;
     private String tranId;

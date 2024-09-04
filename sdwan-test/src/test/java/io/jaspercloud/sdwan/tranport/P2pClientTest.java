@@ -20,7 +20,7 @@ public class P2pClientTest {
 
     @Test
     public void parseNatAddress() throws Exception {
-        P2pClient p2pClient = new P2pClient("127.0.0.1:3478", 3000, () -> new ChannelInboundHandlerAdapter());
+        P2pClient p2pClient = new P2pClient("stun.netbird.io:5555", 5000, () -> new ChannelInboundHandlerAdapter());
         p2pClient.start();
         NatAddress natAddress = p2pClient.parseNatAddress(3000);
         System.out.println();

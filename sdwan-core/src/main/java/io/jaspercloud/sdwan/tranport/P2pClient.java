@@ -101,29 +101,35 @@ public class P2pClient implements TransportLifecycle, Runnable {
         StunPacket response = sendBind(remote, timeout).get();
         Map<AttrType, Attr> attrs = response.content().getAttrs();
         AddressAttr changedAddressAttr = (AddressAttr) attrs.get(AttrType.ChangedAddress);
-        InetSocketAddress changedAddress = changedAddressAttr.getAddress();
-        AddressAttr mappedAddressAttr = (AddressAttr) attrs.get(AttrType.MappedAddress);
-        InetSocketAddress mappedAddress1 = mappedAddressAttr.getAddress();
-        if (null != (response = testChangeBind(remote, true, true, timeout))) {
-            return new NatAddress(SDWanProtos.MappingTypeCode.FullCone, mappedAddress1);
-        } else if (null != (response = testChangeBind(remote, false, true, timeout))) {
-            return new NatAddress(SDWanProtos.MappingTypeCode.RestrictedCone, mappedAddress1);
-        }
-        try {
-            response = sendBind(changedAddress, timeout).get();
-            attrs = response.content().getAttrs();
-            mappedAddressAttr = (AddressAttr) attrs.get(AttrType.MappedAddress);
-            InetSocketAddress mappedAddress2 = mappedAddressAttr.getAddress();
-            if (Objects.equals(mappedAddress1, mappedAddress2)) {
-                return new NatAddress(SDWanProtos.MappingTypeCode.PortRestrictedCone, mappedAddress1);
-            } else {
-                return new NatAddress(SDWanProtos.MappingTypeCode.Symmetric, mappedAddress1);
+        if (null == changedAddressAttr) {
+            AddressAttr mappedAddressAttr = (AddressAttr) attrs.get(AttrType.MappedAddress);
+            InetSocketAddress mappedAddress = mappedAddressAttr.getAddress();
+            return new NatAddress(SDWanProtos.MappingTypeCode.FullCone, mappedAddress);
+        } else {
+            InetSocketAddress changedAddress = changedAddressAttr.getAddress();
+            AddressAttr mappedAddressAttr = (AddressAttr) attrs.get(AttrType.MappedAddress);
+            InetSocketAddress mappedAddress1 = mappedAddressAttr.getAddress();
+            if (null != (response = testChangeBind(remote, true, true, timeout))) {
+                return new NatAddress(SDWanProtos.MappingTypeCode.FullCone, mappedAddress1);
+            } else if (null != (response = testChangeBind(remote, false, true, timeout))) {
+                return new NatAddress(SDWanProtos.MappingTypeCode.RestrictedCone, mappedAddress1);
             }
-        } catch (ExecutionException e) {
-            if (e.getCause() instanceof TimeoutException) {
-                return new NatAddress(SDWanProtos.MappingTypeCode.Symmetric, mappedAddress1);
-            } else {
-                throw e;
+            try {
+                response = sendBind(changedAddress, timeout).get();
+                attrs = response.content().getAttrs();
+                mappedAddressAttr = (AddressAttr) attrs.get(AttrType.MappedAddress);
+                InetSocketAddress mappedAddress2 = mappedAddressAttr.getAddress();
+                if (Objects.equals(mappedAddress1, mappedAddress2)) {
+                    return new NatAddress(SDWanProtos.MappingTypeCode.PortRestrictedCone, mappedAddress1);
+                } else {
+                    return new NatAddress(SDWanProtos.MappingTypeCode.Symmetric, mappedAddress1);
+                }
+            } catch (ExecutionException e) {
+                if (e.getCause() instanceof TimeoutException) {
+                    return new NatAddress(SDWanProtos.MappingTypeCode.Symmetric, mappedAddress1);
+                } else {
+                    throw e;
+                }
             }
         }
     }

@@ -10,6 +10,7 @@ import java.net.InetSocketAddress;
 public class AddressAttr extends Attr {
 
     public static final Decode Decode = new Decode();
+    public static final XDecode XDecode = new XDecode();
 
     private ProtoFamily family;
     private String ip;
@@ -51,6 +52,19 @@ public class AddressAttr extends Attr {
             byte[] bytes = new byte[4];
             byteBuf.readBytes(bytes);
             String ip = IPUtil.bytes2ip(bytes);
+            return new AddressAttr(ProtoFamily.valueOf(family), ip, port);
+        }
+    }
+
+    private static class XDecode implements AttrDecode {
+
+        @Override
+        public Attr decode(ByteBuf byteBuf) {
+            int reserved = byteBuf.readUnsignedByte();
+            int family = byteBuf.readUnsignedByte();
+            int port = byteBuf.readUnsignedShort() ^ (StunMessage.Cookie >> 16);
+            int ipInt = byteBuf.readInt() ^ StunMessage.Cookie;
+            String ip = IPUtil.int2ip(ipInt);
             return new AddressAttr(ProtoFamily.valueOf(family), ip, port);
         }
     }
