@@ -10,6 +10,8 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import org.junit.jupiter.api.Test;
 
 import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -20,10 +22,17 @@ public class P2pClientTest {
 
     @Test
     public void parseNatAddress() throws Exception {
-        P2pClient p2pClient = new P2pClient("stun.netbird.io:5555", 5000, () -> new ChannelInboundHandlerAdapter());
+        P2pClient p2pClient = new P2pClient(51885, 5000, 3000, () -> new ChannelInboundHandlerAdapter());
         p2pClient.start();
-        NatAddress natAddress = p2pClient.parseNatAddress(3000);
-        System.out.println();
+        List<String> stunList = Arrays.asList(
+                "stun.netbird.io:5555",
+                "turn.netbird.io:443"
+        );
+        for (String stun : stunList) {
+            NatAddress natAddress = p2pClient.parseNatAddress(stun, 3000);
+            System.out.println("parseNatAddress: " + natAddress.toString());
+            Thread.sleep(5000);
+        }
     }
 
     @Test
@@ -34,9 +43,9 @@ public class P2pClientTest {
                 .build();
         StunServer stunServer = new StunServer(config, () -> new ChannelInboundHandlerAdapter());
         stunServer.start();
-        P2pClient p2pClient = new P2pClient("127.0.0.1:1000", 3000, () -> new ChannelInboundHandlerAdapter());
+        P2pClient p2pClient = new P2pClient(3000, () -> new ChannelInboundHandlerAdapter());
         p2pClient.start();
-        NatAddress natAddress = p2pClient.parseNatAddress(3000);
+        NatAddress natAddress = p2pClient.parseNatAddress("127.0.0.1:1000", 3000);
         System.out.println();
     }
 
@@ -49,14 +58,14 @@ public class P2pClientTest {
         StunServer stunServer = new StunServer(config, () -> new ChannelInboundHandlerAdapter());
         stunServer.start();
         CompletableFuture<StunPacket> future = new CompletableFuture<>();
-        P2pClient p2pClient1 = new P2pClient("127.0.0.1:3478", 1001, 3000, () -> new SimpleChannelInboundHandler<StunPacket>() {
+        P2pClient p2pClient1 = new P2pClient(1001, 5000, 3000, () -> new SimpleChannelInboundHandler<StunPacket>() {
             @Override
             protected void channelRead0(ChannelHandlerContext ctx, StunPacket msg) throws Exception {
                 future.complete(msg);
             }
         });
         p2pClient1.start();
-        P2pClient p2pClient2 = new P2pClient("127.0.0.1:3478", 1002, 3000, () -> new ChannelInboundHandlerAdapter());
+        P2pClient p2pClient2 = new P2pClient(1002, 5000, 3000, () -> new ChannelInboundHandlerAdapter());
         p2pClient2.start();
         p2pClient2.transfer("127.0.0.1", new InetSocketAddress("127.0.0.1", 1001), "test".getBytes());
         StunPacket stunPacket = future.get();
@@ -71,14 +80,14 @@ public class P2pClientTest {
                 .build();
         StunServer stunServer = new StunServer(config, () -> new ChannelInboundHandlerAdapter());
         stunServer.start();
-        P2pClient p2pClient1 = new P2pClient("127.0.0.1:3478", 1001, 3000, () -> new SimpleChannelInboundHandler<StunPacket>() {
+        P2pClient p2pClient1 = new P2pClient(1001, 5000, 3000, () -> new SimpleChannelInboundHandler<StunPacket>() {
             @Override
             protected void channelRead0(ChannelHandlerContext ctx, StunPacket msg) throws Exception {
                 System.out.println();
             }
         });
         p2pClient1.start();
-        P2pClient p2pClient2 = new P2pClient("127.0.0.1:3478", 1002, 3000, () -> new SimpleChannelInboundHandler<StunPacket>() {
+        P2pClient p2pClient2 = new P2pClient(1002, 5000, 3000, () -> new SimpleChannelInboundHandler<StunPacket>() {
             @Override
             protected void channelRead0(ChannelHandlerContext ctx, StunPacket packet) throws Exception {
                 StunMessage message = packet.content();

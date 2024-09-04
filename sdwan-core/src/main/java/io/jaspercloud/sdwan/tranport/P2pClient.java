@@ -9,10 +9,14 @@ import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import sun.net.util.IPAddressUtil;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -24,27 +28,27 @@ import java.util.function.Supplier;
 @Slf4j
 public class P2pClient implements TransportLifecycle, Runnable {
 
-    private String stunServer;
     private int port;
     private long heartTime;
+    private long timeout;
     private Supplier<ChannelHandler> handler;
 
+    private List<StunPing> stunServerList = new ArrayList<>();
     private Channel localChannel;
-    private NatAddress curNatAddress;
 
     public int getLocalPort() {
         InetSocketAddress address = (InetSocketAddress) localChannel.localAddress();
         return address.getPort();
     }
 
-    public P2pClient(String stunServer, long heartTime, Supplier<ChannelHandler> handler) {
-        this(stunServer, 0, heartTime, handler);
+    public P2pClient(long heartTime, Supplier<ChannelHandler> handler) {
+        this(0, heartTime, 3000, handler);
     }
 
-    public P2pClient(String stunServer, int port, long heartTime, Supplier<ChannelHandler> handler) {
-        this.stunServer = stunServer;
+    public P2pClient(int port, long heartTime, long timeout, Supplier<ChannelHandler> handler) {
         this.port = port;
         this.heartTime = heartTime;
+        this.timeout = timeout;
         this.handler = handler;
     }
 
@@ -96,7 +100,14 @@ public class P2pClient implements TransportLifecycle, Runnable {
         localChannel.writeAndFlush(request);
     }
 
-    public NatAddress parseNatAddress(long timeout) throws Exception {
+    public NatAddress addStunServer(String stunServer) throws Exception {
+        NatAddress natAddress = parseNatAddress(stunServer, timeout);
+        StunPing stunPing = new StunPing(stunServer, natAddress);
+        stunServerList.add(stunPing);
+        return natAddress;
+    }
+
+    public NatAddress parseNatAddress(String stunServer, long timeout) throws Exception {
         InetSocketAddress remote = SocketAddressUtil.parse(stunServer);
         StunPacket response = sendBind(remote, timeout).get();
         Map<AttrType, Attr> attrs = response.content().getAttrs();
@@ -198,7 +209,6 @@ public class P2pClient implements TransportLifecycle, Runnable {
             localChannel = bootstrap.bind(new InetSocketAddress("0.0.0.0", port)).sync().channel();
             InetSocketAddress localAddress = (InetSocketAddress) localChannel.localAddress();
             log.info("P2pClient started: port={}", localAddress.getPort());
-            curNatAddress = parseNatAddress(3000);
             bossGroup.scheduleAtFixedRate(this, 0, heartTime, TimeUnit.MILLISECONDS);
             localChannel.closeFuture().addListener(new ChannelFutureListener() {
                 @Override
@@ -224,15 +234,38 @@ public class P2pClient implements TransportLifecycle, Runnable {
 
     @Override
     public void run() {
-        try {
-            NatAddress natAddress = parseNatAddress(3000);
-            if (!natAddress.equals(curNatAddress)) {
+        for (StunPing ping : stunServerList) {
+            try {
+                boolean ret = ping.ping(timeout);
+                if (!ret) {
+                    log.error("stun server error: {}", ping.getStunServer());
+                    localChannel.close();
+                }
+            } catch (ExecutionException e) {
+                log.error("stun server error: {}", ping.getStunServer());
                 localChannel.close();
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
             }
-        } catch (ExecutionException e) {
-            localChannel.close();
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
+        }
+    }
+
+    @Getter
+    @Setter
+    private class StunPing {
+
+        private String stunServer;
+        private NatAddress curNatAddress;
+
+        public StunPing(String stunServer, NatAddress curNatAddress) {
+            this.stunServer = stunServer;
+            this.curNatAddress = curNatAddress;
+        }
+
+        public boolean ping(long timeout) throws Exception {
+            NatAddress natAddress = parseNatAddress(stunServer, timeout);
+            boolean eq = natAddress.equals(curNatAddress);
+            return eq;
         }
     }
 }

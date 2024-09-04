@@ -215,7 +215,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                         .build().toString();
                 builder.addAddressUri(host);
             });
-            natAddress = processNatAddress(iceClient.parseNatAddress(3000));
+            natAddress = processNatAddress(iceClient.addStunServer(config.getStunServer()));
             log.info("parseNatAddress: type={}, address={}",
                     natAddress.getMappingType().name(), SocketAddressUtil.toAddress(natAddress.getMappingAddress()));
             String srflx = AddressUri.builder()

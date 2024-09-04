@@ -52,8 +52,8 @@ public class IceClient implements TransportLifecycle {
         this.handler = handler;
     }
 
-    public NatAddress parseNatAddress(int timeout) throws Exception {
-        return p2pClient.parseNatAddress(timeout);
+    public NatAddress addStunServer(String stunServer) throws Exception {
+        return p2pClient.addStunServer(stunServer);
     }
 
     public String registRelay(int timeout) throws Exception {
@@ -146,7 +146,7 @@ public class IceClient implements TransportLifecycle {
     @Override
     public void start() throws Exception {
         encryptionKeyPair = Ecdh.generateKeyPair();
-        p2pClient = new P2pClient(config.getStunServer(), config.getP2pPort(), config.getP2pHeartTime(),
+        p2pClient = new P2pClient(config.getP2pPort(), config.getP2pHeartTime(), config.getP2pTimeout(),
                 () -> createStunPacketHandler());
         relayClient = new RelayClient(config.getRelayServer(), config.getRelayPort(), config.getP2pHeartTime(),
                 () -> createStunPacketHandler());
