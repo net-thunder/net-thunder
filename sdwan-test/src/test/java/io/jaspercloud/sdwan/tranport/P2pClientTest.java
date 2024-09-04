@@ -25,12 +25,13 @@ public class P2pClientTest {
         P2pClient p2pClient = new P2pClient(51885, 5000, 3000, () -> new ChannelInboundHandlerAdapter());
         p2pClient.start();
         List<String> stunList = Arrays.asList(
+                "stun.miwifi.com:3478",
                 "stun.netbird.io:5555",
                 "turn.netbird.io:443"
         );
         for (String stun : stunList) {
             NatAddress natAddress = p2pClient.parseNatAddress(stun, 3000);
-            System.out.println("parseNatAddress: " + natAddress.toString());
+            System.out.println(String.format("parseNatAddress: stun=%s, nat=%s", stun, natAddress.toString()));
             Thread.sleep(5000);
         }
     }
