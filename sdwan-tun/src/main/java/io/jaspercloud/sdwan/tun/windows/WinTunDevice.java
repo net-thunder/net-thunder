@@ -1,6 +1,7 @@
 package io.jaspercloud.sdwan.tun.windows;
 
 import com.sun.jna.*;
+import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinNT;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.tun.*;
@@ -27,7 +28,6 @@ public class WinTunDevice extends TunDevice {
             adapter = NativeWinTunApi.WintunCreateAdapter(new WString(getName()), new WString(getType()), getGuid());
         }
         session = NativeWinTunApi.WintunStartSession(adapter, NativeWinTunApi.WINTUN_MAX_RING_CAPACITY);
-        NativeKernel32Api.INSTANCE.WaitForSingleObject(NativeWinTunApi.WintunGetReadWaitEvent(session), NativeKernel32Api.INFINITE);
         setActive(true);
     }
 
@@ -70,7 +70,7 @@ public class WinTunDevice extends TunDevice {
                 }
             } catch (LastErrorException e) {
                 if (e.getErrorCode() == NativeWinTunApi.ERROR_NO_MORE_ITEMS) {
-                    NativeKernel32Api.INSTANCE.WaitForSingleObject(NativeWinTunApi.WintunGetReadWaitEvent(session), NativeKernel32Api.INFINITE);
+                    Kernel32.INSTANCE.WaitForSingleObject(NativeWinTunApi.WintunGetReadWaitEvent(session), Kernel32.INFINITE);
                 } else {
                     throw e;
                 }
@@ -125,6 +125,7 @@ public class WinTunDevice extends TunDevice {
         if (closing) {
             return;
         }
+        Kernel32.INSTANCE.SetEvent(NativeWinTunApi.WintunGetReadWaitEvent(session));
         closing = true;
         setActive(false);
         NativeWinTunApi.WintunEndSession(session);
