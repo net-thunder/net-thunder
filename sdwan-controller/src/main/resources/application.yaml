@@ -3,7 +3,7 @@ controller:
     port: 1800
     heartTimeout: 30000
     tenantConfig:
-      tenant1:
+      default:
         vipCidr: 10.5.0.0/24
   relay:
     bindPort: 2478

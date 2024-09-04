@@ -1,4 +1,4 @@
-tenantId: tenant1
+tenantId: default
 controllerServer: 127.0.0.1:1800
 connectTimeout: 30000
 heartTime: 15000
