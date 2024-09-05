@@ -7,6 +7,9 @@ import io.netty.buffer.ByteBuf;
 
 public class Ipv4Packet implements IpPacket {
 
+    public static final int Tcp = 6;
+    public static final int Udp = 17;
+
     private short version;
     //IPV4+(TCP/UDP)
     private short headerLen;
@@ -146,7 +149,7 @@ public class Ipv4Packet implements IpPacket {
         byteBuf.readBytes(srcIPBytes);
         byte[] dstIPBytes = new byte[4];
         byteBuf.readBytes(dstIPBytes);
-        ByteBuf payload = byteBuf.readSlice(byteBuf.readableBytes());
+        ByteBuf payload = byteBuf.readSlice(totalLen - headLen);
         //set
         ipv4Packet.setVersion(version);
         ipv4Packet.setHeaderLen(headLen);
@@ -190,6 +193,30 @@ public class Ipv4Packet implements IpPacket {
         byteBuf.writeBytes(IPUtil.ip2bytes(srcIP));
         byteBuf.writeBytes(IPUtil.ip2bytes(dstIP));
         if (null != payload) {
+            switch (protocol) {
+                case Tcp: {
+                    TcpPacket packet = TcpPacket.decodeMark(getPayload());
+                    ByteBuf encode = packet.encode(this);
+                    try {
+                        payload.writerIndex(0);
+                        payload.writeBytes(encode);
+                    } finally {
+                        encode.release();
+                    }
+                    break;
+                }
+                case Udp: {
+                    UdpPacket packet = UdpPacket.decodeMark(getPayload());
+                    ByteBuf encode = packet.encode(this);
+                    try {
+                        payload.writerIndex(0);
+                        payload.writeBytes(encode);
+                    } finally {
+                        encode.release();
+                    }
+                    break;
+                }
+            }
             byteBuf.writeBytes(getPayload());
         }
         return byteBuf;
