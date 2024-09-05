@@ -29,6 +29,7 @@ public class LoggerSystem {
         fileAppender.setContext(loggerContext);
         fileAppender.setName("file");
         fileAppender.setEncoder(encoder);
+        fileAppender.setAppend(true);
         fileAppender.setFile(logFile);
         fileAppender.start();
         AsyncAppender asyncAppender = new AsyncAppender();
@@ -53,6 +54,7 @@ public class LoggerSystem {
         fileAppender.setContext(loggerContext);
         fileAppender.setName("file");
         fileAppender.setEncoder(encoder);
+        fileAppender.setAppend(true);
         String logFile = new File(System.getProperty("user.dir"), "app.log").getAbsolutePath();
         fileAppender.setFile(logFile);
         fileAppender.start();
