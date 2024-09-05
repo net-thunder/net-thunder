@@ -62,7 +62,7 @@ public class IceClient implements TransportLifecycle {
 
     public void sendNode(String srcVip, SDWanProtos.NodeInfo nodeInfo, byte[] bytes) {
         AtomicReference<DataTransport> ref = p2pTransportManager.getOrCreate(nodeInfo.getVip(), key -> {
-            log.debug("election: vip={}", nodeInfo.getVip());
+            log.info("election: vip={}", nodeInfo.getVip());
             electionProtocol.offer(nodeInfo)
                     .whenComplete((transport, ex) -> {
                         if (null != ex) {
@@ -87,7 +87,7 @@ public class IceClient implements TransportLifecycle {
         log.info("processOffer: id={}", reqId);
         electionProtocol.answer(reqId, p2pOffer)
                 .thenAccept(transport -> {
-                    log.debug("answer addTransport: vip={}", p2pOffer.getSrcVIP());
+                    log.info("answer addTransport: vip={}", p2pOffer.getSrcVIP());
                     p2pTransportManager.addTransport(p2pOffer.getSrcVIP(), transport);
                 });
     }

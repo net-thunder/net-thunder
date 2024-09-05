@@ -1,5 +1,6 @@
 package io.jaspercloud.sdwan.node;
 
+import ch.qos.logback.classic.AsyncAppender;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
@@ -24,13 +25,18 @@ public class LoggerSystem {
         encoder.setCharset(Charset.forName("utf-8"));
         encoder.setPattern("%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n");
         encoder.start();
-        FileAppender appender = new FileAppender();
-        appender.setContext(loggerContext);
-        appender.setName("file");
-        appender.setEncoder(encoder);
-        appender.setFile(logFile);
-        appender.start();
-        logger.addAppender(appender);
+        FileAppender fileAppender = new FileAppender();
+        fileAppender.setContext(loggerContext);
+        fileAppender.setName("file");
+        fileAppender.setEncoder(encoder);
+        fileAppender.setFile(logFile);
+        fileAppender.start();
+        AsyncAppender asyncAppender = new AsyncAppender();
+        asyncAppender.setName("async");
+        asyncAppender.setContext(loggerContext);
+        asyncAppender.addAppender(fileAppender);
+        asyncAppender.start();
+        logger.addAppender(asyncAppender);
         return logger;
     }
 
@@ -43,14 +49,19 @@ public class LoggerSystem {
         encoder.setCharset(Charset.forName("utf-8"));
         encoder.setPattern("%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n");
         encoder.start();
-        FileAppender appender = new FileAppender();
-        appender.setContext(loggerContext);
-        appender.setName("file");
-        appender.setEncoder(encoder);
+        FileAppender fileAppender = new FileAppender();
+        fileAppender.setContext(loggerContext);
+        fileAppender.setName("file");
+        fileAppender.setEncoder(encoder);
         String logFile = new File(System.getProperty("user.dir"), "app.log").getAbsolutePath();
-        appender.setFile(logFile);
-        appender.start();
-        logger.addAppender(appender);
+        fileAppender.setFile(logFile);
+        fileAppender.start();
+        AsyncAppender asyncAppender = new AsyncAppender();
+        asyncAppender.setName("async");
+        asyncAppender.setContext(loggerContext);
+        asyncAppender.addAppender(fileAppender);
+        asyncAppender.start();
+        logger.addAppender(asyncAppender);
         return logger;
     }
 }

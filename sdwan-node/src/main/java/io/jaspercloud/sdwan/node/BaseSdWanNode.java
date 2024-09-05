@@ -129,13 +129,17 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                             case SDWanProtos.MessageTypeCode.NodeOnlineType_VALUE: {
                                 SDWanProtos.NodeInfo nodeInfo = SDWanProtos.NodeInfo.parseFrom(msg.getData());
                                 nodeInfoMap.put(nodeInfo.getVip(), nodeInfo);
-                                log.debug("onlineNode: vip={}", nodeInfo.getVip());
+                                if (log.isDebugEnabled()) {
+                                    log.debug("onlineNode: vip={}", nodeInfo.getVip());
+                                }
                                 break;
                             }
                             case SDWanProtos.MessageTypeCode.NodeOfflineType_VALUE: {
                                 SDWanProtos.NodeInfo nodeInfo = SDWanProtos.NodeInfo.parseFrom(msg.getData());
                                 nodeInfoMap.remove(nodeInfo.getVip());
-                                log.debug("offlineNode: vip={}", nodeInfo.getVip());
+                                if (log.isDebugEnabled()) {
+                                    log.debug("offlineNode: vip={}", nodeInfo.getVip());
+                                }
                                 break;
                             }
                         }
