@@ -12,6 +12,7 @@ import io.jaspercloud.sdwan.support.Multicast;
 import io.jaspercloud.sdwan.tranport.Lifecycle;
 import io.jaspercloud.sdwan.tranport.SdWanClient;
 import io.jaspercloud.sdwan.tranport.SdWanClientConfig;
+import io.jaspercloud.sdwan.tun.IpRoutePacket;
 import io.jaspercloud.sdwan.tun.Ipv4Packet;
 import io.jaspercloud.sdwan.tun.windows.Ics;
 import io.jaspercloud.sdwan.util.*;
@@ -171,19 +172,19 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         log.info("SdWanNode stopped");
     }
 
-    public void sendIpPacket(Ipv4Packet ipPacket) {
+    public void sendIpPacket(IpRoutePacket packet) {
         if (config.getShareNetwork()
                 && PlatformDependent.isWindows()
-                && Ics.IcsIp.equals(ipPacket.getSrcIP())) {
+                && Ics.IcsIp.equals(packet.getSrcIP())) {
             //fix ics
-            ipPacket.setSrcIP(localVip);
+            packet.setSrcIP(localVip);
         }
-        if (Multicast.isMulticastIp(ipPacket.getDstIP()) || Cidr.isBroadcastAddress(vipCidr, ipPacket.getDstIP())) {
+        if (Multicast.isMulticastIp(packet.getDstIP()) || Cidr.isBroadcastAddress(vipCidr, packet.getDstIP())) {
             //broadcast
             byte[] bytes = SDWanProtos.IpPacket.newBuilder()
-                    .setSrcIP(ipPacket.getSrcIP())
-                    .setDstIP(ipPacket.getDstIP())
-                    .setPayload(ByteString.copyFrom(ByteBufUtil.toBytesRelease(ipPacket.encode())))
+                    .setSrcIP(packet.getSrcIP())
+                    .setDstIP(packet.getDstIP())
+                    .setPayload(ByteString.copyFrom(ByteBufUtil.toBytes(packet.rebuild())))
                     .build().toByteArray();
             nodeInfoMap.values().forEach(nodeInfo -> {
                 iceClient.sendNode(localVip, nodeInfo, bytes);
@@ -191,7 +192,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
             return;
         }
         //route
-        String dstVip = virtualRouter.routeOut(ipPacket);
+        String dstVip = virtualRouter.routeOut(packet);
         if (null == dstVip) {
             return;
         }
@@ -200,18 +201,19 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
             return;
         }
         byte[] bytes = SDWanProtos.IpPacket.newBuilder()
-                .setSrcIP(ipPacket.getSrcIP())
-                .setDstIP(ipPacket.getDstIP())
-                .setPayload(ByteString.copyFrom(ByteBufUtil.toBytesRelease(ipPacket.encode())))
+                .setSrcIP(packet.getSrcIP())
+                .setDstIP(packet.getDstIP())
+                .setPayload(ByteString.copyFrom(ByteBufUtil.toBytes(packet.rebuild())))
                 .build().toByteArray();
         iceClient.sendNode(localVip, nodeInfo, bytes);
     }
 
     public void sendIpPacket(SDWanProtos.IpPacket ipPacket) {
-        Ipv4Packet ipv4Packet = new Ipv4Packet();
-        ipv4Packet.setSrcIP(ipPacket.getSrcIP());
-        ipv4Packet.setDstIP(ipPacket.getDstIP());
-        sendIpPacket(ipv4Packet);
+//        IpRoutePacket packet = new IpRoutePacket();
+//        packet.setSrcIP(ipPacket.getSrcIP());
+//        packet.setDstIP(ipPacket.getDstIP());
+//        sendIpPacket(packet);
+        //todo
     }
 
     protected void install() throws Exception {

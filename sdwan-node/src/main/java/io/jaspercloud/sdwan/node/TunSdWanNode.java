@@ -7,7 +7,7 @@ import io.jaspercloud.sdwan.route.VirtualRouter;
 import io.jaspercloud.sdwan.stun.*;
 import io.jaspercloud.sdwan.tranport.TunTransport;
 import io.jaspercloud.sdwan.tranport.TunTransportConfig;
-import io.jaspercloud.sdwan.tun.Ipv4Packet;
+import io.jaspercloud.sdwan.tun.IpRoutePacket;
 import io.jaspercloud.sdwan.tun.TunChannel;
 import io.jaspercloud.sdwan.util.ByteBufUtil;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;
@@ -63,7 +63,7 @@ public class TunSdWanNode extends BaseSdWanNode {
                 VirtualRouter virtualRouter = getVirtualRouter();
                 ByteBuf byteBuf = ByteBufUtil.toByteBuf(ipPacket.getPayload().toByteArray());
                 try {
-                    ipPacket = virtualRouter.routeIn(Ipv4Packet.decodeMark(byteBuf));
+                    ipPacket = virtualRouter.routeIn(new IpRoutePacket(byteBuf));
                     tunTransport.writeIpPacket(ipPacket);
                 } finally {
                     byteBuf.release();
@@ -90,8 +90,8 @@ public class TunSdWanNode extends BaseSdWanNode {
         tunTransport = new TunTransport(tunConfig, () -> new SimpleChannelInboundHandler<ByteBuf>() {
             @Override
             protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
-                Ipv4Packet ipv4Packet = Ipv4Packet.decodeMark(msg);
-                TunSdWanNode.this.sendIpPacket(ipv4Packet);
+                IpRoutePacket packet = new IpRoutePacket(msg);
+                TunSdWanNode.this.sendIpPacket(packet);
             }
         });
         tunTransport.start();

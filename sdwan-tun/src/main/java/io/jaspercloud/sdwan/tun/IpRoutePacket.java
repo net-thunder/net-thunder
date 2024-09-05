@@ -13,19 +13,19 @@ public class IpRoutePacket implements Referenced {
         this.byteBuf = byteBuf;
     }
 
-    public void setSrcIp(String ip) {
+    public void setSrcIP(String ip) {
         writeIp(12, ip);
     }
 
-    public void setDstIp(String ip) {
+    public void setDstIP(String ip) {
         writeIp(16, ip);
     }
 
-    public String getSrcIp() {
+    public String getSrcIP() {
         return readIp(12);
     }
 
-    public String getDstIp() {
+    public String getDstIP() {
         return readIp(16);
     }
 
@@ -51,7 +51,7 @@ public class IpRoutePacket implements Referenced {
         }
     }
 
-    public void rebuild() {
+    public ByteBuf rebuild() {
         byteBuf.markReaderIndex();
         byteBuf.readerIndex(0);
         short head = byteBuf.readUnsignedByte();
@@ -65,19 +65,20 @@ public class IpRoutePacket implements Referenced {
         byteBuf.resetReaderIndex();
         switch (protocol) {
             case Ipv4Packet.Tcp: {
-                String srcIp = getSrcIp();
-                String dstIp = getDstIp();
+                String srcIp = getSrcIP();
+                String dstIp = getDstIP();
                 reCalcTcpCheckSum(payload, protocol, srcIp, dstIp);
                 break;
             }
             case Ipv4Packet.Udp: {
-                String srcIp = getSrcIp();
-                String dstIp = getDstIp();
+                String srcIp = getSrcIP();
+                String dstIp = getDstIP();
                 reCalcUdpCheckSum(payload, protocol, srcIp, dstIp);
                 break;
             }
         }
         reCalcIpCheckSum();
+        return byteBuf;
     }
 
     private void reCalcTcpCheckSum(ByteBuf payload, int protocol, String srcIp, String dstIp) {

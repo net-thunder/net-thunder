@@ -4,7 +4,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.ProtocolStringList;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.support.Cidr;
-import io.jaspercloud.sdwan.tun.Ipv4Packet;
+import io.jaspercloud.sdwan.tun.IpRoutePacket;
 import io.jaspercloud.sdwan.util.ByteBufUtil;
 
 import java.util.Collections;
@@ -59,12 +59,12 @@ public class VirtualRouter {
         listenerMap.forEach((k, v) -> v.accept(routeList));
     }
 
-    public SDWanProtos.IpPacket routeIn(Ipv4Packet packet) {
+    public SDWanProtos.IpPacket routeIn(IpRoutePacket packet) {
         String srcIp = transformMap.get(packet.getSrcIP());
         if (null != srcIp) {
             packet.setSrcIP(srcIp);
         }
-        byte[] bytes = ByteBufUtil.toBytesRelease(packet.encode());
+        byte[] bytes = ByteBufUtil.toBytes(packet.rebuild());
         SDWanProtos.IpPacket ipPacket = SDWanProtos.IpPacket.newBuilder()
                 .setSrcIP(packet.getSrcIP())
                 .setDstIP(packet.getDstIP())
@@ -73,7 +73,7 @@ public class VirtualRouter {
         return ipPacket;
     }
 
-    public String routeOut(Ipv4Packet packet) {
+    public String routeOut(IpRoutePacket packet) {
         String dstIP = packet.getDstIP();
         if (Cidr.contains(cidr, dstIP)) {
             return dstIP;
