@@ -23,7 +23,7 @@ public class LinuxRouteManager extends AbstractRouteManager {
     protected void addRoute(TunChannel tunChannel, SDWanProtos.Route route) throws Exception {
         TunAddress tunAddress = (TunAddress) tunChannel.localAddress();
         NetworkInterfaceInfo interfaceInfo = NetworkInterfaceUtil.findIp(tunAddress.getIp());
-        String cmd = String.format("ip route add %s via %s dev %s", route.getDestination(), tunAddress.getIp(), interfaceInfo.getName());
+        String cmd = String.format("ip route add %s via %s dev %s", route.getDestination(), tunAddress.getIp(), interfaceInfo.getEthName());
         int code = ProcessUtil.exec(cmd);
         CheckInvoke.check(code, 0);
     }

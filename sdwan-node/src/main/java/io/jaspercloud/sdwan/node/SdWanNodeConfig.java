@@ -6,6 +6,8 @@ import io.jaspercloud.sdwan.util.NetworkInterfaceUtil;
 import lombok.*;
 
 import java.net.InetAddress;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author jasper
@@ -36,6 +38,23 @@ public class SdWanNodeConfig {
     private String tunName = "net-thunder";
     private int mtu = 1440;
     private Boolean shareNetwork = false;
+
+    private List<String> ifaceBlackList = Arrays.asList(
+            "wt0",
+            "wt",
+            "utun",
+            "tun0",
+            "zt",
+            "ZeroTier",
+            "wg",
+            "ts",
+            "Tailscale",
+            "tailscale",
+            "docker",
+            "veth",
+            "br-",
+            "lo"
+    );
 
     public String getHostAddress() {
         try {

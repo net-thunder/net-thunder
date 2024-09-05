@@ -1,6 +1,7 @@
 package io.jaspercloud.sdwan.support;
 
 import io.jaspercloud.sdwan.exception.CidrParseException;
+import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.util.IPUtil;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
@@ -8,6 +9,7 @@ import sun.net.util.IPAddressUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Data
 public class Cidr {
@@ -134,6 +136,39 @@ public class Cidr {
         int checkAddr = IPUtil.ip2int(ip);
         boolean contains = checkAddr >= address && checkAddr <= maxAddr;
         return contains;
+    }
+
+    private boolean contains(String ip) {
+        int address = parseIdentifierAddress(IPUtil.ip2int(networkIdentifier), maskBits);
+        int count = (int) Math.pow(2, 32 - maskBits) - 1;
+        int maxAddr = address + count;
+        int checkAddr = IPUtil.ip2int(ip);
+        boolean contains = checkAddr >= address && checkAddr <= maxAddr;
+        return contains;
+    }
+
+    private int getIdx(String ip) {
+        int address = parseIdentifierAddress(IPUtil.ip2int(networkIdentifier), maskBits);
+        int checkAddr = IPUtil.ip2int(ip);
+        return checkAddr - address;
+    }
+
+    private String genIpByIdx(int idx) {
+        int address = parseIdentifierAddress(IPUtil.ip2int(networkIdentifier), maskBits);
+        String ip = IPUtil.int2ip(address + idx);
+        return ip;
+    }
+
+    public static String transform(String ip, Cidr src, Cidr target) {
+        if (!src.contains(ip)) {
+            throw new ProcessException("ip contains failed");
+        }
+        if (!Objects.equals(src.getMaskBits(), target.getMaskBits())) {
+            throw new ProcessException("maskBits equals failed");
+        }
+        int idx = src.getIdx(ip);
+        String result = target.genIpByIdx(idx);
+        return result;
     }
 
     @Override

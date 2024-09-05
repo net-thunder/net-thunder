@@ -76,7 +76,7 @@ public class TunTransport implements TransportLifecycle {
             log.info("tunTransport started address={}", config.getIp());
             if (config.getShareNetwork()) {
                 NetworkInterfaceInfo interfaceInfo = NetworkInterfaceUtil.findIp(config.getLocalAddress());
-                localChannel.enableShareNetwork(interfaceInfo.getName());
+                localChannel.enableShareNetwork(interfaceInfo.getEthName());
             }
             localChannel.closeFuture().addListener(new ChannelFutureListener() {
                 @Override
@@ -97,7 +97,7 @@ public class TunTransport implements TransportLifecycle {
         }
         if (config.getShareNetwork()) {
             NetworkInterfaceInfo interfaceInfo = NetworkInterfaceUtil.findIp(config.getLocalAddress());
-            localChannel.disableShareNetwork(interfaceInfo.getName());
+            localChannel.disableShareNetwork(interfaceInfo.getEthName());
         }
         localChannel.close();
     }

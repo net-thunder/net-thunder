@@ -2,14 +2,16 @@ package io.jaspercloud.sdwan.util;
 
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.UnpooledByteBufAllocator;
 
 import java.io.ByteArrayOutputStream;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 
 public class ByteBufUtil {
 
-    private static final PooledByteBufAllocator DEFAULT = new PooledByteBufAllocator();
+    private static final ByteBufAllocator DEFAULT = new UnpooledByteBufAllocator(false);
 
     public static ByteBuf newPacketBuf() {
         return DEFAULT.buffer(1500);
@@ -22,6 +24,12 @@ public class ByteBufUtil {
     public static ByteBuf toByteBuf(byte[] bytes) {
         ByteBuf buffer = DEFAULT.buffer(bytes.length);
         buffer.writeBytes(bytes);
+        return buffer;
+    }
+
+    public static ByteBuf toByteBuf(ByteBuffer byteBuffer) {
+        ByteBuf buffer = DEFAULT.buffer(byteBuffer.capacity());
+        buffer.writeBytes(byteBuffer);
         return buffer;
     }
 
