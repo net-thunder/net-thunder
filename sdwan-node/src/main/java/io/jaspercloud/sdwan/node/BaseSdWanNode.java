@@ -191,7 +191,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
             return;
         }
         //route
-        String dstVip = virtualRouter.route(ipPacket);
+        String dstVip = virtualRouter.routeOut(ipPacket);
         if (null == dstVip) {
             return;
         }
@@ -208,24 +208,10 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
     }
 
     public void sendIpPacket(SDWanProtos.IpPacket ipPacket) {
-        byte[] bytes = ipPacket.toByteArray();
-        if (Multicast.isMulticastIp(ipPacket.getDstIP()) || Cidr.isBroadcastAddress(vipCidr, ipPacket.getDstIP())) {
-            //broadcast
-            nodeInfoMap.values().forEach(nodeInfo -> {
-                iceClient.sendNode(localVip, nodeInfo, bytes);
-            });
-            return;
-        }
-        //route
-        String dstVip = virtualRouter.route(ipPacket);
-        if (null == dstVip) {
-            return;
-        }
-        SDWanProtos.NodeInfo nodeInfo = nodeInfoMap.get(dstVip);
-        if (null == nodeInfo) {
-            return;
-        }
-        iceClient.sendNode(localVip, nodeInfo, bytes);
+        Ipv4Packet ipv4Packet = new Ipv4Packet();
+        ipv4Packet.setSrcIP(ipPacket.getSrcIP());
+        ipv4Packet.setDstIP(ipPacket.getDstIP());
+        sendIpPacket(ipv4Packet);
     }
 
     protected void install() throws Exception {

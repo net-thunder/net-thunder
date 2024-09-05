@@ -119,7 +119,7 @@ public class Ipv4Packet implements IpPacket {
         this.payload = payload;
     }
 
-    private Ipv4Packet() {
+    public Ipv4Packet() {
 
     }
 
@@ -189,7 +189,9 @@ public class Ipv4Packet implements IpPacket {
         byteBuf.writeShort(calcChecksum);
         byteBuf.writeBytes(IPUtil.ip2bytes(srcIP));
         byteBuf.writeBytes(IPUtil.ip2bytes(dstIP));
-        byteBuf.writeBytes(getPayload());
+        if (null != payload) {
+            byteBuf.writeBytes(getPayload());
+        }
         return byteBuf;
     }
 

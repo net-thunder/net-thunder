@@ -8,6 +8,7 @@ import io.jaspercloud.sdwan.tranport.TunTransport;
 import io.jaspercloud.sdwan.tranport.TunTransportConfig;
 import io.jaspercloud.sdwan.tun.Ipv4Packet;
 import io.jaspercloud.sdwan.tun.TunChannel;
+import io.jaspercloud.sdwan.util.ByteBufUtil;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
@@ -58,7 +59,14 @@ public class TunSdWanNode extends BaseSdWanNode {
                 if (null == tunTransport || !tunTransport.isRunning()) {
                     return;
                 }
-                tunTransport.writeIpPacket(ipPacket);
+                ByteBuf byteBuf = ByteBufUtil.toByteBuf(ipPacket.getPayload().toByteArray());
+                try {
+                    Ipv4Packet ipv4Packet = Ipv4Packet.decodeMark(byteBuf);
+                    ipPacket = getVirtualRouter().routeIn(ipv4Packet);
+                    tunTransport.writeIpPacket(ipPacket);
+                } finally {
+                    byteBuf.release();
+                }
             }
         };
     }
