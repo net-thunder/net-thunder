@@ -22,9 +22,9 @@ import java.util.function.Consumer;
 public class VirtualRouter {
 
     private String cidr;
-    private List<SDWanProtos.Route> routeList = Collections.emptyList();
     private ReadWriteLock lock = new ReentrantReadWriteLock();
     private Map<Integer, Consumer<List<SDWanProtos.Route>>> listenerMap = new ConcurrentHashMap<>();
+    private List<SDWanProtos.Route> routeList = Collections.emptyList();
     private Map<String, String> transformMap = new ConcurrentHashMap<>();
 
     public void addListener(Consumer<List<SDWanProtos.Route>> listener) {
@@ -51,6 +51,7 @@ public class VirtualRouter {
     public void updateRoutes(List<SDWanProtos.Route> list) {
         lock.writeLock().lock();
         try {
+            transformMap.clear();
             routeList = list;
         } finally {
             lock.writeLock().unlock();
