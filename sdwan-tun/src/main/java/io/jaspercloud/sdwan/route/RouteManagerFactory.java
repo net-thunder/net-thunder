@@ -1,6 +1,5 @@
 package io.jaspercloud.sdwan.route;
 
-import io.jaspercloud.sdwan.tranport.VirtualRouter;
 import io.jaspercloud.sdwan.tun.TunChannel;
 import io.netty.util.internal.PlatformDependent;
 

@@ -106,7 +106,7 @@ public class WinTunDevice extends TunDevice {
             TunChannel.waitAddress(toIp, 30 * 1000);
         }
         {
-            String cmd = String.format("netsh interface ipv4 add address name=\"%s\" 192.168.137.1/24", getName());
+            String cmd = String.format("netsh interface ipv4 add address name=\"%s\" %s/24", getName(), Ics.IcsIp);
             int code = ProcessUtil.exec(cmd);
             CheckInvoke.check(code, 0);
         }

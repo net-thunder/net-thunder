@@ -1,17 +1,22 @@
 package io.jaspercloud.sdwan.node;
 
+import com.google.protobuf.ByteString;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.exception.ProcessException;
+import io.jaspercloud.sdwan.route.VirtualRouter;
 import io.jaspercloud.sdwan.stun.NatAddress;
 import io.jaspercloud.sdwan.support.AddressUri;
 import io.jaspercloud.sdwan.support.AsyncTask;
 import io.jaspercloud.sdwan.support.Cidr;
+import io.jaspercloud.sdwan.support.Multicast;
 import io.jaspercloud.sdwan.tranport.Lifecycle;
 import io.jaspercloud.sdwan.tranport.SdWanClient;
 import io.jaspercloud.sdwan.tranport.SdWanClientConfig;
-import io.jaspercloud.sdwan.tranport.VirtualRouter;
+import io.jaspercloud.sdwan.tun.Ipv4Packet;
+import io.jaspercloud.sdwan.tun.windows.Ics;
 import io.jaspercloud.sdwan.util.*;
 import io.netty.channel.*;
+import io.netty.util.internal.PlatformDependent;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetAddress;
@@ -166,26 +171,61 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         log.info("SdWanNode stopped");
     }
 
-    public void sendIpPacket(SDWanProtos.IpPacket ipPacket) {
-        sendTo(localVip, ipPacket.getDstIP(), ipPacket.toByteArray());
-    }
-
-    private void sendTo(String srcVip, String dstIp, byte[] bytes) {
-        String dstVip = virtualRouter.route(srcVip, dstIp);
-        if (null == dstVip) {
+    public void sendIpPacket(Ipv4Packet ipPacket) {
+        if (config.getShareNetwork()
+                && PlatformDependent.isWindows()
+                && Ics.IcsIp.equals(ipPacket.getSrcIP())) {
+            //fix ics
+            ipPacket.setSrcIP(localVip);
+        }
+        if (Multicast.isMulticastIp(ipPacket.getDstIP()) || Cidr.isBroadcastAddress(vipCidr, ipPacket.getDstIP())) {
+            //broadcast
+            byte[] bytes = SDWanProtos.IpPacket.newBuilder()
+                    .setSrcIP(ipPacket.getSrcIP())
+                    .setDstIP(ipPacket.getDstIP())
+                    .setPayload(ByteString.copyFrom(ByteBufUtil.toBytesRelease(ipPacket.encode())))
+                    .build().toByteArray();
+            nodeInfoMap.values().forEach(nodeInfo -> {
+                iceClient.sendNode(localVip, nodeInfo, bytes);
+            });
             return;
         }
-        if (Cidr.isBroadcastAddress(vipCidr, dstVip)) {
-            nodeInfoMap.values().forEach(nodeInfo -> {
-                iceClient.sendNode(srcVip, nodeInfo, bytes);
-            });
+        //route
+        String dstVip = virtualRouter.route(ipPacket);
+        if (null == dstVip) {
             return;
         }
         SDWanProtos.NodeInfo nodeInfo = nodeInfoMap.get(dstVip);
         if (null == nodeInfo) {
             return;
         }
-        iceClient.sendNode(srcVip, nodeInfo, bytes);
+        byte[] bytes = SDWanProtos.IpPacket.newBuilder()
+                .setSrcIP(ipPacket.getSrcIP())
+                .setDstIP(ipPacket.getDstIP())
+                .setPayload(ByteString.copyFrom(ByteBufUtil.toBytesRelease(ipPacket.encode())))
+                .build().toByteArray();
+        iceClient.sendNode(localVip, nodeInfo, bytes);
+    }
+
+    public void sendIpPacket(SDWanProtos.IpPacket ipPacket) {
+        byte[] bytes = ipPacket.toByteArray();
+        if (Multicast.isMulticastIp(ipPacket.getDstIP()) || Cidr.isBroadcastAddress(vipCidr, ipPacket.getDstIP())) {
+            //broadcast
+            nodeInfoMap.values().forEach(nodeInfo -> {
+                iceClient.sendNode(localVip, nodeInfo, bytes);
+            });
+            return;
+        }
+        //route
+        String dstVip = virtualRouter.route(ipPacket);
+        if (null == dstVip) {
+            return;
+        }
+        SDWanProtos.NodeInfo nodeInfo = nodeInfoMap.get(dstVip);
+        if (null == nodeInfo) {
+            return;
+        }
+        iceClient.sendNode(localVip, nodeInfo, bytes);
     }
 
     protected void install() throws Exception {

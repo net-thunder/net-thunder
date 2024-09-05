@@ -149,10 +149,13 @@ public class SdWanServer implements Lifecycle, Runnable {
             List<SdWanServerConfig.Route> routeList = tenantSpace.getRouteList();
             if (!CollectionUtil.isEmpty(routeList)) {
                 routeList.forEach(e -> {
-                    routeBuilder.addRoute(SDWanProtos.Route.newBuilder()
+                    SDWanProtos.Route.Builder builder = SDWanProtos.Route.newBuilder()
                             .setDestination(e.getDestination())
-                            .addAllNexthop(e.getNexthop())
-                            .build());
+                            .addAllNexthop(e.getNexthop());
+                    if (null != e.getTransform()) {
+                        builder.setTransform(e.getTransform());
+                    }
+                    routeBuilder.addRoute(builder.build());
                 });
             }
             Cidr ipPool = tenantSpace.getIpPool();

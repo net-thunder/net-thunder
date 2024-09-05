@@ -81,7 +81,8 @@ message NodeInfoList {
 
 message Route {
   required string destination = 1;
-  repeated string nexthop = 2 ;
+  optional string transform = 2;
+  repeated string nexthop = 3;
 }
 
 message RouteList {

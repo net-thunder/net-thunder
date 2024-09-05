@@ -1,8 +1,9 @@
-package io.jaspercloud.sdwan.tranport;
+package io.jaspercloud.sdwan.route;
 
 import com.google.protobuf.ProtocolStringList;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.support.Cidr;
+import io.jaspercloud.sdwan.tun.Ipv4Packet;
 
 import java.util.Collections;
 import java.util.List;
@@ -54,7 +55,11 @@ public class VirtualRouter {
         listenerMap.forEach((k, v) -> v.accept(routeList));
     }
 
-    public String route(String srcVip, String dstIp) {
+    public String route(Ipv4Packet packet) {
+        String dstIP = packet.getDstIP();
+        if (Cidr.contains(cidr, dstIP)) {
+            return dstIP;
+        }
         List<SDWanProtos.Route> list;
         lock.readLock().lock();
         try {
@@ -62,16 +67,45 @@ public class VirtualRouter {
         } finally {
             lock.readLock().unlock();
         }
-        if (Cidr.contains(cidr, dstIp)) {
-            return dstIp;
-        }
         for (SDWanProtos.Route route : list) {
-            if (Cidr.contains(route.getDestination(), dstIp)) {
+            if (Cidr.contains(route.getDestination(), dstIP)) {
                 ProtocolStringList nexthopList = route.getNexthopList();
                 if (nexthopList.isEmpty()) {
                     return null;
                 }
-                int rand = Math.abs(srcVip.hashCode()) % nexthopList.size();
+                if (null != route.getTransform()) {
+                    Cidr from = Cidr.parseCidr(route.getDestination());
+                    Cidr to = Cidr.parseCidr(route.getTransform());
+                    String dst = Cidr.transform(dstIP, from, to);
+                    packet.setDstIP(dst);
+                }
+                int rand = Math.abs(packet.getSrcIP().hashCode()) % nexthopList.size();
+                String nexthop = nexthopList.get(rand);
+                return nexthop;
+            }
+        }
+        return null;
+    }
+
+    public String route(SDWanProtos.IpPacket packet) {
+        String dstIP = packet.getDstIP();
+        if (Cidr.contains(cidr, dstIP)) {
+            return dstIP;
+        }
+        List<SDWanProtos.Route> list;
+        lock.readLock().lock();
+        try {
+            list = routeList;
+        } finally {
+            lock.readLock().unlock();
+        }
+        for (SDWanProtos.Route route : list) {
+            if (Cidr.contains(route.getDestination(), dstIP)) {
+                ProtocolStringList nexthopList = route.getNexthopList();
+                if (nexthopList.isEmpty()) {
+                    return null;
+                }
+                int rand = Math.abs(packet.getSrcIP().hashCode()) % nexthopList.size();
                 String nexthop = nexthopList.get(rand);
                 return nexthop;
             }

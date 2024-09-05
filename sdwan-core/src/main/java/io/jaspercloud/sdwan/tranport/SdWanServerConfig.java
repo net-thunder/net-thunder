@@ -52,6 +52,7 @@ public class SdWanServerConfig {
     public static class Route {
 
         private String destination;
+        private String transform;
         private List<String> nexthop;
     }
 }

@@ -1,7 +1,6 @@
 package io.jaspercloud.sdwan.route;
 
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
-import io.jaspercloud.sdwan.tranport.VirtualRouter;
 import io.jaspercloud.sdwan.tun.CheckInvoke;
 import io.jaspercloud.sdwan.tun.ProcessUtil;
 import io.jaspercloud.sdwan.tun.TunAddress;

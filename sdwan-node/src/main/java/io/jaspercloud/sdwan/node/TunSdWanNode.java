@@ -1,6 +1,5 @@
 package io.jaspercloud.sdwan.node;
 
-import com.google.protobuf.ByteString;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.route.RouteManager;
 import io.jaspercloud.sdwan.route.RouteManagerFactory;
@@ -9,7 +8,6 @@ import io.jaspercloud.sdwan.tranport.TunTransport;
 import io.jaspercloud.sdwan.tranport.TunTransportConfig;
 import io.jaspercloud.sdwan.tun.Ipv4Packet;
 import io.jaspercloud.sdwan.tun.TunChannel;
-import io.jaspercloud.sdwan.util.ByteBufUtil;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
@@ -84,11 +82,7 @@ public class TunSdWanNode extends BaseSdWanNode {
             @Override
             protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
                 Ipv4Packet ipv4Packet = Ipv4Packet.decodeMark(msg);
-                TunSdWanNode.this.sendIpPacket(SDWanProtos.IpPacket.newBuilder()
-                        .setSrcIP(ipv4Packet.getSrcIP())
-                        .setDstIP(ipv4Packet.getDstIP())
-                        .setPayload(ByteString.copyFrom(ByteBufUtil.toBytes(msg)))
-                        .build());
+                TunSdWanNode.this.sendIpPacket(ipv4Packet);
             }
         });
         tunTransport.start();

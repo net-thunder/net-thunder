@@ -12,6 +12,8 @@ import java.util.List;
 @Slf4j
 public final class Ics {
 
+    public static final String IcsIp = "192.168.137.1";
+
     public static void enable(String publicIp, String privateIp, boolean status) throws Exception {
         File vbs = SystemFile.getFile("ics.vbs");
         SystemFile.writeClassFile("script/ics.vbs", vbs);
