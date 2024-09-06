@@ -57,7 +57,6 @@ public class IpLayerPacket implements Referenced {
     }
 
     public void setPayload(ByteBuf payload) {
-        payload.markReaderIndex();
         byteBuf.markReaderIndex();
         try {
             byteBuf.readerIndex(0);
@@ -68,7 +67,6 @@ public class IpLayerPacket implements Referenced {
             byteBuf.writerIndex(headLen);
             byteBuf.writeBytes(payload);
         } finally {
-            payload.resetReaderIndex();
             byteBuf.resetReaderIndex();
         }
     }
