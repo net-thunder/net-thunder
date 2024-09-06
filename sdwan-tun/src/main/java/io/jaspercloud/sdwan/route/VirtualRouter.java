@@ -91,7 +91,7 @@ public class VirtualRouter {
                 if (nexthopList.isEmpty()) {
                     return null;
                 }
-                if (null != route.getTransform()) {
+                if (route.hasTransform()) {
                     Cidr from = Cidr.parseCidr(route.getDestination());
                     Cidr to = Cidr.parseCidr(route.getTransform());
                     String transformIp = Cidr.transform(dstIP, from, to);
