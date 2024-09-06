@@ -271,6 +271,7 @@ public class TcpPacket {
         } else {
             calcChecksum = 0;
         }
+        checksum = calcChecksum;
         byteBuf.writeShort(calcChecksum);
         byteBuf.writeShort(urgentPointer);
         byteBuf.writeBytes(getOptionsByteBuf());

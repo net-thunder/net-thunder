@@ -40,6 +40,39 @@ public class IpLayerPacket implements Referenced {
         }
     }
 
+    public ByteBuf getPayload() {
+        byteBuf.markReaderIndex();
+        try {
+            byteBuf.readerIndex(0);
+            short head = byteBuf.readUnsignedByte();
+            byte headLen = (byte) ((head & 0b00001111) * 4);
+            byteBuf.readerIndex(2);
+            int totalLen = byteBuf.readUnsignedShort();
+            byteBuf.readerIndex(headLen);
+            ByteBuf payload = byteBuf.readSlice(totalLen - headLen);
+            return payload;
+        } finally {
+            byteBuf.resetReaderIndex();
+        }
+    }
+
+    public void setPayload(ByteBuf payload) {
+        payload.markReaderIndex();
+        byteBuf.markReaderIndex();
+        try {
+            byteBuf.readerIndex(0);
+            short head = byteBuf.readUnsignedByte();
+            byte headLen = (byte) ((head & 0b00001111) * 4);
+            byteBuf.writerIndex(2);
+            byteBuf.writeShort(headLen + payload.readableBytes());
+            byteBuf.writerIndex(headLen);
+            byteBuf.writeBytes(payload);
+        } finally {
+            payload.resetReaderIndex();
+            byteBuf.resetReaderIndex();
+        }
+    }
+
     private String readIp(int index) {
         byteBuf.markReaderIndex();
         try {
@@ -87,9 +120,44 @@ public class IpLayerPacket implements Referenced {
                 reCalcUdpCheckSum(payload, protocol, srcIp, dstIp);
                 break;
             }
+            case Ipv4Packet.Icmp: {
+                reCalcIcmpCheckSum(payload);
+                break;
+            }
         }
         reCalcIpCheckSum();
         return byteBuf;
+    }
+
+    private void reCalcIcmpCheckSum(ByteBuf payload) {
+        payload.markWriterIndex();
+        payload.writerIndex(2);
+        payload.writeShort(0);
+        payload.resetWriterIndex();
+        //calc
+        payload.markReaderIndex();
+        try {
+            //数据长度为奇数，在该字节之后补一个字节
+            if (0 != payload.readableBytes() % 2) {
+                payload.writeByte(0);
+            }
+            int sum = 0;
+            while (payload.readableBytes() > 0) {
+                sum += payload.readUnsignedShort();
+            }
+            int h = sum >> 16;
+            int l = sum & 0b11111111_11111111;
+            sum = (h + l);
+            sum = 0b11111111_11111111 & ~sum;
+            payload.resetReaderIndex();
+            //set checksum
+            payload.markWriterIndex();
+            payload.writerIndex(2);
+            payload.writeShort(sum);
+            payload.resetWriterIndex();
+        } finally {
+            payload.resetReaderIndex();
+        }
     }
 
     private void reCalcTcpCheckSum(ByteBuf payload, int protocol, String srcIp, String dstIp) {
@@ -127,6 +195,7 @@ public class IpLayerPacket implements Referenced {
             payload.markWriterIndex();
             payload.writerIndex(16);
             payload.writeShort(sum);
+            payload.resetWriterIndex();
         } finally {
             buffer.release();
         }
@@ -167,6 +236,7 @@ public class IpLayerPacket implements Referenced {
             payload.markWriterIndex();
             payload.writerIndex(6);
             payload.writeShort(sum);
+            payload.resetWriterIndex();
         } finally {
             buffer.release();
         }

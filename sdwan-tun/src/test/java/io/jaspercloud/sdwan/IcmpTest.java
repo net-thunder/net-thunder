@@ -3,6 +3,7 @@ package io.jaspercloud.sdwan;
 import cn.hutool.core.util.HexUtil;
 import cn.hutool.crypto.digest.MD5;
 import io.jaspercloud.sdwan.tun.IcmpPacket;
+import io.jaspercloud.sdwan.tun.IpLayerPacket;
 import io.jaspercloud.sdwan.tun.Ipv4Packet;
 import io.jaspercloud.sdwan.util.ByteBufUtil;
 import io.netty.buffer.ByteBuf;
@@ -37,6 +38,7 @@ public class IcmpTest {
         icmpPacket.setCode((byte) 0);
         icmpPacket.setIdentifier(RandomUtils.nextInt(1000, 5000));
         icmpPacket.setSequence(RandomUtils.nextInt(1000, 5000));
+        icmpPacket.setTimestamp(System.currentTimeMillis());
         ByteBuf payload = ByteBufUtil.newPacketBuf();
         payload.writeLong(System.currentTimeMillis());
         icmpPacket.setPayload(payload);
@@ -52,6 +54,22 @@ public class IcmpTest {
         ipv4Packet.setDstIP("192.222.0.65");
         ipv4Packet.setPayload(icmpEncode);
         ByteBuf ipEncode = ipv4Packet.encode();
+        IpLayerPacket packet = new IpLayerPacket(ipEncode);
+        int protocol = packet.getProtocol();
+        boolean eq = Ipv4Packet.Icmp == protocol;
+        ByteBuf icmpByteBuf = packet.getPayload();
+        IcmpPacket decodeIcmpPacket = IcmpPacket.decodeMark(icmpByteBuf);
+        {
+            ByteBuf byteBuf = ByteBufUtil.create();
+            byteBuf.writeLong(5555);
+            byteBuf.writeBytes(decodeIcmpPacket.getPayload());
+            decodeIcmpPacket.setPayload(byteBuf);
+        }
+        packet.setPayload(decodeIcmpPacket.encode());
+        ByteBuf rebuild = packet.rebuild();
+        Ipv4Packet ipv4 = Ipv4Packet.decodeMark(rebuild);
+        IcmpPacket icmp = IcmpPacket.decodeMark(ipv4.getPayload());
+        long time = icmp.getPayload().readLong();
         System.out.println();
     }
 

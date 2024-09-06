@@ -116,6 +116,7 @@ public class IcmpPacket {
         } else {
             calcChecksum = 0;
         }
+        checksum = calcChecksum;
         byteBuf.writeShort(calcChecksum);
         byteBuf.writeShort(identifier);
         byteBuf.writeShort(sequence);
@@ -126,27 +127,31 @@ public class IcmpPacket {
 
     private int calcChecksum() {
         ByteBuf byteBuf = ByteBufUtil.newPacketBuf();
-        byteBuf.writeByte(type);
-        byteBuf.writeByte(code);
-        byteBuf.writeShort(0);
-        byteBuf.writeShort(identifier);
-        byteBuf.writeShort(sequence);
-        byteBuf.writeLong(timestamp);
-        payload.markReaderIndex();
-        byteBuf.writeBytes(payload);
-        payload.resetReaderIndex();
-        //数据长度为奇数，在该字节之后补一个字节
-        if (0 != byteBuf.readableBytes() % 2) {
-            byteBuf.writeByte(0);
+        try {
+            byteBuf.writeByte(type);
+            byteBuf.writeByte(code);
+            byteBuf.writeShort(0);
+            byteBuf.writeShort(identifier);
+            byteBuf.writeShort(sequence);
+            byteBuf.writeLong(timestamp);
+            payload.markReaderIndex();
+            byteBuf.writeBytes(payload);
+            payload.resetReaderIndex();
+            //数据长度为奇数，在该字节之后补一个字节
+            if (0 != byteBuf.readableBytes() % 2) {
+                byteBuf.writeByte(0);
+            }
+            int sum = 0;
+            while (byteBuf.readableBytes() > 0) {
+                sum += byteBuf.readUnsignedShort();
+            }
+            int h = sum >> 16;
+            int l = sum & 0b11111111_11111111;
+            sum = (h + l);
+            sum = 0b11111111_11111111 & ~sum;
+            return sum;
+        } finally {
+            byteBuf.release();
         }
-        int sum = 0;
-        while (byteBuf.readableBytes() > 0) {
-            sum += byteBuf.readUnsignedShort();
-        }
-        int h = sum >> 16;
-        int l = sum & 0b11111111_11111111;
-        sum = (h + l);
-        sum = 0b11111111_11111111 & ~sum;
-        return sum;
     }
 }

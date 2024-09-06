@@ -91,6 +91,7 @@ public class UdpPacket {
         if (check) {
             Assert.isTrue(calcChecksum == getChecksum(), "checksum error");
         }
+        checksum = calcChecksum;
         byteBuf.writeShort(calcChecksum);
         byteBuf.writeBytes(getPayload());
         return byteBuf;
