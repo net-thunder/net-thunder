@@ -7,6 +7,7 @@ import io.netty.buffer.ByteBuf;
 
 public class Ipv4Packet implements IpPacket {
 
+    public static final int Icmp = 1;
     public static final int Tcp = 6;
     public static final int Udp = 17;
 
@@ -15,7 +16,7 @@ public class Ipv4Packet implements IpPacket {
     private short headerLen;
     private short diffServices;
     private int totalLen;
-    private int id;
+    private int identifier;
     private int flags;
     private short liveTime;
     private int protocol;
@@ -56,12 +57,12 @@ public class Ipv4Packet implements IpPacket {
         this.totalLen = totalLen;
     }
 
-    public int getId() {
-        return id;
+    public int getIdentifier() {
+        return identifier;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setIdentifier(int identifier) {
+        this.identifier = identifier;
     }
 
     public int getFlags() {
@@ -140,7 +141,7 @@ public class Ipv4Packet implements IpPacket {
         byte headLen = (byte) ((head & 0b00001111) * 4);
         short diffServices = byteBuf.readUnsignedByte();
         int totalLen = byteBuf.readUnsignedShort();
-        int id = byteBuf.readUnsignedShort();
+        int identifier = byteBuf.readUnsignedShort();
         int flags = byteBuf.readUnsignedShort();
         short liveTime = byteBuf.readUnsignedByte();
         int protocol = byteBuf.readUnsignedByte();
@@ -155,7 +156,7 @@ public class Ipv4Packet implements IpPacket {
         ipv4Packet.setHeaderLen(headLen);
         ipv4Packet.setDiffServices(diffServices);
         ipv4Packet.setTotalLen(totalLen);
-        ipv4Packet.setId(id);
+        ipv4Packet.setIdentifier(identifier);
         ipv4Packet.setFlags(flags);
         ipv4Packet.setLiveTime(liveTime);
         ipv4Packet.setProtocol(protocol);
@@ -170,25 +171,28 @@ public class Ipv4Packet implements IpPacket {
         return encode(true, false);
     }
 
-    public ByteBuf encode(boolean calcSum, boolean checksum) {
+    public ByteBuf encode(boolean calc, boolean check) {
         ByteBuf byteBuf = ByteBufUtil.newPacketBuf();
+        headerLen = 20;
         byte head = (byte) ((version << 4) | (headerLen / 4));
         byteBuf.writeByte(head);
         byteBuf.writeByte(diffServices);
+        totalLen = headerLen + payload.readableBytes();
         byteBuf.writeShort(totalLen);
-        byteBuf.writeShort(id);
+        byteBuf.writeShort(identifier);
         byteBuf.writeShort(flags);
         byteBuf.writeByte(liveTime);
         byteBuf.writeByte(protocol);
         int calcChecksum;
-        if (calcSum) {
+        if (calc) {
             calcChecksum = calcChecksum();
-            if (checksum) {
+            if (check) {
                 Assert.isTrue(calcChecksum == getChecksum(), "checksum error");
             }
         } else {
             calcChecksum = 0;
         }
+        checksum = calcChecksum;
         byteBuf.writeShort(calcChecksum);
         byteBuf.writeBytes(IPUtil.ip2bytes(srcIP));
         byteBuf.writeBytes(IPUtil.ip2bytes(dstIP));
@@ -229,7 +233,7 @@ public class Ipv4Packet implements IpPacket {
             byteBuf.writeByte(head);
             byteBuf.writeByte(diffServices);
             byteBuf.writeShort(totalLen);
-            byteBuf.writeShort(id);
+            byteBuf.writeShort(identifier);
             byteBuf.writeShort(flags);
             byteBuf.writeByte(liveTime);
             byteBuf.writeByte(protocol);

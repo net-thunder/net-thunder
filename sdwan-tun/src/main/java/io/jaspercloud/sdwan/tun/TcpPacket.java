@@ -254,7 +254,7 @@ public class TcpPacket {
         return encode(ipv4Packet, true, false);
     }
 
-    public ByteBuf encode(Ipv4Packet ipv4Packet, boolean calcSum, boolean checksum) {
+    public ByteBuf encode(Ipv4Packet ipv4Packet, boolean calc, boolean check) {
         ByteBuf byteBuf = ByteBufUtil.newPacketBuf();
         byteBuf.writeShort(srcPort);
         byteBuf.writeShort(dstPort);
@@ -263,9 +263,9 @@ public class TcpPacket {
         byteBuf.writeShort(flags);
         byteBuf.writeShort(window);
         int calcChecksum;
-        if (calcSum) {
+        if (calc) {
             calcChecksum = calcChecksum(ipv4Packet);
-            if (checksum) {
+            if (check) {
                 Assert.isTrue(calcChecksum == getChecksum(), "checksum error");
             }
         } else {

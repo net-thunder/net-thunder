@@ -82,13 +82,13 @@ public class UdpPacket {
         return encode(ipv4Packet, false);
     }
 
-    public ByteBuf encode(Ipv4Packet ipv4Packet, boolean checksum) {
+    public ByteBuf encode(Ipv4Packet ipv4Packet, boolean check) {
         ByteBuf byteBuf = ByteBufUtil.newPacketBuf();
         byteBuf.writeShort(getSrcPort());
         byteBuf.writeShort(getDstPort());
         byteBuf.writeShort(getLen());
         int calcChecksum = calcChecksum(ipv4Packet);
-        if (checksum) {
+        if (check) {
             Assert.isTrue(calcChecksum == getChecksum(), "checksum error");
         }
         byteBuf.writeShort(calcChecksum);
