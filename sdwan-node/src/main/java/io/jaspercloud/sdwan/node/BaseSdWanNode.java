@@ -12,8 +12,7 @@ import io.jaspercloud.sdwan.support.Multicast;
 import io.jaspercloud.sdwan.tranport.Lifecycle;
 import io.jaspercloud.sdwan.tranport.SdWanClient;
 import io.jaspercloud.sdwan.tranport.SdWanClientConfig;
-import io.jaspercloud.sdwan.tun.IpRoutePacket;
-import io.jaspercloud.sdwan.tun.Ipv4Packet;
+import io.jaspercloud.sdwan.tun.IpLayerPacket;
 import io.jaspercloud.sdwan.tun.windows.Ics;
 import io.jaspercloud.sdwan.util.*;
 import io.netty.channel.*;
@@ -176,7 +175,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         log.info("SdWanNode stopped");
     }
 
-    public void sendIpPacket(IpRoutePacket packet) {
+    public void sendIpPacket(IpLayerPacket packet) {
         if (config.getShareNetwork()
                 && PlatformDependent.isWindows()
                 && Ics.IcsIp.equals(packet.getSrcIP())) {

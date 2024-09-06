@@ -5,11 +5,11 @@ import io.jaspercloud.sdwan.util.IPUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.util.ReferenceCounted;
 
-public class IpRoutePacket implements Referenced {
+public class IpLayerPacket implements Referenced {
 
     private ByteBuf byteBuf;
 
-    public IpRoutePacket(ByteBuf byteBuf) {
+    public IpLayerPacket(ByteBuf byteBuf) {
         this.byteBuf = byteBuf;
     }
 
@@ -27,6 +27,17 @@ public class IpRoutePacket implements Referenced {
 
     public String getDstIP() {
         return readIp(16);
+    }
+
+    public int getProtocol() {
+        try {
+            byteBuf.markReaderIndex();
+            byteBuf.readerIndex(9);
+            int protocol = byteBuf.readUnsignedByte();
+            return protocol;
+        } finally {
+            byteBuf.resetReaderIndex();
+        }
     }
 
     private String readIp(int index) {
