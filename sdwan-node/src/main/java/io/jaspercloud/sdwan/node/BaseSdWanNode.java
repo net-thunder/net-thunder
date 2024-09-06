@@ -175,7 +175,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         log.info("SdWanNode stopped");
     }
 
-    public void sendIpPacket(IpLayerPacket packet) {
+    public void sendIpLayerPacket(IpLayerPacket packet) {
         if (config.getShareNetwork()
                 && PlatformDependent.isWindows()
                 && Ics.IcsIp.equals(packet.getSrcIP())) {

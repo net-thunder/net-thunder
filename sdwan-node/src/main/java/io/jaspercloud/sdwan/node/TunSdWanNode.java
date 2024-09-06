@@ -8,6 +8,8 @@ import io.jaspercloud.sdwan.stun.*;
 import io.jaspercloud.sdwan.tranport.TunTransport;
 import io.jaspercloud.sdwan.tranport.TunTransportConfig;
 import io.jaspercloud.sdwan.tun.IpLayerPacket;
+import io.jaspercloud.sdwan.tun.IpLayerPacketProcessor;
+import io.jaspercloud.sdwan.tun.IpLayerPacketProcessorPipeline;
 import io.jaspercloud.sdwan.tun.TunChannel;
 import io.jaspercloud.sdwan.util.ByteBufUtil;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;
@@ -30,9 +32,14 @@ public class TunSdWanNode extends BaseSdWanNode {
 
     private TunTransport tunTransport;
     private RouteManager routeManager;
+    private IpLayerPacketProcessorPipeline ipPacketProcessor = new IpLayerPacketProcessorPipeline();
 
     public SdWanNodeConfig getConfig() {
         return config;
+    }
+
+    public void addIpLayerPacketProcessor(IpLayerPacketProcessor processor) {
+        ipPacketProcessor.add(processor);
     }
 
     public TunSdWanNode(SdWanNodeConfig config) {
@@ -65,8 +72,10 @@ public class TunSdWanNode extends BaseSdWanNode {
                 VirtualRouter virtualRouter = getVirtualRouter();
                 ByteBuf byteBuf = ByteBufUtil.toByteBuf(ipPacket.getPayload().toByteArray());
                 try {
-                    ipPacket = virtualRouter.routeIn(new IpLayerPacket(byteBuf));
-                    tunTransport.writeIpPacket(ipPacket);
+                    IpLayerPacket packet = new IpLayerPacket(byteBuf);
+                    packet = virtualRouter.routeIn(packet);
+                    ipPacketProcessor.input(packet);
+                    tunTransport.writeIpLayerPacket(packet.retain());
                 } finally {
                     byteBuf.release();
                 }
@@ -93,7 +102,8 @@ public class TunSdWanNode extends BaseSdWanNode {
             @Override
             protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
                 IpLayerPacket packet = new IpLayerPacket(msg);
-                TunSdWanNode.this.sendIpPacket(packet);
+                ipPacketProcessor.output(packet);
+                TunSdWanNode.this.sendIpLayerPacket(packet);
             }
         });
         tunTransport.start();

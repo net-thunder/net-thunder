@@ -1,6 +1,7 @@
 package io.jaspercloud.sdwan.tranport;
 
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
+import io.jaspercloud.sdwan.tun.IpLayerPacket;
 import io.jaspercloud.sdwan.tun.TunAddress;
 import io.jaspercloud.sdwan.tun.TunChannel;
 import io.jaspercloud.sdwan.tun.TunChannelConfig;
@@ -37,6 +38,10 @@ public class TunTransport implements TransportLifecycle {
     public TunTransport(TunTransportConfig config, Supplier<ChannelHandler> handler) {
         this.config = config;
         this.handler = handler;
+    }
+
+    public void writeIpLayerPacket(IpLayerPacket packet) {
+        localChannel.writeAndFlush(packet.rebuild());
     }
 
     public void writeIpPacket(SDWanProtos.IpPacket ipPacket) {

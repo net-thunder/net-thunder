@@ -278,6 +278,12 @@ public class IpLayerPacket implements Referenced {
     }
 
     @Override
+    public IpLayerPacket retain() {
+        retain(1);
+        return this;
+    }
+
+    @Override
     public boolean release(int decrement) {
         return byteBuf.release(decrement);
     }
