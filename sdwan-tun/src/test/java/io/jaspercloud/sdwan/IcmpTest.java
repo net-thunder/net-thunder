@@ -57,15 +57,19 @@ public class IcmpTest {
         IpLayerPacket packet = new IpLayerPacket(ipEncode);
         int protocol = packet.getProtocol();
         boolean eq = Ipv4Packet.Icmp == protocol;
-        ByteBuf icmpByteBuf = packet.getPayload();
-        IcmpPacket decodeIcmpPacket = IcmpPacket.decodeMark(icmpByteBuf);
         {
+            ByteBuf icmpByteBuf = packet.getPayload();
+            IcmpPacket decodeIcmpPacket = IcmpPacket.decodeMark(icmpByteBuf);
             ByteBuf byteBuf = ByteBufUtil.create();
+            byteBuf.writeInt(0x1100);
             byteBuf.writeLong(5555);
-            byteBuf.writeBytes(decodeIcmpPacket.getPayload());
+            ByteBuf icmpPayload = decodeIcmpPacket.getPayload();
+            icmpPayload.markWriterIndex();
+            byteBuf.writeBytes(icmpPayload);
+            icmpPayload.resetWriterIndex();
             decodeIcmpPacket.setPayload(byteBuf);
+            packet.setPayload(decodeIcmpPacket.encode());
         }
-        packet.setPayload(decodeIcmpPacket.encode());
         ByteBuf rebuild = packet.rebuild();
         Ipv4Packet ipv4 = Ipv4Packet.decodeMark(rebuild);
         IcmpPacket icmp = IcmpPacket.decodeMark(ipv4.getPayload());
