@@ -5,6 +5,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.FileAppender;
 import org.slf4j.impl.StaticLoggerBinder;
 
@@ -18,13 +19,22 @@ public class LoggerSystem {
             throw new IllegalArgumentException("logFile is null");
         }
         LoggerContext loggerContext = (LoggerContext) StaticLoggerBinder.getSingleton().getLoggerFactory();
+        loggerContext.stop();
+        loggerContext.reset();
         Logger logger = loggerContext.getLogger("ROOT");
         logger.setLevel(Level.INFO);
+        //config
         PatternLayoutEncoder encoder = new PatternLayoutEncoder();
         encoder.setContext(loggerContext);
         encoder.setCharset(Charset.forName("utf-8"));
         encoder.setPattern("%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n");
         encoder.start();
+        //consoleAppender
+        ConsoleAppender consoleAppender = new ConsoleAppender<>();
+        consoleAppender.setContext(loggerContext);
+        consoleAppender.setEncoder(encoder);
+        consoleAppender.start();
+        //fileAppender
         FileAppender fileAppender = new FileAppender();
         fileAppender.setContext(loggerContext);
         fileAppender.setName("file");
@@ -32,9 +42,11 @@ public class LoggerSystem {
         fileAppender.setAppend(true);
         fileAppender.setFile(logFile);
         fileAppender.start();
+        //asyncAppender
         AsyncAppender asyncAppender = new AsyncAppender();
         asyncAppender.setName("async");
         asyncAppender.setContext(loggerContext);
+        asyncAppender.addAppender(consoleAppender);
         asyncAppender.addAppender(fileAppender);
         asyncAppender.start();
         logger.addAppender(asyncAppender);
@@ -43,24 +55,35 @@ public class LoggerSystem {
 
     public Logger initUserDir() {
         LoggerContext loggerContext = (LoggerContext) StaticLoggerBinder.getSingleton().getLoggerFactory();
-        Logger logger = loggerContext.getLogger("ROOT");
+        loggerContext.stop();
+        loggerContext.reset();
+        Logger logger = loggerContext.getLogger(Logger.ROOT_LOGGER_NAME);
         logger.setLevel(Level.INFO);
+        //config
         PatternLayoutEncoder encoder = new PatternLayoutEncoder();
         encoder.setContext(loggerContext);
         encoder.setCharset(Charset.forName("utf-8"));
         encoder.setPattern("%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n");
         encoder.start();
+        //consoleAppender
+        ConsoleAppender consoleAppender = new ConsoleAppender<>();
+        consoleAppender.setContext(loggerContext);
+        consoleAppender.setEncoder(encoder);
+        consoleAppender.start();
+        //fileAppender
+        String logFile = new File(System.getProperty("user.dir"), "app.log").getAbsolutePath();
         FileAppender fileAppender = new FileAppender();
         fileAppender.setContext(loggerContext);
         fileAppender.setName("file");
         fileAppender.setEncoder(encoder);
         fileAppender.setAppend(true);
-        String logFile = new File(System.getProperty("user.dir"), "app.log").getAbsolutePath();
         fileAppender.setFile(logFile);
         fileAppender.start();
+        //asyncAppender
         AsyncAppender asyncAppender = new AsyncAppender();
         asyncAppender.setName("async");
         asyncAppender.setContext(loggerContext);
+        asyncAppender.addAppender(consoleAppender);
         asyncAppender.addAppender(fileAppender);
         asyncAppender.start();
         logger.addAppender(asyncAppender);
