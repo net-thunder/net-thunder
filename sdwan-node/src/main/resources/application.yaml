@@ -3,9 +3,6 @@ controllerServer: 127.0.0.1:1800
 connectTimeout: 30000
 heartTime: 15000
 #
-stunServer: 127.0.0.1:3478
-relayServer: 127.0.0.1:2478
-#
 p2pHeartTime: 10000
 #
 tunName: net-thunder

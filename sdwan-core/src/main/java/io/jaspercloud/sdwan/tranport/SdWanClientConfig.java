@@ -14,6 +14,7 @@ import lombok.Setter;
 public class SdWanClientConfig {
 
     private String controllerServer;
+    private String tenantId;
     private int connectTimeout;
     private long heartTime;
 }

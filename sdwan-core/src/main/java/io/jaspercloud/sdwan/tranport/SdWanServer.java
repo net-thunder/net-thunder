@@ -60,6 +60,10 @@ public class SdWanServer implements Lifecycle, Runnable {
                 SdWanServer.reply(channel, msg, SDWanProtos.MessageTypeCode.HeartType, null);
                 break;
             }
+            case SDWanProtos.MessageTypeCode.ConfigReqType_VALUE: {
+                processConfig(ctx, msg);
+                break;
+            }
             case SDWanProtos.MessageTypeCode.RegistReqType_VALUE: {
                 processRegist(ctx, msg);
                 break;
@@ -72,6 +76,27 @@ public class SdWanServer implements Lifecycle, Runnable {
                 processP2pAnswer(ctx, msg);
                 break;
             }
+        }
+    }
+
+    private void processConfig(ChannelHandlerContext ctx, SDWanProtos.Message msg) {
+        try {
+            SDWanProtos.ServerConfigReq req = SDWanProtos.ServerConfigReq.parseFrom(msg.getData());
+            TenantSpace tenantSpace = tenantSpaceMap.get(req.getTenantId());
+            if (null == tenantSpace) {
+                throw new ProcessException("not found tenant");
+            }
+            SDWanProtos.ServerConfigResp resp = SDWanProtos.ServerConfigResp.newBuilder()
+                    .setCode(SDWanProtos.MessageCode.Success)
+                    .setStunServer(tenantSpace.getStunServer())
+                    .setRelayServer(tenantSpace.getRelayServer())
+                    .build();
+            SdWanServer.reply(ctx.channel(), msg, SDWanProtos.MessageTypeCode.ConfigRespTpe, resp);
+        } catch (Exception e) {
+            SDWanProtos.ServerConfigResp resp = SDWanProtos.ServerConfigResp.newBuilder()
+                    .setCode(SDWanProtos.MessageCode.SysError)
+                    .build();
+            SdWanServer.reply(ctx.channel(), msg, SDWanProtos.MessageTypeCode.ConfigRespTpe, resp);
         }
     }
 
@@ -289,6 +314,8 @@ public class SdWanServer implements Lifecycle, Runnable {
     public void start() throws Exception {
         config.getTenantConfig().forEach((k, config) -> {
             TenantSpace tenantSpace = new TenantSpace();
+            tenantSpace.setStunServer(config.getStunServer());
+            tenantSpace.setRelayServer(config.getRelayServer());
             Cidr ipPool = Cidr.parseCidr(config.getVipCidr());
             tenantSpace.setIpPool(ipPool);
             Map<String, AtomicReference<Channel>> bindIPMap = tenantSpace.getBindIPMap();

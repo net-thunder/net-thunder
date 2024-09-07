@@ -22,6 +22,8 @@ enum MessageTypeCode {
   RegistRespType = 102;
   P2pOfferType = 103;
   P2pAnswerType = 104;
+  ConfigReqType = 105;
+  ConfigRespTpe = 106;
   //push
   NodeInfoListType = 201;
   RouteListType = 202;
@@ -109,6 +111,16 @@ message P2pAnswer {
   required string srcVIP = 3;
   required string dstVIP = 4;
   required bytes publicKey = 5;
+}
+
+message ServerConfigReq {
+  required string tenantId = 1;
+}
+
+message ServerConfigResp {
+  required MessageCode code = 1;
+  required string stunServer = 2;
+  required string relayServer = 3;
 }
 
 message RpcMessage {

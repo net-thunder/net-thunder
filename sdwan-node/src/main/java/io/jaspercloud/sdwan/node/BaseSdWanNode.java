@@ -99,6 +99,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         CheckAdmin.check();
         sdWanClient = new SdWanClient(SdWanClientConfig.builder()
                 .controllerServer(config.getControllerServer())
+                .tenantId(config.getTenantId())
                 .connectTimeout(config.getConnectTimeout())
                 .heartTime(config.getHeartTime())
                 .build(),
@@ -221,8 +222,11 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
 
     protected void install() throws Exception {
         nodeInfoMap.clear();
-        iceClient.start();
         sdWanClient.start();
+        SDWanProtos.ServerConfigResp configResp = sdWanClient.getConfig(config.getConnectTimeout()).get();
+        config.setStunServer(configResp.getStunServer());
+        config.setRelayServer(configResp.getRelayServer());
+        iceClient.start();
         log.info("SdWanNode install");
         SDWanProtos.RegistReq.Builder builder = SDWanProtos.RegistReq.newBuilder()
                 .setTenantId(config.getTenantId())

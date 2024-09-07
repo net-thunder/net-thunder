@@ -112,6 +112,29 @@ public class SdWanClient implements TransportLifecycle, Runnable {
         localChannel.writeAndFlush(message);
     }
 
+    public CompletableFuture<SDWanProtos.ServerConfigResp> getConfig(long timeout) {
+        String id = UUID.randomUUID().toString();
+        SDWanProtos.ServerConfigReq configReq = SDWanProtos.ServerConfigReq.newBuilder()
+                .setTenantId(config.getTenantId())
+                .build();
+        SDWanProtos.Message message = SDWanProtos.Message.newBuilder()
+                .setReqId(id)
+                .setMode(SDWanProtos.MessageMode.ReqResp)
+                .setType(SDWanProtos.MessageTypeCode.ConfigReqType)
+                .setData(configReq.toByteString())
+                .build();
+        CompletableFuture<SDWanProtos.Message> task = AsyncTask.waitTask(id, timeout);
+        localChannel.writeAndFlush(message);
+        return task.thenApply(result -> {
+            try {
+                SDWanProtos.ServerConfigResp resp = SDWanProtos.ServerConfigResp.parseFrom(result.getData());
+                return resp;
+            } catch (Exception e) {
+                throw new ProcessException(e.getMessage(), e);
+            }
+        });
+    }
+
     @Override
     public boolean isRunning() {
         if (null == localChannel) {

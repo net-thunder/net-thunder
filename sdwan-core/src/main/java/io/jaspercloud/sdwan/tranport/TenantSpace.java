@@ -17,6 +17,8 @@ import java.util.concurrent.atomic.AtomicReference;
 @Setter
 public class TenantSpace {
 
+    private String stunServer;
+    private String relayServer;
     private Cidr ipPool;
     private Map<String, AtomicReference<Channel>> bindIPMap = new ConcurrentHashMap<>();
     private Map<String, String> fixedVipMap = new ConcurrentHashMap<>();

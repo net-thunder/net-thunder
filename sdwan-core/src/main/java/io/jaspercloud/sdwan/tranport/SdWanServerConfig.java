@@ -28,6 +28,8 @@ public class SdWanServerConfig {
     @Setter
     public static class TenantConfig {
 
+        private String stunServer;
+        private String relayServer;
         private String vipCidr = "10.1.0.0/24";
         private List<FixVip> fixedVipList = Collections.emptyList();
         private List<Route> routeList = Collections.emptyList();

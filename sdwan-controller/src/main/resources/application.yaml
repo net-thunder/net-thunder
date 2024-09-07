@@ -4,6 +4,8 @@ controller:
     heartTimeout: 30000
     tenantConfig:
       default:
+        stunServer: 127.0.0.1:3478
+        relayServer: 127.0.0.1:2478
         vipCidr: 10.5.0.0/24
   relay:
     bindPort: 2478
