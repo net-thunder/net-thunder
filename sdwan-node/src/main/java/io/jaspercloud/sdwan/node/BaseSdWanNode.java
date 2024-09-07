@@ -40,8 +40,8 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
 
     private SdWanNodeConfig config;
 
-    private IceClient iceClient;
     private SdWanClient sdWanClient;
+    private IceClient iceClient;
     private NatAddress natAddress;
     private List<String> localAddressUriList;
     private String localVip;
