@@ -18,7 +18,11 @@ public class ConfigSystem {
     }
 
     public SdWanNodeConfig initUserDir() throws Exception {
-        File file = new File(System.getProperty("user.dir"), "application.yaml");
+        return initUserDir("application.yaml");
+    }
+
+    public SdWanNodeConfig initUserDir(String configFile) throws Exception {
+        File file = new File(System.getProperty("user.dir"), configFile);
         try (InputStream in = new FileInputStream(file)) {
             return YamlUtil.load(in, SdWanNodeConfig.class);
         }

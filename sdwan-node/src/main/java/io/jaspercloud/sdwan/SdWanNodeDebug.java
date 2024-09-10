@@ -3,10 +3,13 @@ package io.jaspercloud.sdwan;
 import ch.qos.logback.classic.Logger;
 import io.jaspercloud.sdwan.node.ConfigSystem;
 import io.jaspercloud.sdwan.node.LoggerSystem;
-import io.jaspercloud.sdwan.node.SdWanNodeConfig;
 import io.jaspercloud.sdwan.node.TunSdWanNode;
-import io.jaspercloud.sdwan.tranport.P2pClient;
-import io.jaspercloud.sdwan.tranport.RelayClient;
+import io.jaspercloud.sdwan.tun.IcmpPacket;
+import io.jaspercloud.sdwan.tun.IpLayerPacket;
+import io.jaspercloud.sdwan.tun.IpLayerPacketProcessor;
+import io.jaspercloud.sdwan.tun.Ipv4Packet;
+import io.jaspercloud.sdwan.util.ByteBufUtil;
+import io.netty.buffer.ByteBuf;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -14,27 +17,50 @@ public class SdWanNodeDebug {
 
     public static void main(String[] args) throws Exception {
         Logger logger = new LoggerSystem().initUserDir();
-        SdWanNodeConfig config = new ConfigSystem().initUserDir();
-        TunSdWanNode tunSdWanNode = new TunSdWanNode(config);
+        TunSdWanNode mainSdWanNode = new TunSdWanNode(new ConfigSystem().initUserDir());
+        mainSdWanNode.addIpLayerPacketProcessor(new IpLayerPacketProcessor() {
+            @Override
+            public void input(IpLayerPacket packet) {
+                if (Ipv4Packet.Icmp != packet.getProtocol()) {
+                    return;
+                }
+                IcmpPacket icmpPacket = IcmpPacket.decodeMark(packet.getPayload());
+                ByteBuf payload = icmpPacket.getPayload();
+                ByteBuf byteBuf = ByteBufUtil.create();
+                byteBuf.writeLong(System.currentTimeMillis());
+                byteBuf.writeBytes(payload);
+                icmpPacket.setPayload(byteBuf);
+                payload = icmpPacket.encode();
+                packet.setPayload(payload);
+                payload.release();
+                byteBuf.release();
+            }
+
+            @Override
+            public void output(IpLayerPacket packet) {
+                if (Ipv4Packet.Icmp != packet.getProtocol()) {
+                    return;
+                }
+                IcmpPacket icmpPacket = IcmpPacket.decodeMark(packet.getPayload());
+                ByteBuf payload = icmpPacket.getPayload();
+                long s = payload.readLong();
+                icmpPacket.setPayload(payload.readSlice(payload.readableBytes()));
+                payload = icmpPacket.encode();
+                packet.setPayload(payload);
+                payload.release();
+                long e = System.currentTimeMillis();
+                System.out.println("ping: " + (e - s));
+            }
+        });
+        mainSdWanNode.start();
+        TunSdWanNode tunSdWanNode = new TunSdWanNode(new ConfigSystem().initUserDir("application-tun.yaml")) {
+            @Override
+            protected String processMacAddress(String hardwareAddress) {
+                return "ff:ff:ff:ff:ff:ff";
+            }
+        };
         tunSdWanNode.start();
-        String controllerServer = config.getControllerServer();
-        System.out.println("controllerServer: " + controllerServer);
-        String stunServer = config.getStunServer();
-        System.out.println("stunServer: " + stunServer);
-        String relayServer = config.getRelayServer();
-        System.out.println("relayServer: " + relayServer);
-        String vipCidr = tunSdWanNode.getVipCidr();
-        System.out.println("vipCidr: " + vipCidr);
-        int sdwanLocalPort = tunSdWanNode.getSdWanClient().getLocalPort();
-        System.out.println("sdwanLocalPort: " + sdwanLocalPort);
-        P2pClient p2pClient = tunSdWanNode.getIceClient().getP2pClient();
-        int p2pLocalPort = p2pClient.getLocalPort();
-        System.out.println("p2pLocalPort: " + p2pLocalPort);
-        RelayClient relayClient = tunSdWanNode.getIceClient().getRelayClient();
-        String curToken = relayClient.getCurToken();
-        System.out.println("curToken: " + curToken);
-        int relayLocalPort = relayClient.getLocalPort();
-        System.out.println("relayLocalPort: " + relayLocalPort);
+        logger.info("SdWanNodeDebug started");
         CountDownLatch latch = new CountDownLatch(1);
         latch.await();
     }
