@@ -5,6 +5,7 @@ import io.jaspercloud.sdwan.route.RouteManager;
 import io.jaspercloud.sdwan.route.RouteManagerFactory;
 import io.jaspercloud.sdwan.route.VirtualRouter;
 import io.jaspercloud.sdwan.stun.*;
+import io.jaspercloud.sdwan.support.GlobalTime;
 import io.jaspercloud.sdwan.tranport.TunTransport;
 import io.jaspercloud.sdwan.tranport.TunTransportConfig;
 import io.jaspercloud.sdwan.tun.IpLayerPacket;
@@ -103,7 +104,9 @@ public class TunSdWanNode extends BaseSdWanNode {
             protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
                 IpLayerPacket packet = new IpLayerPacket(msg);
                 ipPacketProcessor.output(packet);
+                GlobalTime.log("sendIpLayerPacket");
                 TunSdWanNode.this.sendIpLayerPacket(packet);
+                GlobalTime.remove();
             }
         });
         tunTransport.start();

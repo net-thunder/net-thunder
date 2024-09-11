@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Logger;
 import io.jaspercloud.sdwan.node.ConfigSystem;
 import io.jaspercloud.sdwan.node.LoggerSystem;
 import io.jaspercloud.sdwan.node.TunSdWanNode;
+import io.jaspercloud.sdwan.support.GlobalTime;
 import io.jaspercloud.sdwan.tun.IcmpPacket;
 import io.jaspercloud.sdwan.tun.IpLayerPacket;
 import io.jaspercloud.sdwan.tun.IpLayerPacketProcessor;
@@ -24,10 +25,12 @@ public class SdWanNodeDebug {
                 if (Ipv4Packet.Icmp != packet.getProtocol()) {
                     return;
                 }
+
+                long s = System.nanoTime();
                 IcmpPacket icmpPacket = IcmpPacket.decodeMark(packet.getPayload());
                 ByteBuf payload = icmpPacket.getPayload();
                 ByteBuf byteBuf = ByteBufUtil.create();
-                byteBuf.writeLong(System.currentTimeMillis());
+                byteBuf.writeLong(s);
                 byteBuf.writeBytes(payload);
                 icmpPacket.setPayload(byteBuf);
                 payload = icmpPacket.encode();
@@ -41,25 +44,20 @@ public class SdWanNodeDebug {
                 if (Ipv4Packet.Icmp != packet.getProtocol()) {
                     return;
                 }
+                GlobalTime.create();
                 IcmpPacket icmpPacket = IcmpPacket.decodeMark(packet.getPayload());
                 ByteBuf payload = icmpPacket.getPayload();
                 long s = payload.readLong();
+                GlobalTime.setStart(s);
                 icmpPacket.setPayload(payload.readSlice(payload.readableBytes()));
                 payload = icmpPacket.encode();
+                GlobalTime.log("icmpPacket.encode");
                 packet.setPayload(payload);
                 payload.release();
-                long e = System.currentTimeMillis();
-                System.out.println("ping: " + (e - s));
+                GlobalTime.log("ping");
             }
         });
         mainSdWanNode.start();
-        TunSdWanNode tunSdWanNode = new TunSdWanNode(new ConfigSystem().initUserDir("application-tun.yaml")) {
-            @Override
-            protected String processMacAddress(String hardwareAddress) {
-                return "ff:ff:ff:ff:ff:ff";
-            }
-        };
-        tunSdWanNode.start();
         logger.info("SdWanNodeDebug started");
         CountDownLatch latch = new CountDownLatch(1);
         latch.await();

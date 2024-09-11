@@ -4,6 +4,7 @@ import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.stun.*;
 import io.jaspercloud.sdwan.support.Ecdh;
+import io.jaspercloud.sdwan.support.GlobalTime;
 import io.jaspercloud.sdwan.tranport.*;
 import io.netty.channel.*;
 import lombok.extern.slf4j.Slf4j;
@@ -80,6 +81,7 @@ public class IceClient implements TransportLifecycle {
             //in the election
             return;
         }
+        GlobalTime.log("transfer");
         transport.transfer(srcVip, bytes);
     }
 

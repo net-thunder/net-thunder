@@ -6,10 +6,7 @@ import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.stun.AttrType;
 import io.jaspercloud.sdwan.stun.LongAttr;
 import io.jaspercloud.sdwan.stun.StunPacket;
-import io.jaspercloud.sdwan.support.AddressUri;
-import io.jaspercloud.sdwan.support.AsyncTask;
-import io.jaspercloud.sdwan.support.CountBarrier;
-import io.jaspercloud.sdwan.support.Ecdh;
+import io.jaspercloud.sdwan.support.*;
 import io.jaspercloud.sdwan.util.AddressType;
 import lombok.Getter;
 import lombok.Setter;
@@ -273,6 +270,7 @@ public abstract class ElectionProtocol {
         public void transfer(String vip, byte[] bytes) {
             try {
                 byte[] encodeData = Ecdh.encryptAES(bytes, secretKey);
+                GlobalTime.log("encryptAES");
                 p2pClient.transfer(vip, address, encodeData);
             } catch (Exception e) {
                 throw new ProcessException(e.getMessage(), e);

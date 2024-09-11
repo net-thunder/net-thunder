@@ -3,6 +3,7 @@ package io.jaspercloud.sdwan.tranport;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.stun.*;
 import io.jaspercloud.sdwan.support.AsyncTask;
+import io.jaspercloud.sdwan.support.GlobalTime;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.UnpooledByteBufAllocator;
@@ -99,6 +100,7 @@ public class P2pClient implements TransportLifecycle, Runnable {
         message.setAttr(AttrType.SrcVip, new StringAttr(vip));
         message.setAttr(AttrType.Data, new BytesAttr(bytes));
         StunPacket request = new StunPacket(message, toAddress);
+        GlobalTime.log("encodeStunPacket");
         localChannel.writeAndFlush(request);
     }
 
