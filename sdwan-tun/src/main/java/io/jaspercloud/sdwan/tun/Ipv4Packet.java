@@ -4,6 +4,8 @@ import cn.hutool.core.lang.Assert;
 import io.jaspercloud.sdwan.util.ByteBufUtil;
 import io.jaspercloud.sdwan.util.IPUtil;
 import io.netty.buffer.ByteBuf;
+import lombok.Builder;
+import lombok.Setter;
 
 public class Ipv4Packet implements IpPacket {
 
@@ -125,6 +127,18 @@ public class Ipv4Packet implements IpPacket {
 
     public Ipv4Packet() {
 
+    }
+
+    public Ipv4Packet(Packet packet) {
+        this.version = packet.version;
+        this.diffServices = packet.diffServices;
+        this.identifier = packet.identifier;
+        this.flags = packet.flags;
+        this.liveTime = packet.liveTime;
+        this.protocol = packet.protocol;
+        this.srcIP = packet.srcIP;
+        this.dstIP = packet.dstIP;
+        this.payload = packet.payload;
     }
 
     public static Ipv4Packet decodeMark(ByteBuf byteBuf) {
@@ -273,5 +287,36 @@ public class Ipv4Packet implements IpPacket {
     @Override
     public boolean release(int decrement) {
         return payload.release(decrement);
+    }
+
+    public static Packet.PacketBuilder builder() {
+        return Packet.builder();
+    }
+
+    @Builder
+    @Setter
+    public static class Packet {
+
+        private short version;
+        private short diffServices;
+        private int identifier;
+        private int flags;
+        private short liveTime;
+        private int protocol;
+        private String srcIP;
+        private String dstIP;
+        private ByteBuf payload;
+
+        private Packet(short version, short diffServices, int identifier, int flags, short liveTime, int protocol, String srcIP, String dstIP, ByteBuf payload) {
+            this.version = version;
+            this.diffServices = diffServices;
+            this.identifier = identifier;
+            this.flags = flags;
+            this.liveTime = liveTime;
+            this.protocol = protocol;
+            this.srcIP = srcIP;
+            this.dstIP = dstIP;
+            this.payload = payload;
+        }
     }
 }

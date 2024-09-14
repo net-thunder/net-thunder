@@ -34,6 +34,8 @@ public class TransferTest {
                 .port(1800)
                 .heartTimeout(30 * 1000)
                 .tenantConfig(Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
+                        .stunServer("127.0.0.1:3478")
+                        .relayServer("127.0.0.1:2478")
                         .vipCidr("10.5.0.0/24")
                         .fixedVipList(fixVipList)
                         .routeList(routeList)
@@ -57,6 +59,9 @@ public class TransferTest {
                 .p2pPort(1001)
                 .heartTime(15 * 1000)
                 .p2pHeartTime(10 * 1000)
+                .tenantId("tenant1")
+                .connectTimeout(30 * 1000)
+                .shareNetwork(false)
                 .build()) {
             @Override
             protected String processMacAddress(String hardwareAddress) {
@@ -71,6 +76,9 @@ public class TransferTest {
                 .p2pPort(1002)
                 .heartTime(15 * 1000)
                 .p2pHeartTime(10 * 1000)
+                .tenantId("tenant1")
+                .connectTimeout(30 * 1000)
+                .shareNetwork(false)
                 .build()) {
             @Override
             protected String processMacAddress(String hardwareAddress) {

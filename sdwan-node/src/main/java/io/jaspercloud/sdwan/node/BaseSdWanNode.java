@@ -13,6 +13,7 @@ import io.jaspercloud.sdwan.tranport.Lifecycle;
 import io.jaspercloud.sdwan.tranport.SdWanClient;
 import io.jaspercloud.sdwan.tranport.SdWanClientConfig;
 import io.jaspercloud.sdwan.tun.IpLayerPacket;
+import io.jaspercloud.sdwan.tun.Ipv4Packet;
 import io.jaspercloud.sdwan.tun.windows.Ics;
 import io.jaspercloud.sdwan.util.*;
 import io.netty.buffer.ByteBuf;
@@ -217,11 +218,19 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
     }
 
     public void sendIpPacket(SDWanProtos.IpPacket ipPacket) {
-//        IpRoutePacket packet = new IpRoutePacket();
-//        packet.setSrcIP(ipPacket.getSrcIP());
-//        packet.setDstIP(ipPacket.getDstIP());
-//        sendIpPacket(packet);
-        //todo
+        Ipv4Packet.Packet packet = Ipv4Packet.builder()
+                .version((short) 4)
+                .protocol(Ipv4Packet.Icmp)
+                .srcIP(ipPacket.getSrcIP())
+                .dstIP(ipPacket.getDstIP())
+                .payload(ByteBufUtil.toByteBuf(ipPacket.getPayload().toByteArray()))
+                .build();
+        Ipv4Packet ipv4Packet = new Ipv4Packet(packet);
+        IpLayerPacket ipLayerPacket = new IpLayerPacket(ipv4Packet.encode());
+        ipLayerPacket.setSrcIP(ipPacket.getSrcIP());
+        ipLayerPacket.setDstIP(ipPacket.getDstIP());
+        ipLayerPacket.setPayload(ByteBufUtil.toByteBuf(ipPacket.getPayload().toByteArray()));
+        sendIpLayerPacket(ipLayerPacket);
     }
 
     protected void install() throws Exception {
