@@ -1,8 +1,10 @@
 package io.jaspercloud.sdwan.util;
 
-import sun.net.util.IPAddressUtil;
+import java.util.regex.Pattern;
 
 public class IPUtil {
+
+    private static final Pattern PATTERN = Pattern.compile("^((25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)$");
 
     public static int ip2int(String ip) {
         String[] split = ip.split("\\.");
@@ -44,6 +46,6 @@ public class IPUtil {
     }
 
     public static boolean isIPv4(String ip) {
-        return IPAddressUtil.isIPv4LiteralAddress(ip);
+        return PATTERN.matcher(ip).find();
     }
 }

@@ -1,7 +1,6 @@
 package io.jaspercloud.sdwan.service;
 
 import io.jaspercloud.sdwan.node.ConfigSystem;
-import io.jaspercloud.sdwan.node.LoggerSystem;
 import io.jaspercloud.sdwan.node.SdWanNodeConfig;
 import io.jaspercloud.sdwan.node.TunSdWanNode;
 import io.jaspercloud.sdwan.platform.rpc.RpcInvoker;
@@ -21,37 +20,56 @@ import java.util.List;
 
 public class TunnelService {
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
+    private static Logger logger = LoggerFactory.getLogger(TunnelService.class);
 
     public static final String Type = "tunnel";
 
     public static String getTunnelServiceArgs() throws Exception {
-        String javaPath = WinSvcUtil.getJavaPath();
-        List<String> argList = new ArrayList<>();
-        argList.add(javaPath);
-        argList.add("-jar");
-        String executeJarPath = WinSvcUtil.getExecuteJarPath();
-        String parentPath = new File(executeJarPath).getParent();
-        String configPath = new File(parentPath, "application.yaml").getAbsolutePath();
-        String logPath = new File(parentPath, "app.log").getAbsolutePath();
-        argList.add(executeJarPath);
-        argList.add("-t");
-        argList.add(Type);
-        argList.add("-n");
-        SdWanNodeConfig config = new ConfigSystem().init(configPath);
-        String name = config.getTunName();
-        argList.add(name);
-        argList.add("-c");
-        argList.add(new File(configPath).getAbsolutePath());
-        argList.add("-log");
-        argList.add(new File(logPath).getAbsolutePath());
-        String args = StringUtils.join(argList, " ");
-        return args;
+        if (WinSvcUtil.isNative()) {
+            List<String> argList = new ArrayList<>();
+            String executePath = WinSvcUtil.getExecuteBinPath();
+            String parentPath = new File(executePath).getParent();
+            String configPath = new File(parentPath, "application.yaml").getAbsolutePath();
+            String logPath = new File(parentPath, "app.log").getAbsolutePath();
+            argList.add(executePath);
+            argList.add("-t");
+            argList.add(Type);
+            argList.add("-n");
+            SdWanNodeConfig config = new ConfigSystem().init(configPath);
+            String name = config.getTunName();
+            argList.add(name);
+            argList.add("-c");
+            argList.add(new File(configPath).getAbsolutePath());
+            argList.add("-log");
+            argList.add(new File(logPath).getAbsolutePath());
+            String args = StringUtils.join(argList, " ");
+            return args;
+        } else {
+            String javaPath = WinSvcUtil.getJavaPath();
+            List<String> argList = new ArrayList<>();
+            argList.add(javaPath);
+            argList.add("-jar");
+            String executeJarPath = WinSvcUtil.getExecuteJarPath();
+            String parentPath = new File(executeJarPath).getParent();
+            String configPath = new File(parentPath, "application.yaml").getAbsolutePath();
+            String logPath = new File(parentPath, "app.log").getAbsolutePath();
+            argList.add(executeJarPath);
+            argList.add("-t");
+            argList.add(Type);
+            argList.add("-n");
+            SdWanNodeConfig config = new ConfigSystem().init(configPath);
+            String name = config.getTunName();
+            argList.add(name);
+            argList.add("-c");
+            argList.add(new File(configPath).getAbsolutePath());
+            argList.add("-log");
+            argList.add(new File(logPath).getAbsolutePath());
+            String args = StringUtils.join(argList, " ");
+            return args;
+        }
     }
 
     public static void run(CommandLine cmd) throws Exception {
-        String logPath = cmd.getOptionValue("log");
-        Logger logger = new LoggerSystem().init(logPath);
         logger.info("TunnelService run");
         new TunnelService().runService(cmd);
     }

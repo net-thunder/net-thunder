@@ -4,6 +4,8 @@ import com.sun.jna.platform.win32.Winsvc;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.util.CheckAdmin;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -11,8 +13,19 @@ import java.util.List;
 
 public final class WinSvcUtil {
 
+    private static Logger logger = LoggerFactory.getLogger(WinSvcUtil.class);
+
     private WinSvcUtil() {
 
+    }
+
+    public static boolean isNative() {
+        String kind = System.getProperties().getProperty("org.graalvm.nativeimage.kind");
+        if ("executable".equals(kind)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public static String getJavaPath() {
@@ -27,21 +40,44 @@ public final class WinSvcUtil {
         return path;
     }
 
-    public static String getManageServiceArgs(String action, String serviceName, String logPath) {
-        List<String> argList = new ArrayList<>();
-        argList.add(getJavaPath());
-        argList.add("-jar");
-        argList.add(getExecuteJarPath());
-        argList.add("-t");
-        argList.add("manage");
-        argList.add("-a");
-        argList.add(action);
-        argList.add("-n");
-        argList.add(serviceName);
-        argList.add("-log");
-        argList.add(new File(logPath).getAbsolutePath());
-        String path = StringUtils.join(argList, " ");
+    public static String getExecuteBinPath() {
+        String userDir = System.getProperty("user.dir");
+        String path = new File(userDir, "sdwan-node-bootstrap.exe").getAbsolutePath();
         return path;
+    }
+
+    public static String getManageServiceArgs(String action, String serviceName, String logPath) {
+        if (WinSvcUtil.isNative()) {
+            List<String> argList = new ArrayList<>();
+            argList.add(getExecuteBinPath());
+            argList.add("-t");
+            argList.add("manage");
+            argList.add("-a");
+            argList.add(action);
+            argList.add("-n");
+            argList.add(serviceName);
+            argList.add("-log");
+            argList.add(new File(logPath).getAbsolutePath());
+            String path = StringUtils.join(argList, " ");
+            logger.info("manageServiceArgs: {}", path);
+            return path;
+        } else {
+            List<String> argList = new ArrayList<>();
+            argList.add(getJavaPath());
+            argList.add("-jar");
+            argList.add(getExecuteJarPath());
+            argList.add("-t");
+            argList.add("manage");
+            argList.add("-a");
+            argList.add(action);
+            argList.add("-n");
+            argList.add(serviceName);
+            argList.add("-log");
+            argList.add(new File(logPath).getAbsolutePath());
+            String path = StringUtils.join(argList, " ");
+            logger.info("manageServiceArgs: {}", path);
+            return path;
+        }
     }
 
     public static void createService(String serviceName, String path) {

@@ -1,6 +1,5 @@
 package io.jaspercloud.sdwan.tun;
 
-import io.jaspercloud.sdwan.support.GlobalTime;
 import io.jaspercloud.sdwan.support.Referenced;
 import io.jaspercloud.sdwan.util.IPUtil;
 import io.netty.buffer.ByteBuf;
@@ -104,9 +103,7 @@ public class IpLayerPacket implements Referenced {
         byteBuf.readerIndex(9);
         int protocol = byteBuf.readUnsignedByte();
         byteBuf.readerIndex(headLen);
-        GlobalTime.log("rebuild readSlice before");
         ByteBuf payload = byteBuf.readSlice(totalLen - headLen);
-        GlobalTime.log("rebuild readSlice after");
         byteBuf.resetReaderIndex();
         switch (protocol) {
             case Ipv4Packet.Tcp: {
@@ -122,15 +119,11 @@ public class IpLayerPacket implements Referenced {
                 break;
             }
             case Ipv4Packet.Icmp: {
-                GlobalTime.log("rebuild reCalcIcmpCheckSum before");
                 reCalcIcmpCheckSum(payload);
-                GlobalTime.log("rebuild reCalcIcmpCheckSum after");
                 break;
             }
         }
-        GlobalTime.log("rebuild reCalcIpCheckSum before");
         reCalcIpCheckSum();
-        GlobalTime.log("rebuild reCalcIpCheckSum after");
         return byteBuf;
     }
 

@@ -3,7 +3,7 @@ package io.jaspercloud.sdwan.tranport;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.stun.*;
 import io.jaspercloud.sdwan.support.AsyncTask;
-import io.jaspercloud.sdwan.support.GlobalTime;
+import io.jaspercloud.sdwan.util.IPUtil;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.UnpooledByteBufAllocator;
@@ -13,7 +13,6 @@ import io.netty.channel.socket.nio.NioDatagramChannel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import sun.net.util.IPAddressUtil;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -56,14 +55,10 @@ public class P2pClient implements TransportLifecycle, Runnable {
     private void processBindRequest(ChannelHandlerContext ctx, StunPacket request) {
         Channel channel = ctx.channel();
         InetSocketAddress sender = request.sender();
-        ProtoFamily protoFamily;
-        if (IPAddressUtil.isIPv4LiteralAddress(sender.getHostString())) {
-            protoFamily = ProtoFamily.IPv4;
-        } else if (IPAddressUtil.isIPv6LiteralAddress(sender.getHostString())) {
-            protoFamily = ProtoFamily.IPv6;
-        } else {
+        if (!IPUtil.isIPv4(sender.getHostString())) {
             throw new UnsupportedOperationException();
         }
+        ProtoFamily protoFamily = ProtoFamily.IPv4;
         StunMessage stunMessage = new StunMessage(MessageType.BindResponse, request.content().getTranId());
         stunMessage.setAttr(AttrType.MappedAddress, new AddressAttr(protoFamily, sender.getHostString(), sender.getPort()));
         StunPacket response = new StunPacket(stunMessage, request.sender());
@@ -100,7 +95,6 @@ public class P2pClient implements TransportLifecycle, Runnable {
         message.setAttr(AttrType.SrcVip, new StringAttr(vip));
         message.setAttr(AttrType.Data, new BytesAttr(bytes));
         StunPacket request = new StunPacket(message, toAddress);
-        GlobalTime.log("encodeStunPacket");
         localChannel.writeAndFlush(request);
     }
 

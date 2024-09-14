@@ -5,7 +5,6 @@ import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.util.IPUtil;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
-import sun.net.util.IPAddressUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +27,7 @@ public class Cidr {
     public static void check(String text) {
         String[] split = text.split("/");
         String address = split[0];
-        if (!IPAddressUtil.isIPv4LiteralAddress(address)) {
+        if (!IPUtil.isIPv4(address)) {
             throw new CidrParseException("address error: " + address);
         }
         int maskBits = Integer.parseInt(split[1]);

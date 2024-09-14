@@ -5,7 +5,10 @@ import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.route.VirtualRouter;
 import io.jaspercloud.sdwan.stun.NatAddress;
-import io.jaspercloud.sdwan.support.*;
+import io.jaspercloud.sdwan.support.AddressUri;
+import io.jaspercloud.sdwan.support.AsyncTask;
+import io.jaspercloud.sdwan.support.Cidr;
+import io.jaspercloud.sdwan.support.Multicast;
 import io.jaspercloud.sdwan.tranport.Lifecycle;
 import io.jaspercloud.sdwan.tranport.SdWanClient;
 import io.jaspercloud.sdwan.tranport.SdWanClientConfig;
@@ -181,7 +184,6 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
             //fix ics
             packet.setSrcIP(localVip);
         }
-        GlobalTime.log("isBroadcastAddress before");
         if (Multicast.isMulticastIp(packet.getDstIP()) || Cidr.isBroadcastAddress(vipCidr, packet.getDstIP())) {
             //broadcast
             byte[] bytes = SDWanProtos.IpPacket.newBuilder()
@@ -194,10 +196,8 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
             });
             return;
         }
-        GlobalTime.log("isBroadcastAddress after");
         //route
         String dstVip = virtualRouter.routeOut(packet);
-        GlobalTime.log("routeOut after");
         if (null == dstVip) {
             return;
         }
@@ -205,19 +205,14 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         if (null == nodeInfo) {
             return;
         }
-        GlobalTime.log("encodeIpPacket");
         ByteBuf byteBuf = packet.rebuild();
-        GlobalTime.log("rebuild");
         byte[] toBytes = ByteBufUtil.toBytes(byteBuf);
-        GlobalTime.log("toBytes");
         ByteString byteString = ByteString.copyFrom(toBytes);
-        GlobalTime.log("byteString");
         byte[] bytes = SDWanProtos.IpPacket.newBuilder()
                 .setSrcIP(packet.getSrcIP())
                 .setDstIP(packet.getDstIP())
                 .setPayload(byteString)
                 .build().toByteArray();
-        GlobalTime.log("sendNode");
         iceClient.sendNode(localVip, nodeInfo, bytes);
     }
 

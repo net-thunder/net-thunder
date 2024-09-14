@@ -114,6 +114,7 @@ public class MainWindowController implements EventHandler<ActionEvent> {
                     if (Winsvc.SERVICE_RUNNING == status) {
                         return;
                     } else if (-1 == status) {
+                        log.info("createService: serviceName={}, path={}", serviceName, path);
                         winSvcRpc.createService(serviceName, path);
                     }
                     winSvcRpc.startService(serviceName);

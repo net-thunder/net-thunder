@@ -1,6 +1,5 @@
 package io.jaspercloud.sdwan.stun;
 
-import io.jaspercloud.sdwan.support.GlobalTime;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -44,7 +43,6 @@ public class StunEncoder extends MessageToMessageEncoder<StunPacket> {
             attrsByteBuf.release();
         }
         DatagramPacket datagramPacket = new DatagramPacket(byteBuf, msg.recipient());
-        GlobalTime.log("encodeDatagramPacket");
         out.add(datagramPacket);
     }
 }

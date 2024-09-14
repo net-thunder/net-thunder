@@ -1,13 +1,13 @@
 package io.jaspercloud.sdwan.tranport;
 
 import io.jaspercloud.sdwan.stun.*;
+import io.jaspercloud.sdwan.util.IPUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import lombok.extern.slf4j.Slf4j;
-import sun.net.util.IPAddressUtil;
 
 import java.net.InetSocketAddress;
 import java.util.function.Supplier;
@@ -32,14 +32,10 @@ public class StunServer implements Lifecycle {
     private void processBindRequest(ChannelHandlerContext ctx, StunPacket request) {
         Channel channel = ctx.channel();
         InetSocketAddress sender = request.sender();
-        ProtoFamily protoFamily;
-        if (IPAddressUtil.isIPv4LiteralAddress(sender.getHostString())) {
-            protoFamily = ProtoFamily.IPv4;
-        } else if (IPAddressUtil.isIPv6LiteralAddress(sender.getHostString())) {
-            protoFamily = ProtoFamily.IPv6;
-        } else {
+        if (!IPUtil.isIPv4(sender.getHostString())) {
             throw new UnsupportedOperationException();
         }
+        ProtoFamily protoFamily = ProtoFamily.IPv4;
         StunMessage stunMessage = new StunMessage(MessageType.BindResponse, request.content().getTranId());
         stunMessage.setAttr(AttrType.MappedAddress, new AddressAttr(protoFamily, sender.getHostString(), sender.getPort()));
         stunMessage.setAttr(AttrType.ChangedAddress, new AddressAttr(protoFamily, config.getBindHost(), config.getBindPort()));

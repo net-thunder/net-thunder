@@ -7,7 +7,7 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.FileAppender;
-import org.slf4j.impl.StaticLoggerBinder;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.charset.Charset;
@@ -18,7 +18,7 @@ public class LoggerSystem {
         if (null == logFile) {
             throw new IllegalArgumentException("logFile is null");
         }
-        LoggerContext loggerContext = (LoggerContext) StaticLoggerBinder.getSingleton().getLoggerFactory();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         loggerContext.stop();
         loggerContext.reset();
         Logger logger = loggerContext.getLogger("ROOT");
@@ -43,18 +43,32 @@ public class LoggerSystem {
         fileAppender.setFile(logFile);
         fileAppender.start();
         //asyncAppender
-        AsyncAppender asyncAppender = new AsyncAppender();
-        asyncAppender.setName("async");
-        asyncAppender.setContext(loggerContext);
-        asyncAppender.addAppender(consoleAppender);
-        asyncAppender.addAppender(fileAppender);
-        asyncAppender.start();
-        logger.addAppender(asyncAppender);
+        boolean async = true;
+        if (async) {
+            AsyncAppender asyncAppender = new AsyncAppender();
+            asyncAppender.setName("async-console");
+            asyncAppender.setContext(loggerContext);
+            asyncAppender.addAppender(consoleAppender);
+            asyncAppender.start();
+            logger.addAppender(asyncAppender);
+        } else {
+            logger.addAppender(consoleAppender);
+        }
+        if (async) {
+            AsyncAppender asyncAppender = new AsyncAppender();
+            asyncAppender.setName("async-file");
+            asyncAppender.setContext(loggerContext);
+            asyncAppender.addAppender(fileAppender);
+            asyncAppender.start();
+            logger.addAppender(asyncAppender);
+        } else {
+            logger.addAppender(fileAppender);
+        }
         return logger;
     }
 
     public Logger initUserDir() {
-        LoggerContext loggerContext = (LoggerContext) StaticLoggerBinder.getSingleton().getLoggerFactory();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         loggerContext.stop();
         loggerContext.reset();
         Logger logger = loggerContext.getLogger(Logger.ROOT_LOGGER_NAME);
@@ -80,13 +94,27 @@ public class LoggerSystem {
         fileAppender.setFile(logFile);
         fileAppender.start();
         //asyncAppender
-        AsyncAppender asyncAppender = new AsyncAppender();
-        asyncAppender.setName("async");
-        asyncAppender.setContext(loggerContext);
-        asyncAppender.addAppender(consoleAppender);
-        asyncAppender.addAppender(fileAppender);
-        asyncAppender.start();
-        logger.addAppender(asyncAppender);
+        boolean async = true;
+        if (async) {
+            AsyncAppender asyncAppender = new AsyncAppender();
+            asyncAppender.setName("async-console");
+            asyncAppender.setContext(loggerContext);
+            asyncAppender.addAppender(consoleAppender);
+            asyncAppender.start();
+            logger.addAppender(asyncAppender);
+        } else {
+            logger.addAppender(consoleAppender);
+        }
+        if (async) {
+            AsyncAppender asyncAppender = new AsyncAppender();
+            asyncAppender.setName("async-file");
+            asyncAppender.setContext(loggerContext);
+            asyncAppender.addAppender(fileAppender);
+            asyncAppender.start();
+            logger.addAppender(asyncAppender);
+        } else {
+            logger.addAppender(fileAppender);
+        }
         return logger;
     }
 }

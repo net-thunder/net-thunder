@@ -1,6 +1,5 @@
 package io.jaspercloud.sdwan.service;
 
-import io.jaspercloud.sdwan.node.LoggerSystem;
 import io.jaspercloud.sdwan.platform.rpc.RpcInvoker;
 import io.jaspercloud.sdwan.platform.rpc.WinSvcRpc;
 import io.jaspercloud.sdwan.platform.rpc.WinSvcRpcImpl;
@@ -19,53 +18,86 @@ import java.util.List;
 
 public class ManagerService {
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
+    private static Logger logger = LoggerFactory.getLogger(ManagerService.class);
 
     public static final String Type = "manage";
     private static final String ServiceName = "NetThunderManager";
 
     public static void executeInstall() {
-        String javaPath = WinSvcUtil.getJavaPath();
-        List<String> argList = new ArrayList<>();
-        argList.add("-jar");
-        String executeJarPath = WinSvcUtil.getExecuteJarPath();
-        String parentPath = new File(executeJarPath).getParent();
-        String logPath = new File(parentPath, "app.log").getAbsolutePath();
-        argList.add(executeJarPath);
-        argList.add("-t");
-        argList.add(Type);
-        argList.add("-a");
-        argList.add("install");
-        argList.add("-log");
-        argList.add(new File(logPath).getAbsolutePath());
-        String args = StringUtils.join(argList, " ");
-        WinShell.ShellExecuteW(javaPath, args, null, WinShell.SW_HIDE);
+        if (WinSvcUtil.isNative()) {
+            List<String> argList = new ArrayList<>();
+            String executePath = WinSvcUtil.getExecuteBinPath();
+            String parentPath = new File(executePath).getParent();
+            String logPath = new File(parentPath, "app.log").getAbsolutePath();
+            argList.add("-t");
+            argList.add(Type);
+            argList.add("-a");
+            argList.add("install");
+            argList.add("-log");
+            argList.add(new File(logPath).getAbsolutePath());
+            String args = StringUtils.join(argList, " ");
+            logger.info("executeInstall: {} {}", executePath, args);
+            WinShell.ShellExecuteW(executePath, args, null, WinShell.SW_HIDE);
+        } else {
+            String javaPath = WinSvcUtil.getJavaPath();
+            List<String> argList = new ArrayList<>();
+            argList.add("-jar");
+            String executeJarPath = WinSvcUtil.getExecuteJarPath();
+            String parentPath = new File(executeJarPath).getParent();
+            String logPath = new File(parentPath, "app.log").getAbsolutePath();
+            argList.add(executeJarPath);
+            argList.add("-t");
+            argList.add(Type);
+            argList.add("-a");
+            argList.add("install");
+            argList.add("-log");
+            argList.add(new File(logPath).getAbsolutePath());
+            String args = StringUtils.join(argList, " ");
+            logger.info("executeInstall: {} {}", javaPath, args);
+            WinShell.ShellExecuteW(javaPath, args, null, WinShell.SW_HIDE);
+        }
     }
 
     public static void executeUnInstall() {
-        String javaPath = WinSvcUtil.getJavaPath();
-        List<String> argList = new ArrayList<>();
-        argList.add("-jar");
-        String executeJarPath = WinSvcUtil.getExecuteJarPath();
-        String parentPath = new File(executeJarPath).getParent();
-        String logPath = new File(parentPath, "app.log").getAbsolutePath();
-        argList.add(executeJarPath);
-        argList.add("-t");
-        argList.add(Type);
-        argList.add("-a");
-        argList.add("uninstall");
-        argList.add("-log");
-        argList.add(new File(logPath).getAbsolutePath());
-        String args = StringUtils.join(argList, " ");
-        WinShell.ShellExecuteW(javaPath, args, null, WinShell.SW_HIDE);
+        if (WinSvcUtil.isNative()) {
+            List<String> argList = new ArrayList<>();
+            String executePath = WinSvcUtil.getExecuteBinPath();
+            String parentPath = new File(executePath).getParent();
+            String logPath = new File(parentPath, "app.log").getAbsolutePath();
+            argList.add("-t");
+            argList.add(Type);
+            argList.add("-a");
+            argList.add("uninstall");
+            argList.add("-log");
+            argList.add(new File(logPath).getAbsolutePath());
+            String args = StringUtils.join(argList, " ");
+            logger.info("executeUnInstall: {} {}", executePath, args);
+            WinShell.ShellExecuteW(executePath, args, null, WinShell.SW_HIDE);
+        } else {
+            String javaPath = WinSvcUtil.getJavaPath();
+            List<String> argList = new ArrayList<>();
+            argList.add("-jar");
+            String executeJarPath = WinSvcUtil.getExecuteJarPath();
+            String parentPath = new File(executeJarPath).getParent();
+            String logPath = new File(parentPath, "app.log").getAbsolutePath();
+            argList.add(executeJarPath);
+            argList.add("-t");
+            argList.add(Type);
+            argList.add("-a");
+            argList.add("uninstall");
+            argList.add("-log");
+            argList.add(new File(logPath).getAbsolutePath());
+            String args = StringUtils.join(argList, " ");
+            logger.info("executeUnInstall: {} {}", javaPath, args);
+            WinShell.ShellExecuteW(javaPath, args, null, WinShell.SW_HIDE);
+        }
     }
 
     public static void run(CommandLine cmd) throws Exception {
-        String logPath = cmd.getOptionValue("log");
-        Logger logger = new LoggerSystem().init(logPath);
         try {
             if ("install".equals(cmd.getOptionValue("a"))) {
                 logger.info("ManagerService install");
+                String logPath = cmd.getOptionValue("log");
                 String path = WinSvcUtil.getManageServiceArgs("run", ServiceName, logPath);
                 WinSvcUtil.createService(ServiceName, path);
                 WinSvcUtil.startService(ServiceName);

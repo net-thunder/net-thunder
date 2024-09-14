@@ -11,6 +11,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>io.jaspercloud</groupId>
+            <artifactId>sdwan-node</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
@@ -36,35 +40,49 @@
             <version>1.8.0</version>
         </dependency>
         <dependency>
-            <groupId>io.jaspercloud</groupId>
-            <artifactId>sdwan-node</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-base</artifactId>
-            <version>20</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-controls</artifactId>
-            <version>20</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-graphics</artifactId>
-            <version>20</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-fxml</artifactId>
-            <version>20</version>
-        </dependency>
-        <dependency>
             <groupId>com.caucho</groupId>
             <artifactId>hessian</artifactId>
             <version>4.0.60</version>
         </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-base</artifactId>
+            <version>21</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>21</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>
+            <version>21</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+            <version>21</version>
+        </dependency>
+        <dependency>
+            <groupId>org.graalvm.sdk</groupId>
+            <artifactId>graal-sdk</artifactId>
+            <version>23.0.1</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>3.2.7</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <finalName>${project.artifactId}</finalName>
@@ -72,7 +90,6 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>2.1.4.RELEASE</version>
                 <executions>
                     <execution>
                         <goals>
@@ -83,5 +100,39 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>native</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.graalvm.buildtools</groupId>
+                        <artifactId>native-maven-plugin</artifactId>
+                        <version>0.10.3</version>
+                        <configuration>
+                            <fallback>false</fallback>
+                            <agent>
+                                <enabled>false</enabled>
+                            </agent>
+                            <buildArgs>
+                                <buildArg>-H:+AddAllCharsets</buildArg>
+<!--                                <buildArg>-Djava.awt.headless=false</buildArg>-->
+<!--                                <buildArg>-H:NativeLinkerOption=/MANIFEST:EMBED</buildArg>-->
+<!--                                <buildArg>-H:NativeLinkerOption=/MANIFESTUAC:level='requireAdministrator'</buildArg>-->
+                                <buildArg>-H:NativeLinkerOption=/SUBSYSTEM:WINDOWS</buildArg>
+                                <buildArg>-H:NativeLinkerOption=/ENTRY:mainCRTStartup</buildArg>
+<!--                                <buildArg>-H:NativeLinkerOption=${project.basedir}\src\main\resources\ui\mainicon.res</buildArg>-->
+                            </buildArgs>
+                            <!-- imageName用于设置生成的二进制文件名称 -->
+                            <imageName>${project.artifactId}</imageName>
+                            <!-- mainClass用于指定main方法类路径 -->
+                            <mainClass>io.jaspercloud.sdwan.SdWanNodeLauncher</mainClass>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

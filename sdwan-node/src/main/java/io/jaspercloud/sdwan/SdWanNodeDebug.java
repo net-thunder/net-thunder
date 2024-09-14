@@ -4,7 +4,6 @@ import ch.qos.logback.classic.Logger;
 import io.jaspercloud.sdwan.node.ConfigSystem;
 import io.jaspercloud.sdwan.node.LoggerSystem;
 import io.jaspercloud.sdwan.node.TunSdWanNode;
-import io.jaspercloud.sdwan.support.GlobalTime;
 import io.jaspercloud.sdwan.tun.IcmpPacket;
 import io.jaspercloud.sdwan.tun.IpLayerPacket;
 import io.jaspercloud.sdwan.tun.IpLayerPacketProcessor;
@@ -44,17 +43,13 @@ public class SdWanNodeDebug {
                 if (Ipv4Packet.Icmp != packet.getProtocol()) {
                     return;
                 }
-                GlobalTime.create();
                 IcmpPacket icmpPacket = IcmpPacket.decodeMark(packet.getPayload());
                 ByteBuf payload = icmpPacket.getPayload();
                 long s = payload.readLong();
-                GlobalTime.setStart(s);
                 icmpPacket.setPayload(payload.readSlice(payload.readableBytes()));
                 payload = icmpPacket.encode();
-                GlobalTime.log("icmpPacket.encode");
                 packet.setPayload(payload);
                 payload.release();
-                GlobalTime.log("ping");
             }
         });
         mainSdWanNode.start();
