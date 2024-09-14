@@ -6,12 +6,6 @@ import io.jaspercloud.sdwan.node.LoggerSystem;
 import io.jaspercloud.sdwan.node.SdWanNodeConfig;
 import io.jaspercloud.sdwan.node.TunSdWanNode;
 import io.jaspercloud.sdwan.platform.WindowsPlatformLauncher;
-import io.jaspercloud.sdwan.tun.IcmpPacket;
-import io.jaspercloud.sdwan.tun.IpLayerPacket;
-import io.jaspercloud.sdwan.tun.IpLayerPacketProcessor;
-import io.jaspercloud.sdwan.tun.Ipv4Packet;
-import io.jaspercloud.sdwan.util.ByteBufUtil;
-import io.netty.buffer.ByteBuf;
 import io.netty.util.internal.PlatformDependent;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -63,39 +57,6 @@ public class SdWanNodeLauncher {
         logger.info("startTunSdWanNode");
         SdWanNodeConfig config = new ConfigSystem().initUserDir();
         TunSdWanNode tunSdWanNode = new TunSdWanNode(config);
-        tunSdWanNode.addIpLayerPacketProcessor(new IpLayerPacketProcessor() {
-            @Override
-            public void input(IpLayerPacket packet) {
-                if (Ipv4Packet.Icmp != packet.getProtocol()) {
-                    return;
-                }
-                long s = System.nanoTime();
-                IcmpPacket icmpPacket = IcmpPacket.decodeMark(packet.getPayload());
-                ByteBuf payload = icmpPacket.getPayload();
-                ByteBuf byteBuf = ByteBufUtil.create();
-                byteBuf.writeLong(s);
-                byteBuf.writeBytes(payload);
-                icmpPacket.setPayload(byteBuf);
-                payload = icmpPacket.encode();
-                packet.setPayload(payload);
-                payload.release();
-                byteBuf.release();
-            }
-
-            @Override
-            public void output(IpLayerPacket packet) {
-                if (Ipv4Packet.Icmp != packet.getProtocol()) {
-                    return;
-                }
-                IcmpPacket icmpPacket = IcmpPacket.decodeMark(packet.getPayload());
-                ByteBuf payload = icmpPacket.getPayload();
-                long s = payload.readLong();
-                icmpPacket.setPayload(payload.readSlice(payload.readableBytes()));
-                payload = icmpPacket.encode();
-                packet.setPayload(payload);
-                payload.release();
-            }
-        });
         tunSdWanNode.start();
         return tunSdWanNode;
     }

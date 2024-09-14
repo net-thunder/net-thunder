@@ -7,7 +7,7 @@ import io.netty.buffer.ByteBuf;
 public class IcmpPacket {
 
     public static final byte Echo = 8;
-    public static final byte Reply = 1;
+    public static final byte Reply = 0;
 
     private byte type;
     private byte code;

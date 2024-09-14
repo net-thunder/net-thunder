@@ -1,6 +1,7 @@
 package io.jaspercloud.sdwan.node;
 
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
+import io.jaspercloud.sdwan.node.processor.PingPacketProcessor;
 import io.jaspercloud.sdwan.route.RouteManager;
 import io.jaspercloud.sdwan.route.RouteManagerFactory;
 import io.jaspercloud.sdwan.route.VirtualRouter;
@@ -45,6 +46,7 @@ public class TunSdWanNode extends BaseSdWanNode {
     public TunSdWanNode(SdWanNodeConfig config) {
         super(config);
         this.config = config;
+        addIpLayerPacketProcessor(new PingPacketProcessor());
     }
 
     @Override
