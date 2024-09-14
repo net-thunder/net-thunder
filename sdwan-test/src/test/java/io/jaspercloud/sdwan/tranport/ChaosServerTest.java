@@ -7,7 +7,7 @@ import io.jaspercloud.sdwan.node.SdWanNodeConfig;
 import io.jaspercloud.sdwan.node.TunSdWanNode;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.apache.commons.lang3.RandomUtils;
-import org.slf4j.impl.StaticLoggerBinder;
+import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
 import java.util.*;
@@ -20,7 +20,7 @@ public class ChaosServerTest {
         applySdWanServer(60 * 1000, 120 * 1000, 5 * 1000);
         applyRelayServer(60 * 1000, 120 * 1000, 5 * 1000);
         applyStunServer(60 * 1000, 120 * 1000, 5 * 1000);
-        LoggerContext loggerContext = (LoggerContext) StaticLoggerBinder.getSingleton().getLoggerFactory();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         List<Logger> loggerList = loggerContext.getLoggerList();
         loggerList.forEach(log -> {
             if (log.getName().startsWith("io.jaspercloud.sdwan")) {
@@ -139,7 +139,7 @@ public class ChaosServerTest {
     }
 
     private static void applyLog() {
-        LoggerContext loggerContext = (LoggerContext) StaticLoggerBinder.getSingleton().getLoggerFactory();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         Logger logger = loggerContext.getLogger("ROOT");
         logger.setLevel(Level.INFO);
     }
