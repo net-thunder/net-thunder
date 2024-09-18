@@ -37,11 +37,14 @@ public class Cidr {
     }
 
     public static Cidr parseCidr(String text) {
+        return parseCidr(text, true);
+    }
+
+    public static Cidr parseCidr(String text, boolean parseList) {
         String[] split = text.split("/");
         int address = IPUtil.ip2int(split[0]);
         int maskBits = Integer.parseInt(split[1]);
         address = parseIdentifierAddress(address, maskBits);
-        List<String> ipList = parseIpList(address, maskBits);
         String maskAddress = parseMaskAddress(maskBits);
         String networkIdentifier = parseNetworkIdentifier(address, maskBits);
         String broadcastAddress = parseBroadcastAddress(address, maskBits);
@@ -52,13 +55,16 @@ public class Cidr {
         cidr.setMaskAddress(maskAddress);
         cidr.setBroadcastAddress(broadcastAddress);
         cidr.setGatewayAddress(gatewayAddress);
-        cidr.setIpList(ipList);
-        List<String> availableIpList = new ArrayList<>(ipList);
-        availableIpList.remove(networkIdentifier);
-        availableIpList.remove(maskAddress);
-        availableIpList.remove(broadcastAddress);
-        availableIpList.remove(gatewayAddress);
-        cidr.setAvailableIpList(availableIpList);
+        if (parseList) {
+            List<String> ipList = parseIpList(address, maskBits);
+            cidr.setIpList(ipList);
+            List<String> availableIpList = new ArrayList<>(ipList);
+            availableIpList.remove(networkIdentifier);
+            availableIpList.remove(maskAddress);
+            availableIpList.remove(broadcastAddress);
+            availableIpList.remove(gatewayAddress);
+            cidr.setAvailableIpList(availableIpList);
+        }
         return cidr;
     }
 

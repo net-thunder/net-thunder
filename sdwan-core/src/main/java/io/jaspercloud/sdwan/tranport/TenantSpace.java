@@ -1,5 +1,6 @@
 package io.jaspercloud.sdwan.tranport;
 
+import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.support.Cidr;
 import io.netty.channel.Channel;
 import lombok.*;
@@ -23,4 +24,5 @@ public class TenantSpace {
     private Map<String, AtomicReference<Channel>> bindIPMap = new ConcurrentHashMap<>();
     private Map<String, String> fixedVipMap = new ConcurrentHashMap<>();
     private List<SdWanServerConfig.Route> routeList = new ArrayList<>();
+    private Map<String, SDWanProtos.VNATList> vnatMap = new ConcurrentHashMap<>();
 }

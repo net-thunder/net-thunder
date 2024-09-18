@@ -33,6 +33,7 @@ public class SdWanServerConfig {
         private String vipCidr = "10.1.0.0/24";
         private List<FixVip> fixedVipList = Collections.emptyList();
         private List<Route> routeList = Collections.emptyList();
+        private List<VNAT> vnatList = Collections.emptyList();
     }
 
     @Builder
@@ -54,7 +55,18 @@ public class SdWanServerConfig {
     public static class Route {
 
         private String destination;
-        private String transform;
         private List<String> nexthop;
+    }
+
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
+    @Setter
+    public static class VNAT {
+
+        private String vip;
+        private String src;
+        private String dst;
     }
 }

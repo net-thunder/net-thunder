@@ -19,10 +19,7 @@ import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -172,26 +169,25 @@ public class SdWanServer implements Lifecycle, Runnable {
             if (null == tenantSpace) {
                 throw new ProcessException("not found tenant");
             }
-            SDWanProtos.RouteList.Builder routeBuilder = SDWanProtos.RouteList.newBuilder();
+            SDWanProtos.RouteList.Builder routeListBuilder = SDWanProtos.RouteList.newBuilder();
             List<SdWanServerConfig.Route> routeList = tenantSpace.getRouteList();
             if (!CollectionUtil.isEmpty(routeList)) {
                 routeList.forEach(e -> {
                     SDWanProtos.Route.Builder builder = SDWanProtos.Route.newBuilder()
                             .setDestination(e.getDestination())
                             .addAllNexthop(e.getNexthop());
-                    if (null != e.getTransform()) {
-                        builder.setTransform(e.getTransform());
-                    }
-                    routeBuilder.addRoute(builder.build());
+                    routeListBuilder.addRoute(builder.build());
                 });
             }
             Cidr ipPool = tenantSpace.getIpPool();
+            SDWanProtos.VNATList vnatList = tenantSpace.getVnatMap().getOrDefault(vip, SDWanProtos.VNATList.newBuilder().build());
             SDWanProtos.RegistResp regResp = SDWanProtos.RegistResp.newBuilder()
                     .setCode(SDWanProtos.MessageCode.Success)
                     .setVip(vip)
                     .setMaskBits(ipPool.getMaskBits())
                     .setNodeList(nodeInfoList)
-                    .setRouteList(routeBuilder.build())
+                    .setRouteList(routeListBuilder.build())
+                    .setVnatList(vnatList)
                     .build();
             SdWanServer.reply(channel, msg, SDWanProtos.MessageTypeCode.RegistRespType, regResp);
             sendAllChannelNodeOnline(channel);
@@ -322,13 +318,33 @@ public class SdWanServer implements Lifecycle, Runnable {
             ipPool.getAvailableIpList().forEach(vip -> {
                 bindIPMap.put(vip, new AtomicReference<>());
             });
+            //fixedVipMap
             if (!CollectionUtil.isEmpty(config.getFixedVipList())) {
                 Map<String, String> fixedVipMap = tenantSpace.getFixedVipMap();
                 config.getFixedVipList().forEach(e -> {
                     fixedVipMap.put(e.getMac(), e.getVip());
                 });
             }
+            //route
             tenantSpace.setRouteList(config.getRouteList());
+            //vnat
+            Map<String, SDWanProtos.VNATList.Builder> vnatBuilderMap = new HashMap<>();
+            List<SdWanServerConfig.VNAT> vnatList = config.getVnatList();
+            if (!CollectionUtil.isEmpty(vnatList)) {
+                vnatList.forEach(e -> {
+                    SDWanProtos.VNATList.Builder vnatListBuilder = vnatBuilderMap.computeIfAbsent(e.getVip(), key -> SDWanProtos.VNATList.newBuilder());
+                    SDWanProtos.VNAT.Builder builder = SDWanProtos.VNAT.newBuilder()
+                            .setVip(e.getVip())
+                            .setSrc(e.getSrc())
+                            .setDst(e.getDst());
+                    vnatListBuilder.addVnat(builder.build());
+                });
+            }
+            Map<String, SDWanProtos.VNATList> vnatMap = new HashMap<>();
+            vnatBuilderMap.forEach((key, value) -> {
+                vnatMap.put(key, value.build());
+            });
+            tenantSpace.setVnatMap(vnatMap);
             tenantSpaceMap.put(k, tenantSpace);
         });
         NioEventLoopGroup bossGroup = NioEventLoopFactory.createBossGroup();

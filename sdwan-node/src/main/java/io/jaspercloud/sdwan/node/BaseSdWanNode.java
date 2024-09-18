@@ -128,6 +128,11 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                                 virtualRouter.updateRoutes(routeList.getRouteList());
                                 break;
                             }
+                            case SDWanProtos.MessageTypeCode.VNATListType_VALUE: {
+                                SDWanProtos.VNATList vnatList = SDWanProtos.VNATList.parseFrom(msg.getData());
+                                virtualRouter.updateVNATs(vnatList.getVnatList());
+                                break;
+                            }
                             case SDWanProtos.MessageTypeCode.NodeOnlineType_VALUE: {
                                 SDWanProtos.NodeInfo nodeInfo = SDWanProtos.NodeInfo.parseFrom(msg.getData());
                                 nodeInfoMap.put(nodeInfo.getVip(), nodeInfo);
@@ -299,6 +304,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         });
         virtualRouter.updateCidr(vipCidr);
         virtualRouter.updateRoutes(regResp.getRouteList().getRouteList());
+        virtualRouter.updateVNATs(regResp.getVnatList().getVnatList());
         log.info("SdWanNode installed");
     }
 

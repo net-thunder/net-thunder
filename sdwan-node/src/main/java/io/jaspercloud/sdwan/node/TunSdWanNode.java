@@ -76,6 +76,9 @@ public class TunSdWanNode extends BaseSdWanNode {
                 try {
                     IpLayerPacket packet = new IpLayerPacket(byteBuf);
                     packet = virtualRouter.routeIn(packet);
+                    if (null == packet) {
+                        return;
+                    }
                     ipPacketProcessor.input(packet);
                     tunTransport.writeIpLayerPacket(packet.retain());
                 } finally {

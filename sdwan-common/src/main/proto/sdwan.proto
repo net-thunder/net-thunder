@@ -27,8 +27,9 @@ enum MessageTypeCode {
   //push
   NodeInfoListType = 201;
   RouteListType = 202;
-  NodeOnlineType = 203;
-  NodeOfflineType = 204;
+  VNATListType = 203;
+  NodeOnlineType = 205;
+  NodeOfflineType = 206;
   //
   HeartType = 301;
 }
@@ -70,6 +71,7 @@ message RegistResp {
   optional int32 maskBits = 3;
   optional NodeInfoList nodeList = 4;
   optional RouteList routeList = 5;
+  optional VNATList vnatList = 6;
 }
 
 message NodeInfo {
@@ -83,12 +85,21 @@ message NodeInfoList {
 
 message Route {
   required string destination = 1;
-  optional string transform = 2;
   repeated string nexthop = 3;
 }
 
 message RouteList {
   repeated Route route = 1;
+}
+
+message VNAT {
+  required string vip = 1;
+  required string src = 2;
+  required string dst = 3;
+}
+
+message VNATList {
+  repeated VNAT vnat = 1;
 }
 
 message IpPacket {
