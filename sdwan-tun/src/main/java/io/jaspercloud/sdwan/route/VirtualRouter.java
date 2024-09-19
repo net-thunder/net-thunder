@@ -117,15 +117,15 @@ public class VirtualRouter {
     }
 
     private String natInIp(SDWanProtos.VNAT vnat, String ip) {
-        Cidr from = Cidr.parseCidr(vnat.getSrc(), false);
-        Cidr to = Cidr.parseCidr(vnat.getDst(), false);
+        Cidr from = Cidr.parseCidr(vnat.getSrc());
+        Cidr to = Cidr.parseCidr(vnat.getDst());
         String natIp = Cidr.transform(ip, from, to);
         return natIp;
     }
 
     private String natOutIp(SDWanProtos.VNAT vnat, String ip) {
-        Cidr from = Cidr.parseCidr(vnat.getDst(), false);
-        Cidr to = Cidr.parseCidr(vnat.getSrc(), false);
+        Cidr from = Cidr.parseCidr(vnat.getDst());
+        Cidr to = Cidr.parseCidr(vnat.getSrc());
         String natIp = Cidr.transform(ip, from, to);
         return natIp;
     }

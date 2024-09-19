@@ -13,8 +13,6 @@ import java.util.Objects;
 @Data
 public class Cidr {
 
-    private List<String> ipList;
-    private List<String> availableIpList;
     private String networkIdentifier;
     private String maskAddress;
     private String broadcastAddress;
@@ -37,10 +35,6 @@ public class Cidr {
     }
 
     public static Cidr parseCidr(String text) {
-        return parseCidr(text, true);
-    }
-
-    public static Cidr parseCidr(String text, boolean parseList) {
         String[] split = text.split("/");
         int address = IPUtil.ip2int(split[0]);
         int maskBits = Integer.parseInt(split[1]);
@@ -55,17 +49,22 @@ public class Cidr {
         cidr.setMaskAddress(maskAddress);
         cidr.setBroadcastAddress(broadcastAddress);
         cidr.setGatewayAddress(gatewayAddress);
-        if (parseList) {
-            List<String> ipList = parseIpList(address, maskBits);
-            cidr.setIpList(ipList);
-            List<String> availableIpList = new ArrayList<>(ipList);
-            availableIpList.remove(networkIdentifier);
-            availableIpList.remove(maskAddress);
-            availableIpList.remove(broadcastAddress);
-            availableIpList.remove(gatewayAddress);
-            cidr.setAvailableIpList(availableIpList);
-        }
         return cidr;
+    }
+
+    public List<String> allIpList() {
+        int address = parseIdentifierAddress(IPUtil.ip2int(networkIdentifier), maskBits);
+        List<String> ipList = parseIpList(address, maskBits);
+        return ipList;
+    }
+
+    public List<String> availableIpList() {
+        List<String> availableIpList = new ArrayList<>(allIpList());
+        availableIpList.remove(networkIdentifier);
+        availableIpList.remove(maskAddress);
+        availableIpList.remove(broadcastAddress);
+        availableIpList.remove(gatewayAddress);
+        return availableIpList;
     }
 
     public static String parseCidr(String vip, int maskBits) {

@@ -315,7 +315,7 @@ public class SdWanServer implements Lifecycle, Runnable {
             Cidr ipPool = Cidr.parseCidr(config.getVipCidr());
             tenantSpace.setIpPool(ipPool);
             Map<String, AtomicReference<Channel>> bindIPMap = tenantSpace.getBindIPMap();
-            ipPool.getAvailableIpList().forEach(vip -> {
+            ipPool.availableIpList().forEach(vip -> {
                 bindIPMap.put(vip, new AtomicReference<>());
             });
             //fixedVipMap
