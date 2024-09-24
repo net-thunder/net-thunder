@@ -212,12 +212,10 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
             return;
         }
         ByteBuf byteBuf = packet.rebuild();
-        byte[] toBytes = ByteBufUtil.toBytes(byteBuf);
-        ByteString byteString = ByteString.copyFrom(toBytes);
         byte[] bytes = SDWanProtos.IpPacket.newBuilder()
                 .setSrcIP(packet.getSrcIP())
                 .setDstIP(packet.getDstIP())
-                .setPayload(byteString)
+                .setPayload(ByteString.copyFrom(ByteBufUtil.toBytes(byteBuf)))
                 .build().toByteArray();
         iceClient.sendNode(localVip, nodeInfo, bytes);
     }
