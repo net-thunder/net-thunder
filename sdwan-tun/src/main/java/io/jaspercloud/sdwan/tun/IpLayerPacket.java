@@ -107,14 +107,14 @@ public class IpLayerPacket implements Referenced {
         byteBuf.resetReaderIndex();
         switch (protocol) {
             case Ipv4Packet.Tcp: {
-                String srcIp = getSrcIP();
-                String dstIp = getDstIP();
+//                String srcIp = getSrcIP();
+//                String dstIp = getDstIP();
 //                reCalcTcpCheckSum(payload, protocol, srcIp, dstIp);
                 break;
             }
             case Ipv4Packet.Udp: {
-                String srcIp = getSrcIP();
-                String dstIp = getDstIP();
+//                String srcIp = getSrcIP();
+//                String dstIp = getDstIP();
 //                reCalcUdpCheckSum(payload, protocol, srcIp, dstIp);
                 break;
             }
@@ -131,9 +131,6 @@ public class IpLayerPacket implements Referenced {
     }
 
     private void reCalcIcmpCheckSum(ByteBuf payload) {
-        payload.markReaderIndex();
-        payload.readerIndex(2);
-        payload.resetReaderIndex();
         //set 0
         payload.markWriterIndex();
         payload.writerIndex(2);
