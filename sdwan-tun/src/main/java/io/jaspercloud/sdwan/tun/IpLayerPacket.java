@@ -150,7 +150,7 @@ public class IpLayerPacket implements Referenced {
     }
 
     private void reCalcTcpCheckSum(ByteBuf payload, int protocol, String srcIp, String dstIp) {
-        ByteBuf ipHeaderByteBuf = ByteBufUtil.create();
+        ByteBuf ipHeaderByteBuf = ByteBufUtil.newPacketBuf();
         try {
             int sum = 0;
             //ipHeader
@@ -178,7 +178,7 @@ public class IpLayerPacket implements Referenced {
     }
 
     private void reCalcUdpCheckSum(ByteBuf payload, int protocol, String srcIp, String dstIp) {
-        ByteBuf ipHeaderByteBuf = ByteBufUtil.create();
+        ByteBuf ipHeaderByteBuf = ByteBufUtil.newPacketBuf();
         int sum = 0;
         try {
             //ipHeader

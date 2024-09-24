@@ -45,7 +45,7 @@ public class IcmpTest {
         icmpPacket.setIdentifier(RandomUtils.nextInt(1000, 5000));
         icmpPacket.setSequence(RandomUtils.nextInt(1000, 5000));
         icmpPacket.setTimestamp(System.currentTimeMillis());
-        ByteBuf payload = ByteBufUtil.newPacketBuf();
+        ByteBuf payload = ByteBufUtil.create();
         payload.writeLong(System.currentTimeMillis());
         icmpPacket.setPayload(payload);
         Ipv4Packet ipv4Packet = new Ipv4Packet();
