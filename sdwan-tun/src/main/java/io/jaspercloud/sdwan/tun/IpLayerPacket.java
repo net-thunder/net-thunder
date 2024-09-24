@@ -9,6 +9,7 @@ import io.netty.util.ReferenceCounted;
 public class IpLayerPacket implements Referenced {
 
     private ByteBuf byteBuf;
+    private boolean update = false;
 
     public IpLayerPacket(ByteBuf byteBuf) {
         this.byteBuf = byteBuf;
@@ -16,10 +17,12 @@ public class IpLayerPacket implements Referenced {
 
     public void setSrcIP(String ip) {
         writeIp(12, ip);
+        update = true;
     }
 
     public void setDstIP(String ip) {
         writeIp(16, ip);
+        update = true;
     }
 
     public String getSrcIP() {
@@ -47,10 +50,8 @@ public class IpLayerPacket implements Referenced {
             byteBuf.readerIndex(0);
             short head = byteBuf.readUnsignedByte();
             byte headLen = (byte) ((head & 0b00001111) * 4);
-            byteBuf.readerIndex(2);
-            int totalLen = byteBuf.readUnsignedShort();
             byteBuf.readerIndex(headLen);
-            ByteBuf payload = byteBuf.readSlice(totalLen - headLen);
+            ByteBuf payload = byteBuf.readSlice(byteBuf.readableBytes());
             return payload;
         } finally {
             byteBuf.resetReaderIndex();
@@ -70,6 +71,7 @@ public class IpLayerPacket implements Referenced {
         } finally {
             byteBuf.resetReaderIndex();
         }
+        update = true;
     }
 
     private String readIp(int index) {
@@ -95,7 +97,9 @@ public class IpLayerPacket implements Referenced {
     }
 
     public ByteBuf rebuild() {
-        //todo SNAT、DNAT rebuild
+        if (!update) {
+            return byteBuf;
+        }
         byteBuf.markReaderIndex();
         byteBuf.readerIndex(0);
         short head = byteBuf.readUnsignedByte();
@@ -107,15 +111,15 @@ public class IpLayerPacket implements Referenced {
         byteBuf.resetReaderIndex();
         switch (protocol) {
             case Ipv4Packet.Tcp: {
-//                String srcIp = getSrcIP();
-//                String dstIp = getDstIP();
-//                reCalcTcpCheckSum(payload, protocol, srcIp, dstIp);
+                String srcIp = getSrcIP();
+                String dstIp = getDstIP();
+                reCalcTcpCheckSum(payload, protocol, srcIp, dstIp);
                 break;
             }
             case Ipv4Packet.Udp: {
-//                String srcIp = getSrcIP();
-//                String dstIp = getDstIP();
-//                reCalcUdpCheckSum(payload, protocol, srcIp, dstIp);
+                String srcIp = getSrcIP();
+                String dstIp = getDstIP();
+                reCalcUdpCheckSum(payload, protocol, srcIp, dstIp);
                 break;
             }
             case Ipv4Packet.Icmp: {

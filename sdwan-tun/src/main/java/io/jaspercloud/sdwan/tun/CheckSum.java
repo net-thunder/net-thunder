@@ -16,7 +16,8 @@ public final class CheckSum {
                 sum += byteBuf.readUnsignedShort();
             }
             while (byteBuf.readableBytes() > 0) {
-                sum += 0;
+                byte b = byteBuf.readByte();
+                sum += (b << 8);
             }
             return sum;
         } finally {
@@ -30,7 +31,7 @@ public final class CheckSum {
             sum = (sum & 0xffff) + (sum >> 16);
         }
         //按位取反并返回
-        sum = ~sum;
+        sum = (~sum) & 0xffff;
         return sum;
     }
 
@@ -42,7 +43,8 @@ public final class CheckSum {
                 sum += byteBuf.readUnsignedShort();
             }
             while (byteBuf.readableBytes() > 0) {
-                sum += 0;
+                byte b = byteBuf.readByte();
+                sum += (b << 8);
             }
             sum = calcHighLow(sum);
             return sum;

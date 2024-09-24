@@ -159,6 +159,7 @@ public class TcpTest {
                 TcpPacket tcpPacket = TcpPacket.decode(ipv4Packet.getPayload());
                 //Checksum: 0xd30e [unverified]
                 System.out.println(String.format("tcp: 0x%x", tcpPacket.getChecksum()));
+                tcpPacket.encode(ipv4Packet, true, true);
             }
             //ipLayerPacket
             IpLayerPacket ipLayerPacket = new IpLayerPacket(ByteBufUtil.toByteBuf(ByteBufUtil.toBytes(ip)));

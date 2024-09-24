@@ -126,21 +126,23 @@ public class IcmpPacket {
     }
 
     private int calcChecksum() {
-        ByteBuf byteBuf = ByteBufUtil.newPacketBuf();
+        ByteBuf payloadByteBuf = ByteBufUtil.newPacketBuf();
+        int sum = 0;
         try {
-            byteBuf.writeByte(type);
-            byteBuf.writeByte(code);
-            byteBuf.writeShort(0);
-            byteBuf.writeShort(identifier);
-            byteBuf.writeShort(sequence);
-            byteBuf.writeLong(timestamp);
+            payloadByteBuf.writeByte(type);
+            payloadByteBuf.writeByte(code);
+            payloadByteBuf.writeShort(0);
+            payloadByteBuf.writeShort(identifier);
+            payloadByteBuf.writeShort(sequence);
+            payloadByteBuf.writeLong(timestamp);
             payload.markReaderIndex();
-            byteBuf.writeBytes(payload);
+            payloadByteBuf.writeBytes(payload);
             payload.resetReaderIndex();
-            int sum = CheckSum.calcIp(byteBuf);
+            sum += CheckSum.calcTcpUdp(payloadByteBuf);
+            sum = CheckSum.calcHighLow(sum);
             return sum;
         } finally {
-            byteBuf.release();
+            payloadByteBuf.release();
         }
     }
 }
