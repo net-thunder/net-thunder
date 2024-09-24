@@ -1,5 +1,8 @@
 [
 {
+  "name":"[B"
+},
+{
   "name":"[Lcom.sun.jna.platform.win32.Winsvc$SERVICE_TABLE_ENTRY;"
 },
 {
@@ -10,7 +13,17 @@
   "name":"[Ljava.lang.Class;HessianSerializer"
 },
 {
+  "name":"[Ljava.lang.String;"
+},
+{
+  "name":"[Lsun.security.pkcs.SignerInfo;"
+},
+{
   "name":"android.content.Context"
+},
+{
+  "name":"apple.security.AppleProvider",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
   "name":"ch.qos.logback.classic.BasicConfigurator",
@@ -133,6 +146,10 @@
   "methods":[{"name":"callback","parameterTypes":["java.lang.Object[]"] }]
 },
 {
+  "name":"com.sun.jna.NativeLong",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
   "name":"com.sun.jna.Pointer",
   "fields":[{"name":"OPTIONS"}, {"name":"STRING_ENCODING"}, {"name":"STRUCTURE_ALIGNMENT"}, {"name":"TYPE_MAPPER"}]
 },
@@ -146,6 +163,10 @@
 {
   "name":"com.sun.jna.Structure$FFIType$size_t",
   "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.sun.jna.Union",
+  "allDeclaredFields":true
 },
 {
   "name":"com.sun.jna.platform.win32.WinNT$HANDLE",
@@ -195,6 +216,7 @@
 },
 {
   "name":"com.sun.jna.ptr.IntByReference",
+  "fields":[{"name":"OPTIONS"}, {"name":"STRING_ENCODING"}, {"name":"STRUCTURE_ALIGNMENT"}, {"name":"TYPE_MAPPER"}],
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
@@ -265,7 +287,7 @@
   "name":"io.jaspercloud.sdwan.node.SdWanNodeConfig",
   "allDeclaredFields":true,
   "queryAllPublicMethods":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setConnectTimeout","parameterTypes":["int"] }, {"name":"setControllerServer","parameterTypes":["java.lang.String"] }, {"name":"setHeartTime","parameterTypes":["long"] }, {"name":"setMtu","parameterTypes":["int"] }, {"name":"setP2pHeartTime","parameterTypes":["long"] }, {"name":"setShareNetwork","parameterTypes":["java.lang.Boolean"] }, {"name":"setTenantId","parameterTypes":["java.lang.String"] }, {"name":"setTunName","parameterTypes":["java.lang.String"] }]
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setConnectTimeout","parameterTypes":["int"] }, {"name":"setControllerServer","parameterTypes":["java.lang.String"] }, {"name":"setHeartTime","parameterTypes":["long"] }, {"name":"setMtu","parameterTypes":["int"] }, {"name":"setP2pHeartTime","parameterTypes":["long"] }, {"name":"setRelayServer","parameterTypes":["java.lang.String"] }, {"name":"setShareNetwork","parameterTypes":["java.lang.Boolean"] }, {"name":"setStunServer","parameterTypes":["java.lang.String"] }, {"name":"setTenantId","parameterTypes":["java.lang.String"] }, {"name":"setTunName","parameterTypes":["java.lang.String"] }]
 },
 {
   "name":"io.jaspercloud.sdwan.node.SdWanNodeConfigBeanInfo"
@@ -363,6 +385,36 @@
 {
   "name":"io.jaspercloud.sdwan.tun.TunChannel",
   "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"io.jaspercloud.sdwan.tun.osx.CtlInfo",
+  "allDeclaredFields":true,
+  "fields":[{"name":"OPTIONS"}, {"name":"STRING_ENCODING"}, {"name":"STRUCTURE_ALIGNMENT"}, {"name":"TYPE_MAPPER"}]
+},
+{
+  "name":"io.jaspercloud.sdwan.tun.osx.Ifreq",
+  "allDeclaredFields":true,
+  "allPublicFields":true
+},
+{
+  "name":"io.jaspercloud.sdwan.tun.osx.Ifreq$FfrIfru",
+  "allDeclaredFields":true,
+  "queryAllPublicConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"io.jaspercloud.sdwan.tun.osx.NativeOsxApi",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"io.jaspercloud.sdwan.tun.osx.SockName",
+  "allDeclaredFields":true,
+  "fields":[{"name":"OPTIONS"}, {"name":"STRING_ENCODING"}, {"name":"STRUCTURE_ALIGNMENT"}, {"name":"TYPE_MAPPER"}]
+},
+{
+  "name":"io.jaspercloud.sdwan.tun.osx.SockaddrCtl",
+  "allDeclaredFields":true,
+  "fields":[{"name":"OPTIONS"}, {"name":"STRING_ENCODING"}, {"name":"STRUCTURE_ALIGNMENT"}, {"name":"TYPE_MAPPER"}]
 },
 {
   "name":"io.jaspercloud.sdwan.tun.windows.NativeWinTunApi",
@@ -548,6 +600,10 @@
   "name":"java.lang.ClassLoader"
 },
 {
+  "name":"java.lang.Long",
+  "fields":[{"name":"OPTIONS"}, {"name":"STRING_ENCODING"}, {"name":"STRUCTURE_ALIGNMENT"}, {"name":"TYPE_MAPPER"}]
+},
+{
   "name":"java.lang.Module",
   "methods":[{"name":"getResourceAsStream","parameterTypes":["java.lang.String"] }]
 },
@@ -576,6 +632,9 @@
   "name":"java.lang.StackTraceElement",
   "allDeclaredFields":true,
   "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.lang.String"
 },
 {
   "name":"java.lang.Thread",
@@ -659,7 +718,13 @@
   "methods":[{"name":"openServerSocketChannel","parameterTypes":["java.net.ProtocolFamily"] }, {"name":"openSocketChannel","parameterTypes":["java.net.ProtocolFamily"] }]
 },
 {
+  "name":"java.security.AlgorithmParametersSpi"
+},
+{
   "name":"java.security.AllPermission"
+},
+{
+  "name":"java.security.MessageDigestSpi"
 },
 {
   "name":"java.security.SecureRandomParameters"
@@ -669,6 +734,21 @@
 },
 {
   "name":"java.security.cert.PKIXRevocationChecker"
+},
+{
+  "name":"java.security.interfaces.DSAPrivateKey"
+},
+{
+  "name":"java.security.interfaces.DSAPublicKey"
+},
+{
+  "name":"java.security.interfaces.RSAPrivateKey"
+},
+{
+  "name":"java.security.interfaces.RSAPublicKey"
+},
+{
+  "name":"java.security.spec.DSAParameterSpec"
 },
 {
   "name":"java.sql.Date",
@@ -681,6 +761,9 @@
 {
   "name":"java.sql.Timestamp",
   "methods":[{"name":"<init>","parameterTypes":["long"] }]
+},
+{
+  "name":"java.util.Date"
 },
 {
   "name":"java.util.Locale"
@@ -876,7 +959,15 @@
   "name":"javafx.stage.Window"
 },
 {
+  "name":"javax.crypto.spec.GCMParameterSpec"
+},
+{
   "name":"javax.management.ObjectName"
+},
+{
+  "name":"javax.security.auth.x500.X500Principal",
+  "fields":[{"name":"thisX500Name"}],
+  "methods":[{"name":"<init>","parameterTypes":["sun.security.x509.X500Name"] }]
 },
 {
   "name":"javax.smartcardio.CardPermission"
@@ -939,6 +1030,14 @@
 },
 {
   "name":"org.bouncycastle.jcajce.provider.asymmetric.X509$Mappings",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.bouncycastle.jcajce.provider.asymmetric.ec.KeyAgreementSpi$DH",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.bouncycastle.jcajce.provider.asymmetric.ec.KeyFactorySpi$ECDH",
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
@@ -1051,6 +1150,14 @@
 },
 {
   "name":"org.bouncycastle.jcajce.provider.keystore.PKCS12$Mappings",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.bouncycastle.jcajce.provider.symmetric.AES$ECB",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.bouncycastle.jcajce.provider.symmetric.AES$KeyGen",
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
@@ -1251,8 +1358,28 @@
   "methods":[{"name":"<init>","parameterTypes":["java.security.SecureRandomParameters"] }]
 },
 {
+  "name":"sun.security.provider.DSA$SHA1withDSA",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.DSA$SHA256withDSA",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.DSAKeyFactory",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.DSAParameters",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
   "name":"sun.security.provider.MD5",
   "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.NativePRNG",
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"<init>","parameterTypes":["java.security.SecureRandomParameters"] }]
 },
 {
   "name":"sun.security.provider.SHA",
@@ -1261,6 +1388,72 @@
 {
   "name":"sun.security.provider.SHA2$SHA256",
   "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.X509Factory",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.rsa.RSAKeyFactory$Legacy",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.rsa.RSASignature$MD5withRSA",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.rsa.RSASignature$SHA1withRSA",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.rsa.RSASignature$SHA256withRSA",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.util.ObjectIdentifier"
+},
+{
+  "name":"sun.security.x509.AuthorityInfoAccessExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.AuthorityKeyIdentifierExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.BasicConstraintsExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.CRLDistributionPointsExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.CertificateExtensions"
+},
+{
+  "name":"sun.security.x509.CertificatePoliciesExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.ExtendedKeyUsageExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.KeyUsageExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.NetscapeCertTypeExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.SubjectAlternativeNameExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.SubjectKeyIdentifierExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
 },
 {
   "name":"void",

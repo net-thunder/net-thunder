@@ -111,6 +111,8 @@
   }, {
     "pattern":"\\Qcom/sun/javafx/scene/control/skin/modena/modena.bss\\E"
   }, {
+    "pattern":"\\Qcom/sun/jna/darwin-x86-64/libjnidispatch.jnilib\\E"
+  }, {
     "pattern":"\\Qcom/sun/jna/win32-x86-64/jnidispatch.dll\\E"
   }, {
     "pattern":"\\Qcom/sun/prism/d3d/hlsl/FillPgram_Color.obj\\E"
@@ -156,6 +158,10 @@
     "pattern":"\\Qvcruntime140.dll\\E"
   }, {
     "pattern":"\\Qvcruntime140_1.dll\\E"
+  }, {
+    "pattern":"java.base:\\Qjdk/internal/icu/impl/data/icudt72b/nfc.nrm\\E"
+  }, {
+    "pattern":"java.base:\\Qjdk/internal/icu/impl/data/icudt72b/nfkc.nrm\\E"
   }, {
     "pattern":"java.base:\\Qjdk/internal/icu/impl/data/icudt72b/ubidi.icu\\E"
   }]},

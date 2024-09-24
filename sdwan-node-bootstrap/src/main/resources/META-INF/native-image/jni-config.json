@@ -205,11 +205,11 @@
 },
 {
   "name":"java.lang.String",
-  "methods":[{"name":"<init>","parameterTypes":["byte[]"] }, {"name":"<init>","parameterTypes":["byte[]","java.lang.String"] }, {"name":"getBytes","parameterTypes":[] }, {"name":"getBytes","parameterTypes":["java.lang.String"] }, {"name":"toCharArray","parameterTypes":[] }, {"name":"toLowerCase","parameterTypes":["java.util.Locale"] }]
+  "methods":[{"name":"<init>","parameterTypes":["byte[]"] }, {"name":"<init>","parameterTypes":["byte[]","java.lang.String"] }, {"name":"getBytes","parameterTypes":[] }, {"name":"getBytes","parameterTypes":["java.lang.String"] }, {"name":"lastIndexOf","parameterTypes":["int"] }, {"name":"substring","parameterTypes":["int"] }, {"name":"toCharArray","parameterTypes":[] }, {"name":"toLowerCase","parameterTypes":["java.util.Locale"] }]
 },
 {
   "name":"java.lang.System",
-  "methods":[{"name":"getProperty","parameterTypes":["java.lang.String"] }]
+  "methods":[{"name":"getProperty","parameterTypes":["java.lang.String"] }, {"name":"setProperty","parameterTypes":["java.lang.String","java.lang.String"] }]
 },
 {
   "name":"java.lang.UnsatisfiedLinkError",
@@ -262,5 +262,9 @@
 {
   "name":"java.util.HashMap",
   "methods":[{"name":"containsKey","parameterTypes":["java.lang.Object"] }, {"name":"put","parameterTypes":["java.lang.Object","java.lang.Object"] }]
+},
+{
+  "name":"org.springframework.boot.loader.launch.JarLauncher",
+  "methods":[{"name":"main","parameterTypes":["java.lang.String[]"] }]
 }
 ]
