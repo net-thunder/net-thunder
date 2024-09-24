@@ -3,42 +3,46 @@ package io.jaspercloud.sdwan.tun.linux;
 import cn.hutool.core.io.FileUtil;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.tun.ProcessUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+@Slf4j
 public final class Iptables {
 
     private Iptables() {
 
     }
 
-    public static void enableIpForward(String fromEth, String toEth) throws ProcessException {
+    public static void enableIpForward(String ethName, String tunName) throws ProcessException {
+        log.info("enableIpForward");
         try {
             enableIpForward();
             //filter
-            if (Iptables.queryFilterRule(fromEth, toEth)) {
-                Iptables.deleteFilterRule(fromEth, toEth);
+            if (Iptables.queryFilterRule(tunName, ethName)) {
+                Iptables.deleteFilterRule(tunName, ethName);
             }
-            Iptables.addFilterRule(fromEth, toEth);
+            Iptables.addFilterRule(tunName, ethName);
             //nat
-            if (Iptables.queryNatRule(toEth)) {
-                Iptables.deleteNatRule(toEth);
+            if (Iptables.queryNatRule(ethName)) {
+                Iptables.deleteNatRule(ethName);
             }
-            Iptables.addNatRule(toEth);
+            Iptables.addNatRule(ethName);
         } catch (Exception e) {
             throw new ProcessException(e.getMessage(), e);
         }
     }
 
-    public static void disableIpForward(String fromEth, String toEth) throws ProcessException {
+    public static void disableIpForward(String ethName, String tunName) throws ProcessException {
+        log.info("disableIpForward");
         try {
             //filter
-            Iptables.deleteFilterRule(fromEth, toEth);
+            Iptables.deleteFilterRule(tunName, ethName);
             //nat
-            Iptables.deleteNatRule(toEth);
+            Iptables.deleteNatRule(ethName);
         } catch (Exception e) {
             throw new ProcessException(e.getMessage(), e);
         }
@@ -51,11 +55,13 @@ public final class Iptables {
 
     private static void addFilterRule(String tunName, String ethName) throws IOException, InterruptedException {
         String cmd = String.format("iptables -t filter -A FORWARD -i %s -o %s -j ACCEPT", tunName, ethName);
+        log.info("addFilterRule: {}", cmd);
         int code = ProcessUtil.exec(cmd);
     }
 
     private static void addNatRule(String ethName) throws IOException, InterruptedException {
         String cmd = String.format("iptables -t nat -A POSTROUTING -o %s -j MASQUERADE", ethName);
+        log.info("addNatRule: {}", cmd);
         int code = ProcessUtil.exec(cmd);
     }
 

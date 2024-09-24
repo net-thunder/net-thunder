@@ -41,7 +41,6 @@ public class TunChannel extends AbstractChannel {
 
     private TunAddress tunAddress;
     private TunDevice tunDevice;
-    private Integer mtu;
 
     public TunDevice getTunDevice() {
         return tunDevice;
@@ -50,7 +49,6 @@ public class TunChannel extends AbstractChannel {
     public TunChannel() {
         super(null);
         channelConfig = new TunChannelConfig(this);
-        mtu = config().getOption(TunChannelConfig.MTU);
     }
 
     @Override
@@ -77,16 +75,17 @@ public class TunChannel extends AbstractChannel {
             tunDevice = new LinuxTunDevice(tunName, type, guid);
         }
         tunDevice.open();
-        tunDevice.setMTU(mtu);
         applyLocalAddress();
+        int mtu = config().getOption(TunChannelConfig.MTU);
+        tunDevice.setMTU(mtu);
     }
 
-    public void enableShareNetwork(String fromEth) throws Exception {
-        tunDevice.enableShareNetwork(fromEth, tunAddress);
+    public void enableShareNetwork(String ethName) throws Exception {
+        tunDevice.enableShareNetwork(tunAddress, ethName);
     }
 
-    public void disableShareNetwork(String fromEth) throws Exception {
-        tunDevice.disableShareNetwork(fromEth, tunAddress);
+    public void disableShareNetwork(String ethName) throws Exception {
+        tunDevice.disableShareNetwork(tunAddress, ethName);
     }
 
     public void applyLocalAddress() throws Exception {

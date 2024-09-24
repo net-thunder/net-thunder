@@ -25,6 +25,7 @@ public class WindowsRouteManager extends AbstractRouteManager {
         TunAddress tunAddress = (TunAddress) tunChannel.localAddress();
         NetworkInterfaceInfo interfaceInfo = NetworkInterfaceUtil.findIp(tunAddress.getIp());
         String cmd = String.format("route add %s %s if %s", route.getDestination(), tunAddress.getIp(), interfaceInfo.getIndex());
+        log.info("addRoute: {}", cmd);
         int code = ProcessUtil.exec(cmd);
         CheckInvoke.check(code, 0);
     }
@@ -36,6 +37,7 @@ public class WindowsRouteManager extends AbstractRouteManager {
         // TODO: 2023/11/24 路由删除失败: 找不到元素。
 //        String cmd = String.format("route delete %s %s", route.getDestination(), tunAddress.getVip());
         String cmd = String.format("route delete %s", route.getDestination());
+        log.info("deleteRoute: {}", cmd);
         int code = ProcessUtil.exec(cmd);
         CheckInvoke.check(code, 0);
     }

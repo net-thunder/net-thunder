@@ -10,9 +10,10 @@ import io.jaspercloud.sdwan.tun.TunAddress;
 import io.jaspercloud.sdwan.tun.TunDevice;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import lombok.extern.slf4j.Slf4j;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
-
+@Slf4j
 public class OsxTunDevice extends TunDevice {
 
     private int fd;
@@ -59,7 +60,6 @@ public class OsxTunDevice extends TunDevice {
         String deviceName = getEthName();
         Ifreq ifreq = new Ifreq(deviceName, mtu);
         NativeOsxApi.ioctl(fd, NativeOsxApi.SIOCSIFMTU, ifreq);
-        this.mtu = mtu;
     }
 
     public String getEthName() {
@@ -102,12 +102,12 @@ public class OsxTunDevice extends TunDevice {
     }
 
     @Override
-    public void enableShareNetwork(String fromEth, TunAddress tunAddress) throws Exception {
+    public void enableShareNetwork(TunAddress tunAddress, String ethName) throws Exception {
 
     }
 
     @Override
-    public void disableShareNetwork(String fromEth, TunAddress tunAddress) throws Exception {
+    public void disableShareNetwork(TunAddress tunAddress, String ethName) throws Exception {
 
     }
 

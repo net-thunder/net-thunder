@@ -80,6 +80,7 @@ public class TunTransport implements TransportLifecycle {
             TunChannel.waitAddress(config.getIp(), 30 * 1000);
             log.info("tunTransport started address={}", config.getIp());
             if (config.getShareNetwork()) {
+                log.info("enableShareNetwork");
                 NetworkInterfaceInfo interfaceInfo = NetworkInterfaceUtil.findIp(config.getLocalAddress());
                 localChannel.enableShareNetwork(interfaceInfo.getEthName());
             }

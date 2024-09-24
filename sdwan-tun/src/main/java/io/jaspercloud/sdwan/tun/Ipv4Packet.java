@@ -164,7 +164,7 @@ public class Ipv4Packet implements IpPacket {
         byteBuf.readBytes(srcIPBytes);
         byte[] dstIPBytes = new byte[4];
         byteBuf.readBytes(dstIPBytes);
-        ByteBuf payload = byteBuf.readSlice(totalLen - headLen);
+        ByteBuf payload = byteBuf.readSlice(byteBuf.readableBytes());
         //set
         ipv4Packet.setVersion(version);
         ipv4Packet.setHeaderLen(headLen);
@@ -204,7 +204,7 @@ public class Ipv4Packet implements IpPacket {
                 Assert.isTrue(calcChecksum == getChecksum(), "checksum error");
             }
         } else {
-            calcChecksum = 0;
+            calcChecksum = checksum;
         }
         checksum = calcChecksum;
         byteBuf.writeShort(calcChecksum);
@@ -255,18 +255,7 @@ public class Ipv4Packet implements IpPacket {
             byteBuf.writeShort(0);
             byteBuf.writeBytes(IPUtil.ip2bytes(srcIP));
             byteBuf.writeBytes(IPUtil.ip2bytes(dstIP));
-            //数据长度为奇数，在该字节之后补一个字节
-            if (0 != byteBuf.readableBytes() % 2) {
-                byteBuf.writeByte(0);
-            }
-            int sum = 0;
-            while (byteBuf.readableBytes() > 0) {
-                sum += byteBuf.readUnsignedShort();
-            }
-            int h = sum >> 16;
-            int l = sum & 0b11111111_11111111;
-            sum = (h + l);
-            sum = 0b11111111_11111111 & ~sum;
+            int sum = CheckSum.calcIp(byteBuf);
             return sum;
         } finally {
             byteBuf.release();

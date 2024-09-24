@@ -246,10 +246,12 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         config.setRelayServer(configResp.getRelayServer());
         iceClient.start();
         log.info("SdWanNode install");
+        String macAddress = processMacAddress(NetworkInterfaceUtil.getHardwareAddress(config.getHostAddress()));
+        log.info("parseMacAddress: {}", macAddress);
         SDWanProtos.RegistReq.Builder builder = SDWanProtos.RegistReq.newBuilder()
                 .setTenantId(config.getTenantId())
                 .setNodeType(SDWanProtos.NodeTypeCode.SimpleType)
-                .setMacAddress(processMacAddress(NetworkInterfaceUtil.getHardwareAddress(config.getHostAddress())));
+                .setMacAddress(macAddress);
         if (!config.isOnlyRelayTransport()) {
             List<NetworkInterfaceInfo> interfaceInfoList;
             if (null == config.getLocalAddress()) {

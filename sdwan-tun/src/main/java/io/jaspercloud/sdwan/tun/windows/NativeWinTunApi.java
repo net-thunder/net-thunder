@@ -4,6 +4,7 @@ import com.sun.jna.LastErrorException;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.WString;
+import com.sun.jna.platform.win32.WinDef;
 import com.sun.jna.platform.win32.WinNT;
 import io.jaspercloud.sdwan.util.SystemFile;
 
@@ -36,7 +37,7 @@ public class NativeWinTunApi {
 
     public static native void WintunEndSession(WinNT.HANDLE Session) throws LastErrorException;
 
-    public static native Pointer WintunReceivePacket(WinNT.HANDLE Session, Pointer PacketSize) throws LastErrorException;
+    public static native Pointer WintunReceivePacket(WinNT.HANDLE Session, WinDef.UINTByReference PacketSize) throws LastErrorException;
 
     public static native void WintunReleaseReceivePacket(WinNT.HANDLE Session, Pointer Packet) throws LastErrorException;
 

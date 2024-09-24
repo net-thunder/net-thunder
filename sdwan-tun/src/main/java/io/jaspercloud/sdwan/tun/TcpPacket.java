@@ -269,7 +269,7 @@ public class TcpPacket {
                 Assert.isTrue(calcChecksum == getChecksum(), "checksum error");
             }
         } else {
-            calcChecksum = 0;
+            calcChecksum = checksum;
         }
         checksum = calcChecksum;
         byteBuf.writeShort(calcChecksum);
@@ -280,41 +280,35 @@ public class TcpPacket {
     }
 
     public int calcChecksum(Ipv4Packet ipv4Packet) {
-        ByteBuf byteBuf = ByteBufUtil.newPacketBuf();
+        ByteBuf ipHeaderByteBuf = ByteBufUtil.newPacketBuf();
+        ByteBuf payloadByteBuf = ByteBufUtil.newPacketBuf();
+        int sum = 0;
         try {
             //ipHeader
-            byteBuf.writeBytes(IPUtil.ip2bytes(ipv4Packet.getSrcIP()));
-            byteBuf.writeBytes(IPUtil.ip2bytes(ipv4Packet.getDstIP()));
-            byteBuf.writeByte(0);
-            byteBuf.writeByte(ipv4Packet.getProtocol());
-            byteBuf.writeShort(ipv4Packet.getPayload().readableBytes());
+            ipHeaderByteBuf.writeBytes(IPUtil.ip2bytes(ipv4Packet.getSrcIP()));
+            ipHeaderByteBuf.writeBytes(IPUtil.ip2bytes(ipv4Packet.getDstIP()));
+            ipHeaderByteBuf.writeByte(0);
+            ipHeaderByteBuf.writeByte(ipv4Packet.getProtocol());
+            ipHeaderByteBuf.writeShort(ipv4Packet.getPayload().readableBytes());
+            sum += CheckSum.calcTcpUdp(ipHeaderByteBuf);
             //tcp
-            byteBuf.writeShort(srcPort);
-            byteBuf.writeShort(dstPort);
-            byteBuf.writeInt((int) seq);
-            byteBuf.writeInt((int) ack);
-            byteBuf.writeShort(flags);
-            byteBuf.writeShort(window);
+            payloadByteBuf.writeShort(srcPort);
+            payloadByteBuf.writeShort(dstPort);
+            payloadByteBuf.writeInt((int) seq);
+            payloadByteBuf.writeInt((int) ack);
+            payloadByteBuf.writeShort(flags);
+            payloadByteBuf.writeShort(window);
             //checksum字段置为0
-            byteBuf.writeShort(0);
-            byteBuf.writeShort(urgentPointer);
-            byteBuf.writeBytes(getOptionsByteBuf());
-            byteBuf.writeBytes(getPayload());
-            //数据长度为奇数，在该字节之后补一个字节
-            if (0 != byteBuf.readableBytes() % 2) {
-                byteBuf.writeByte(0);
-            }
-            int sum = 0;
-            while (byteBuf.readableBytes() > 0) {
-                sum += byteBuf.readUnsignedShort();
-            }
-            int h = sum >> 16;
-            int l = sum & 0b11111111_11111111;
-            sum = (h + l);
-            sum = 0b11111111_11111111 & ~sum;
+            payloadByteBuf.writeShort(0);
+            payloadByteBuf.writeShort(urgentPointer);
+            payloadByteBuf.writeBytes(getOptionsByteBuf());
+            payloadByteBuf.writeBytes(getPayload());
+            sum += CheckSum.calcTcpUdp(payloadByteBuf);
+            sum = CheckSum.calcHighLow(sum);
             return sum;
         } finally {
-            byteBuf.release();
+            ipHeaderByteBuf.release();
+            payloadByteBuf.release();
         }
     }
 }

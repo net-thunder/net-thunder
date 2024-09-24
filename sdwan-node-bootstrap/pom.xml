@@ -120,8 +120,8 @@
 <!--                                <buildArg>-Djava.awt.headless=false</buildArg>-->
 <!--                                <buildArg>-H:NativeLinkerOption=/MANIFEST:EMBED</buildArg>-->
 <!--                                <buildArg>-H:NativeLinkerOption=/MANIFESTUAC:level='requireAdministrator'</buildArg>-->
-                                <buildArg>-H:NativeLinkerOption=/SUBSYSTEM:WINDOWS</buildArg>
-                                <buildArg>-H:NativeLinkerOption=/ENTRY:mainCRTStartup</buildArg>
+<!--                                <buildArg>-H:NativeLinkerOption=/SUBSYSTEM:WINDOWS</buildArg>-->
+<!--                                <buildArg>-H:NativeLinkerOption=/ENTRY:mainCRTStartup</buildArg>-->
 <!--                                <buildArg>-H:NativeLinkerOption=${project.basedir}\src\main\resources\ui\mainicon.res</buildArg>-->
                             </buildArgs>
                             <!-- imageName用于设置生成的二进制文件名称 -->

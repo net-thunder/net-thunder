@@ -98,35 +98,30 @@ public class UdpPacket {
     }
 
     private int calcChecksum(Ipv4Packet ipv4Packet) {
-        ByteBuf byteBuf = ByteBufUtil.newPacketBuf();
+        ByteBuf ipHeaderByteBuf = ByteBufUtil.newPacketBuf();
+        ByteBuf payloadByteBuf = ByteBufUtil.newPacketBuf();
+        int sum = 0;
         try {
             //ipHeader
-            byteBuf.writeBytes(IPUtil.ip2bytes(ipv4Packet.getSrcIP()));
-            byteBuf.writeBytes(IPUtil.ip2bytes(ipv4Packet.getDstIP()));
-            byteBuf.writeByte(0);
-            byteBuf.writeByte(ipv4Packet.getProtocol());
-            byteBuf.writeShort(ipv4Packet.getPayload().readableBytes());
+            ipHeaderByteBuf.writeBytes(IPUtil.ip2bytes(ipv4Packet.getSrcIP()));
+            ipHeaderByteBuf.writeBytes(IPUtil.ip2bytes(ipv4Packet.getDstIP()));
+            ipHeaderByteBuf.writeByte(0);
+            ipHeaderByteBuf.writeByte(ipv4Packet.getProtocol());
+            ipHeaderByteBuf.writeShort(ipv4Packet.getPayload().readableBytes());
+            sum += CheckSum.calcTcpUdp(ipHeaderByteBuf);
             //udp
-            byteBuf.writeShort(getSrcPort());
-            byteBuf.writeShort(getDstPort());
-            byteBuf.writeShort(getLen());
-            byteBuf.writeShort(0);
-            byteBuf.writeBytes(getPayload());
-            //数据长度为奇数，在该字节之后补一个字节
-            if (0 != byteBuf.readableBytes() % 2) {
-                byteBuf.writeByte(0);
-            }
-            int sum = 0;
-            while (byteBuf.readableBytes() > 0) {
-                sum += byteBuf.readUnsignedShort();
-            }
-            int h = sum >> 16;
-            int l = sum & 0b11111111_11111111;
-            sum = (h + l);
-            sum = 0b11111111_11111111 & ~sum;
+            payloadByteBuf.writeShort(getSrcPort());
+            payloadByteBuf.writeShort(getDstPort());
+            payloadByteBuf.writeShort(getLen());
+            //checksum字段置为0
+            payloadByteBuf.writeShort(0);
+            payloadByteBuf.writeBytes(getPayload());
+            sum += CheckSum.calcTcpUdp(payloadByteBuf);
+            sum = CheckSum.calcHighLow(sum);
             return sum;
         } finally {
-            byteBuf.release();
+            ipHeaderByteBuf.release();
+            payloadByteBuf.release();
         }
     }
 }

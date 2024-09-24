@@ -8,7 +8,9 @@ import io.jaspercloud.sdwan.tun.TunAddress;
 import io.jaspercloud.sdwan.tun.TunDevice;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class LinuxTunDevice extends TunDevice {
 
     private int fd;
@@ -44,15 +46,18 @@ public class LinuxTunDevice extends TunDevice {
         int addAddr = ProcessUtil.exec(String.format("ifconfig %s inet %s netmask %s",
                 getName(), addr, cidr.getMaskAddress()));
         CheckInvoke.check(addAddr, 0);
-        int up = ProcessUtil.exec(String.format("/sbin/ip link set dev %s up", getName()));
-        CheckInvoke.check(up, 0);
+        String cmd = String.format("/sbin/ip link set dev %s up", getName());
+        log.info("setIP: {}", cmd);
+        int code = ProcessUtil.exec(cmd);
+        CheckInvoke.check(code, 0);
     }
 
     @Override
     public void setMTU(int mtu) throws Exception {
-        int setMtu = ProcessUtil.exec(String.format("/sbin/ip link set %s mtu %s", getName(), mtu));
-        CheckInvoke.check(setMtu, 0);
-        this.mtu = mtu;
+        String cmd = String.format("/sbin/ip link set %s mtu %s", getName(), mtu);
+        log.info("setMTU: {}", cmd);
+        int code = ProcessUtil.exec(cmd);
+        CheckInvoke.check(code, 0);
     }
 
     @Override
@@ -92,13 +97,13 @@ public class LinuxTunDevice extends TunDevice {
     }
 
     @Override
-    public void enableShareNetwork(String fromEth, TunAddress tunAddress) throws Exception {
-        Iptables.enableIpForward(fromEth, tunAddress.getTunName());
+    public void enableShareNetwork(TunAddress tunAddress, String ethName) throws Exception {
+        Iptables.enableIpForward(ethName, tunAddress.getTunName());
     }
 
     @Override
-    public void disableShareNetwork(String fromEth, TunAddress tunAddress) throws Exception {
-        Iptables.disableIpForward(fromEth, tunAddress.getTunName());
+    public void disableShareNetwork(TunAddress tunAddress, String ethName) throws Exception {
+        Iptables.disableIpForward(ethName, tunAddress.getTunName());
     }
 
     @Override
