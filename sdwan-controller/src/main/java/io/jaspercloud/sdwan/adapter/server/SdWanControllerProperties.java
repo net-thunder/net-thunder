@@ -15,10 +15,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @AllArgsConstructor
 @Getter
 @Setter
-@ConfigurationProperties(prefix = "controller")
+@ConfigurationProperties(prefix = "sdwan")
 public class SdWanControllerProperties {
 
-    private SdWanServerConfig sdwan;
-    private RelayServerConfig relay;
-    private StunServerConfig stun;
+    private SdWanServerConfig sdwanServer;
+    private RelayServerConfig relayServer;
+    private StunServerConfig stunServer;
 }

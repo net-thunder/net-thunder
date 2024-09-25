@@ -1,5 +1,6 @@
-controller:
-  sdwan:
+sdwan:
+  sdwanServer:
+    enable: true
     port: 1800
     heartTimeout: 30000
     tenantConfig:
@@ -7,9 +8,11 @@ controller:
         stunServer: 127.0.0.1:3478
         relayServer: 127.0.0.1:2478
         vipCidr: 10.5.0.0/24
-  relay:
+  relayServer:
+    enable: true
     bindPort: 2478
     heartTimeout: 15000
-  stun:
+  stunServer:
+    enable: true
     bindHost: 127.0.0.1
     bindPort: 3478

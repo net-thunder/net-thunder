@@ -7,6 +7,7 @@ import io.jaspercloud.sdwan.adapter.server.StunServerBean;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -29,18 +30,21 @@ public class SdWanControllerApplication {
                 .run(args);
     }
 
+    @ConditionalOnProperty(value = "sdwan.sdwanServer.enable", havingValue = "true")
     @Bean
-    public SdWanServerBean sdWanServer(SdWanControllerProperties properties) {
-        return new SdWanServerBean(properties.getSdwan());
+    public SdWanServerBean sdwanServer(SdWanControllerProperties properties) {
+        return new SdWanServerBean(properties.getSdwanServer());
     }
 
+    @ConditionalOnProperty(value = "sdwan.relayServer.enable", havingValue = "true")
     @Bean
     public RelayServerBean relayServer(SdWanControllerProperties properties) {
-        return new RelayServerBean(properties.getRelay());
+        return new RelayServerBean(properties.getRelayServer());
     }
 
+    @ConditionalOnProperty(value = "sdwan.stunServer.enable", havingValue = "true")
     @Bean
     public StunServerBean stunServer(SdWanControllerProperties properties) {
-        return new StunServerBean(properties.getStun());
+        return new StunServerBean(properties.getStunServer());
     }
 }

@@ -34,23 +34,23 @@ public class P2pTransportManager implements Runnable {
         return transport;
     }
 
-    public AtomicReference<DataTransport> getOrCreate(String ip, Consumer<String> consumer) {
-        return transportMap.computeIfAbsent(ip, key -> {
-            log.info("getOrCreate ip: {}", ip);
+    public AtomicReference<DataTransport> getOrCreate(String vip, Consumer<String> consumer) {
+        return transportMap.computeIfAbsent(vip, key -> {
+            log.info("getOrCreateDataTransport ip: {}", vip);
             AtomicReference<DataTransport> ref = new AtomicReference<>();
             consumer.accept(key);
             return ref;
         });
     }
 
-    public void addTransport(String ip, DataTransport transport) {
-        log.info("add ip: {}", ip);
-        transportMap.put(ip, new AtomicReference<>(transport));
+    public void addTransport(String vip, DataTransport transport) {
+        log.info("addTransport vip: {}", vip);
+        transportMap.put(vip, new AtomicReference<>(transport));
     }
 
-    public void deleteTransport(String ip) {
-        log.info("del ip: {}", ip);
-        transportMap.remove(ip);
+    public void deleteTransport(String vip) {
+        log.info("deleteTransport vip: {}", vip);
+        transportMap.remove(vip);
     }
 
     public P2pTransportManager(long heartTime) {
@@ -70,15 +70,15 @@ public class P2pTransportManager implements Runnable {
                 transport.ping(3000);
             } catch (ExecutionException e) {
                 if (e.getCause() instanceof TimeoutException) {
-                    log.info("timeout remove transport: {}", key);
+                    log.info("timeout remove vip: {}", key);
                 } else {
                     log.error(e.getMessage(), e);
-                    log.info("remove transport: {}", key);
+                    log.info("remove vip: {}", key);
                 }
                 iterator.remove();
             } catch (Throwable e) {
                 log.error(e.getMessage(), e);
-                log.info("remove transport: {}", key);
+                log.info("remove vip: {}", key);
                 iterator.remove();
             }
         }

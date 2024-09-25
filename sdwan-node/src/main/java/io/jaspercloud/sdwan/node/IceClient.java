@@ -66,11 +66,11 @@ public class IceClient implements TransportLifecycle {
             electionProtocol.offer(nodeInfo)
                     .whenComplete((transport, ex) -> {
                         if (null != ex) {
-                            log.info("offer deleteTransport: vip={}, error={}", nodeInfo.getVip(), ex.getMessage());
+                            log.info("offerError: vip={}, error={}", nodeInfo.getVip(), ex.getMessage());
                             p2pTransportManager.deleteTransport(nodeInfo.getVip());
                             return;
                         }
-                        log.info("offer addTransport: vip={}", nodeInfo.getVip());
+                        log.info("offerSuccess: vip={}, addressUri={}", nodeInfo.getVip(), transport.addressUri().toString());
                         p2pTransportManager.addTransport(nodeInfo.getVip(), transport);
                         transport.transfer(srcVip, bytes);
                     });
@@ -87,7 +87,6 @@ public class IceClient implements TransportLifecycle {
         log.info("processOffer: id={}", reqId);
         electionProtocol.answer(reqId, p2pOffer)
                 .thenAccept(transport -> {
-                    log.info("answer addTransport: vip={}", p2pOffer.getSrcVIP());
                     p2pTransportManager.addTransport(p2pOffer.getSrcVIP(), transport);
                 });
     }
