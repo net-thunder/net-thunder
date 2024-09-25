@@ -25,7 +25,7 @@ public class SdWanNodeLauncher {
         options.addOption("n", "name", true, "name");
         options.addOption("c", "config", true, "config");
         options.addOption("log", "logFile", true, "logFile");
-        options.addOption("debug", "debug", false, "debug");
+        options.addOption("f", "foreground", false, "foreground");
         options.addOption("trace", "trace", false, "trace");
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
@@ -37,7 +37,7 @@ public class SdWanNodeLauncher {
             logger = new LoggerSystem().initUserDir();
         }
         try {
-            if (cmd.hasOption("debug")) {
+            if (cmd.hasOption("f")) {
                 startTunSdWanNode(logger);
                 CountDownLatch latch = new CountDownLatch(1);
                 latch.await();
