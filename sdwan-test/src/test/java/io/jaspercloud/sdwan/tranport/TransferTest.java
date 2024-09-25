@@ -61,7 +61,7 @@ public class TransferTest {
                 .p2pHeartTime(10 * 1000)
                 .tenantId("tenant1")
                 .connectTimeout(30 * 1000)
-                .shareNetwork(false)
+                .netMesh(false)
                 .build()) {
             @Override
             protected String processMacAddress(String hardwareAddress) {
@@ -78,7 +78,7 @@ public class TransferTest {
                 .p2pHeartTime(10 * 1000)
                 .tenantId("tenant1")
                 .connectTimeout(30 * 1000)
-                .shareNetwork(false)
+                .netMesh(false)
                 .build()) {
             @Override
             protected String processMacAddress(String hardwareAddress) {

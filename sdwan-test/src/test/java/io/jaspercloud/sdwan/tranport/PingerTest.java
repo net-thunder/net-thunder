@@ -26,7 +26,7 @@ public class PingerTest {
                 .tunName("net-thunder")
                 .mtu(1440)
                 .localAddress("192.222.0.66")
-                .shareNetwork(true)
+                .netMesh(true)
                 .build(), () -> new SimpleChannelInboundHandler<ByteBuf>() {
             @Override
             protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {

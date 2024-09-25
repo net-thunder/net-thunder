@@ -102,12 +102,12 @@ public class OsxTunDevice extends TunDevice {
     }
 
     @Override
-    public void enableShareNetwork(TunAddress tunAddress, String ethName) throws Exception {
+    public void enableNetMesh(TunAddress tunAddress, String ethName) throws Exception {
 
     }
 
     @Override
-    public void disableShareNetwork(TunAddress tunAddress, String ethName) throws Exception {
+    public void disableNetMesh(TunAddress tunAddress, String ethName) throws Exception {
 
     }
 

@@ -80,12 +80,12 @@ public class TunChannel extends AbstractChannel {
         tunDevice.setMTU(mtu);
     }
 
-    public void enableShareNetwork(String ethName) throws Exception {
-        tunDevice.enableShareNetwork(tunAddress, ethName);
+    public void enableNetMesh(String ethName) throws Exception {
+        tunDevice.enableNetMesh(tunAddress, ethName);
     }
 
-    public void disableShareNetwork(String ethName) throws Exception {
-        tunDevice.disableShareNetwork(tunAddress, ethName);
+    public void disableNetMesh(String ethName) throws Exception {
+        tunDevice.disableNetMesh(tunAddress, ethName);
     }
 
     public void applyLocalAddress() throws Exception {

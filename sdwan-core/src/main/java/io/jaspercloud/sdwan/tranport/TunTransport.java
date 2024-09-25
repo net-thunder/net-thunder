@@ -79,10 +79,10 @@ public class TunTransport implements TransportLifecycle {
             }));
             TunChannel.waitAddress(config.getIp(), 30 * 1000);
             log.info("tunTransport started address={}", config.getIp());
-            if (config.getShareNetwork()) {
-                log.info("enableShareNetwork");
+            if (config.getNetMesh()) {
+                log.info("enableNetMesh");
                 NetworkInterfaceInfo interfaceInfo = NetworkInterfaceUtil.findIp(config.getLocalAddress());
-                localChannel.enableShareNetwork(interfaceInfo.getEthName());
+                localChannel.enableNetMesh(interfaceInfo.getEthName());
             }
             localChannel.closeFuture().addListener(new ChannelFutureListener() {
                 @Override
@@ -101,9 +101,9 @@ public class TunTransport implements TransportLifecycle {
         if (null == localChannel) {
             return;
         }
-        if (config.getShareNetwork()) {
+        if (config.getNetMesh()) {
             NetworkInterfaceInfo interfaceInfo = NetworkInterfaceUtil.findIp(config.getLocalAddress());
-            localChannel.disableShareNetwork(interfaceInfo.getEthName());
+            localChannel.disableNetMesh(interfaceInfo.getEthName());
         }
         localChannel.close();
     }

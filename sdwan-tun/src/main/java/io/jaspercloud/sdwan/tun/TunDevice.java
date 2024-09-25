@@ -52,7 +52,7 @@ public abstract class TunDevice {
 
     public abstract void writePacket(ByteBufAllocator alloc, ByteBuf msg);
 
-    public abstract void enableShareNetwork(TunAddress tunAddress, String ethName) throws Exception;
+    public abstract void enableNetMesh(TunAddress tunAddress, String ethName) throws Exception;
 
-    public abstract void disableShareNetwork(TunAddress tunAddress, String ethName) throws Exception;
+    public abstract void disableNetMesh(TunAddress tunAddress, String ethName) throws Exception;
 }

@@ -184,7 +184,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
     }
 
     public void sendIpLayerPacket(IpLayerPacket packet) {
-        if (config.getShareNetwork()
+        if (config.getNetMesh()
                 && PlatformDependent.isWindows()
                 && Ics.IcsIp.equals(packet.getSrcIP())) {
             //fix ics

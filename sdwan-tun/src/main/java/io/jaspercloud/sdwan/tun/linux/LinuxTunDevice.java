@@ -97,12 +97,12 @@ public class LinuxTunDevice extends TunDevice {
     }
 
     @Override
-    public void enableShareNetwork(TunAddress tunAddress, String ethName) throws Exception {
+    public void enableNetMesh(TunAddress tunAddress, String ethName) throws Exception {
         Iptables.enableIpForward(ethName, tunAddress.getTunName());
     }
 
     @Override
-    public void disableShareNetwork(TunAddress tunAddress, String ethName) throws Exception {
+    public void disableNetMesh(TunAddress tunAddress, String ethName) throws Exception {
         Iptables.disableIpForward(ethName, tunAddress.getTunName());
     }
 
