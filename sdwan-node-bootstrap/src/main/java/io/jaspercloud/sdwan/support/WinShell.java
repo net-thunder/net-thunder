@@ -27,14 +27,6 @@ public final class WinShell {
     public static final int SW_SHOWDEFAULT = 10;
     public static final int SW_FORCEMINIMIZE = 11;
 
-    public static String GetModuleFileNameA() {
-        int size = Short.MAX_VALUE;
-        byte[] bytes = new byte[size];
-        int len = Kernel32NativeApi.INSTANCE.GetModuleFileNameA(null, bytes, size);
-        String path = new String(Arrays.copyOf(bytes, len));
-        return path;
-    }
-
     public static void ShellExecuteW(String lpFile, String lpParameters, String lpDirectory, int nShowCmd) {
         WinShellNativeApi.INSTANCE.ShellExecuteW(
                 null,

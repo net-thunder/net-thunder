@@ -5,6 +5,7 @@ import io.jaspercloud.sdwan.node.ConfigSystem;
 import io.jaspercloud.sdwan.node.LoggerSystem;
 import io.jaspercloud.sdwan.node.SdWanNodeConfig;
 import io.jaspercloud.sdwan.node.TunSdWanNode;
+import io.jaspercloud.sdwan.node.support.PathApi;
 import io.jaspercloud.sdwan.support.OsxShell;
 import io.jaspercloud.sdwan.support.WinShell;
 import io.jaspercloud.sdwan.util.CheckAdmin;
@@ -48,15 +49,15 @@ public class SdWanNodeLauncher {
         try {
             if (PlatformDependent.isWindows()) {
                 if (!CheckAdmin.checkWindows()) {
-                    String path = WinShell.GetModuleFileNameA();
+                    String path = PathApi.getExecutableFromWin();
                     String execArgs = StringUtils.join(args, " ");
                     WinShell.ShellExecuteW(path, execArgs, null, WinShell.SW_SHOW);
                     return;
                 }
             } else if (PlatformDependent.isOsx()) {
                 if (!CheckAdmin.checkOsx()) {
-                    String path = OsxShell.executable();
-                    System.out.println("path: " + path);
+                    System.out.println("sdwan需要root用户运行，请输入密码");
+                    String path = PathApi.getExecutableFromOSX();
                     OsxShell.executeWaitFor(path, args);
                     return;
                 }

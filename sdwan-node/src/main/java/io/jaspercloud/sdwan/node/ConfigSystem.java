@@ -1,6 +1,7 @@
 package io.jaspercloud.sdwan.node;
 
 import cn.hutool.setting.yaml.YamlUtil;
+import io.jaspercloud.sdwan.node.support.PathApi;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,7 +23,7 @@ public class ConfigSystem {
     }
 
     public SdWanNodeConfig initUserDir(String configFile) throws Exception {
-        File file = new File(System.getProperty("user.dir"), configFile);
+        File file = new File(PathApi.getExecutableParent(), configFile);
         try (InputStream in = new FileInputStream(file)) {
             return YamlUtil.load(in, SdWanNodeConfig.class);
         }

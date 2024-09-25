@@ -7,6 +7,7 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.FileAppender;
+import io.jaspercloud.sdwan.node.support.PathApi;
 import io.netty.util.internal.PlatformDependent;
 import org.slf4j.LoggerFactory;
 
@@ -98,7 +99,7 @@ public class LoggerSystem {
         consoleAppender.setEncoder(encoder);
         consoleAppender.start();
         //fileAppender
-        String logFile = new File(System.getProperty("user.dir"), "app.log").getAbsolutePath();
+        String logFile = new File(PathApi.getExecutableParent(), "app.log").getAbsolutePath();
         FileAppender fileAppender = new FileAppender();
         fileAppender.setContext(loggerContext);
         fileAppender.setName("file");
