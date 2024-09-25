@@ -1,12 +1,14 @@
 package io.jaspercloud.sdwan.tranport;
 
+import io.jaspercloud.sdwan.support.AddressUri;
+
 import javax.crypto.SecretKey;
 
 public interface DataTransport {
 
     long order();
 
-    String type();
+    AddressUri addressUri();
 
     void ping(long timeout) throws Exception;
 
