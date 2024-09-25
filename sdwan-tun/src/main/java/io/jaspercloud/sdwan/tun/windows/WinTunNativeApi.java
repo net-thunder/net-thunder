@@ -7,11 +7,11 @@ import com.sun.jna.WString;
 import com.sun.jna.platform.win32.WinDef;
 import com.sun.jna.platform.win32.WinNT;
 
-public class NativeWinTunApi {
+public class WinTunNativeApi {
 
     static {
         try {
-            Native.register(NativeWinTunApi.class, "wintun");
+            Native.register(WinTunNativeApi.class, "wintun");
         } catch (Throwable e) {
             throw new ExceptionInInitializerError(e);
         }

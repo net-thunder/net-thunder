@@ -24,14 +24,14 @@ public class LinuxTunDevice extends TunDevice {
 
     @Override
     public void open() throws Exception {
-        fd = NativeLinuxApi.open("/dev/net/tun", NativeLinuxApi.O_RDWR);
-        int flags = NativeLinuxApi.fcntl(fd, NativeLinuxApi.F_GETFL, 0);
-        int noblock = NativeLinuxApi.fcntl(fd, NativeLinuxApi.F_SETFL, flags | NativeLinuxApi.O_NONBLOCK);
+        fd = LinuxNativeApi.open("/dev/net/tun", LinuxNativeApi.O_RDWR);
+        int flags = LinuxNativeApi.fcntl(fd, LinuxNativeApi.F_GETFL, 0);
+        int noblock = LinuxNativeApi.fcntl(fd, LinuxNativeApi.F_SETFL, flags | LinuxNativeApi.O_NONBLOCK);
         CheckInvoke.check(noblock, 0);
         timeval = new Timeval();
         timeval.tv_sec = 5;
-        Ifreq ifreq = new Ifreq(getName(), (short) (NativeLinuxApi.IFF_TUN | NativeLinuxApi.IFF_NO_PI));
-        NativeLinuxApi.ioctl(fd, NativeLinuxApi.TUNSETIFF, ifreq);
+        Ifreq ifreq = new Ifreq(getName(), (short) (LinuxNativeApi.IFF_TUN | LinuxNativeApi.IFF_NO_PI));
+        LinuxNativeApi.ioctl(fd, LinuxNativeApi.TUNSETIFF, ifreq);
         setActive(true);
     }
 
@@ -68,13 +68,13 @@ public class LinuxTunDevice extends TunDevice {
             }
             FdSet fdSet = new FdSet();
             fdSet.FD_SET(fd);
-            int select = NativeLinuxApi.select(fd + 1, fdSet, null, null, timeval);
+            int select = LinuxNativeApi.select(fd + 1, fdSet, null, null, timeval);
             if (-1 == select) {
                 throw new ProcessException("select -1");
             }
             if (fdSet.FD_ISSET(fd)) {
                 byte[] bytes = new byte[mtu];
-                int read = NativeLinuxApi.read(fd, bytes, bytes.length);
+                int read = LinuxNativeApi.read(fd, bytes, bytes.length);
                 if (read <= 0) {
                     continue;
                 }
@@ -93,7 +93,7 @@ public class LinuxTunDevice extends TunDevice {
         //TunChannel已回收
         byte[] bytes = new byte[msg.readableBytes()];
         msg.readBytes(bytes);
-        NativeLinuxApi.write(fd, bytes, bytes.length);
+        LinuxNativeApi.write(fd, bytes, bytes.length);
     }
 
     @Override
@@ -112,7 +112,7 @@ public class LinuxTunDevice extends TunDevice {
             return;
         }
         closing = true;
-        int close = NativeLinuxApi.close(fd);
+        int close = LinuxNativeApi.close(fd);
         CheckInvoke.check(close, 0);
     }
 

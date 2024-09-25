@@ -3,11 +3,11 @@ package io.jaspercloud.sdwan.tun.osx;
 import com.sun.jna.*;
 import com.sun.jna.ptr.IntByReference;
 
-public class NativeOsxApi {
+public class OsxNativeApi {
 
     static {
         try {
-            Native.register(NativeOsxApi.class, Platform.C_LIBRARY_NAME);
+            Native.register(OsxNativeApi.class, Platform.C_LIBRARY_NAME);
         } catch (Throwable e) {
             throw new ExceptionInInitializerError(e);
         }

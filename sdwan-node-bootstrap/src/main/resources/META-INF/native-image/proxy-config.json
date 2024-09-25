@@ -12,6 +12,9 @@
     "interfaces":["io.jaspercloud.sdwan.platform.rpc.WinSvcRpc"]
   },
   {
-    "interfaces":["io.jaspercloud.sdwan.support.WinShellApi"]
+    "interfaces":["io.jaspercloud.sdwan.support.Kernel32NativeApi"]
+  },
+  {
+    "interfaces":["io.jaspercloud.sdwan.support.WinShellNativeApi"]
   }
 ]

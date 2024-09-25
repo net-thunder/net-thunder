@@ -2,11 +2,11 @@ package io.jaspercloud.sdwan.tun.linux;
 
 import com.sun.jna.*;
 
-public class NativeLinuxApi {
+public class LinuxNativeApi {
 
     static {
         try {
-            Native.register(NativeLinuxApi.class, Platform.C_LIBRARY_NAME);
+            Native.register(LinuxNativeApi.class, Platform.C_LIBRARY_NAME);
         } catch (Throwable e) {
             throw new ExceptionInInitializerError(e);
         }

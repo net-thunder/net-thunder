@@ -10,7 +10,7 @@ import java.util.concurrent.CountDownLatch;
 public class SdWanNodeDebug {
 
     public static void main(String[] args) throws Exception {
-        Logger logger = new LoggerSystem().initUserDir();
+        Logger logger = new LoggerSystem().initUserDir(true);
         TunSdWanNode mainSdWanNode = new TunSdWanNode(new ConfigSystem().initUserDir());
         mainSdWanNode.start();
         logger.info("SdWanNodeDebug started");

@@ -26,11 +26,11 @@ public class OsxTunDevice extends TunDevice {
 
     @Override
     public void open() throws Exception {
-        fd = NativeOsxApi.socket(NativeOsxApi.AF_SYSTEM, NativeOsxApi.SOCK_DGRAM, NativeOsxApi.SYSPROTO_CONTROL);
-        CtlInfo ctlInfo = new CtlInfo(NativeOsxApi.UTUN_CONTROL_NAME);
-        NativeOsxApi.ioctl(fd, NativeOsxApi.CTLIOCGINFO, ctlInfo);
-        SockaddrCtl address = new SockaddrCtl(NativeOsxApi.AF_SYSTEM, (short) NativeOsxApi.SYSPROTO_CONTROL, ctlInfo.ctl_id, 0);
-        NativeOsxApi.connect(fd, address, address.sc_len);
+        fd = OsxNativeApi.socket(OsxNativeApi.AF_SYSTEM, OsxNativeApi.SOCK_DGRAM, OsxNativeApi.SYSPROTO_CONTROL);
+        CtlInfo ctlInfo = new CtlInfo(OsxNativeApi.UTUN_CONTROL_NAME);
+        OsxNativeApi.ioctl(fd, OsxNativeApi.CTLIOCGINFO, ctlInfo);
+        SockaddrCtl address = new SockaddrCtl(OsxNativeApi.AF_SYSTEM, (short) OsxNativeApi.SYSPROTO_CONTROL, ctlInfo.ctl_id, 0);
+        OsxNativeApi.connect(fd, address, address.sc_len);
         setActive(true);
     }
 
@@ -43,7 +43,7 @@ public class OsxTunDevice extends TunDevice {
     public void setIP(String addr, int netmaskPrefix) throws Exception {
         String deviceName = getEthName();
         Ifreq ifreq = new Ifreq(deviceName, mtu);
-        NativeOsxApi.ioctl(fd, NativeOsxApi.SIOCSIFMTU, ifreq);
+        OsxNativeApi.ioctl(fd, OsxNativeApi.SIOCSIFMTU, ifreq);
         Cidr cidr = Cidr.parseCidr(String.format("%s/%s", addr, netmaskPrefix));
         int addAddr = ProcessUtil.exec(String.format("ifconfig %s inet %s netmask %s broadcast %s",
                 deviceName, addr, cidr.getMaskAddress(), cidr.getBroadcastAddress()));
@@ -59,13 +59,13 @@ public class OsxTunDevice extends TunDevice {
     public void setMTU(int mtu) throws Exception {
         String deviceName = getEthName();
         Ifreq ifreq = new Ifreq(deviceName, mtu);
-        NativeOsxApi.ioctl(fd, NativeOsxApi.SIOCSIFMTU, ifreq);
+        OsxNativeApi.ioctl(fd, OsxNativeApi.SIOCSIFMTU, ifreq);
     }
 
     public String getEthName() {
         SockName sockName = new SockName();
         IntByReference sockNameLen = new IntByReference(SockName.LENGTH);
-        NativeOsxApi.getsockopt(fd, NativeOsxApi.SYSPROTO_CONTROL, NativeOsxApi.UTUN_OPT_IFNAME, sockName, sockNameLen);
+        OsxNativeApi.getsockopt(fd, OsxNativeApi.SYSPROTO_CONTROL, OsxNativeApi.UTUN_OPT_IFNAME, sockName, sockNameLen);
         String deviceName = Native.toString(sockName.name, US_ASCII);
         return deviceName;
     }
@@ -77,7 +77,7 @@ public class OsxTunDevice extends TunDevice {
                 throw new ProcessException("Device is closed.");
             }
             byte[] bytes = new byte[mtu];
-            int read = NativeOsxApi.read(fd, bytes, bytes.length);
+            int read = OsxNativeApi.read(fd, bytes, bytes.length);
             if (read <= 0) {
                 continue;
             }
@@ -98,7 +98,7 @@ public class OsxTunDevice extends TunDevice {
         bytes[3] = 0x2;
         //process loopback
         msg.readBytes(bytes, 4, msg.readableBytes());
-        NativeOsxApi.write(fd, bytes, bytes.length);
+        OsxNativeApi.write(fd, bytes, bytes.length);
     }
 
     @Override
@@ -117,7 +117,7 @@ public class OsxTunDevice extends TunDevice {
             return;
         }
         closing = true;
-        int close = NativeOsxApi.close(fd);
+        int close = OsxNativeApi.close(fd);
         CheckInvoke.check(close, 0);
     }
 

@@ -7,6 +7,7 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.FileAppender;
+import io.netty.util.internal.PlatformDependent;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
@@ -26,7 +27,13 @@ public class LoggerSystem {
         //config
         PatternLayoutEncoder encoder = new PatternLayoutEncoder();
         encoder.setContext(loggerContext);
-        encoder.setCharset(Charset.forName("utf-8"));
+        String charset;
+        if (PlatformDependent.isWindows()) {
+            charset = "gbk";
+        } else {
+            charset = "utf-8";
+        }
+        encoder.setCharset(Charset.forName(charset));
         encoder.setPattern("%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n");
         encoder.start();
         //consoleAppender
@@ -67,7 +74,7 @@ public class LoggerSystem {
         return logger;
     }
 
-    public Logger initUserDir() {
+    public Logger initUserDir(boolean async) {
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         loggerContext.stop();
         loggerContext.reset();
@@ -76,7 +83,13 @@ public class LoggerSystem {
         //config
         PatternLayoutEncoder encoder = new PatternLayoutEncoder();
         encoder.setContext(loggerContext);
-        encoder.setCharset(Charset.forName("utf-8"));
+        String charset;
+        if (PlatformDependent.isWindows()) {
+            charset = "gbk";
+        } else {
+            charset = "utf-8";
+        }
+        encoder.setCharset(Charset.forName(charset));
         encoder.setPattern("%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n");
         encoder.start();
         //consoleAppender
@@ -94,7 +107,6 @@ public class LoggerSystem {
         fileAppender.setFile(logFile);
         fileAppender.start();
         //asyncAppender
-        boolean async = true;
         if (async) {
             AsyncAppender asyncAppender = new AsyncAppender();
             asyncAppender.setName("async-console");

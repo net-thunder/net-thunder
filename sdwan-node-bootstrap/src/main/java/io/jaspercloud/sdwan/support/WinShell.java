@@ -26,7 +26,7 @@ public final class WinShell {
     public static final int SW_FORCEMINIMIZE = 11;
 
     public static void ShellExecuteW(String lpFile, String lpParameters, String lpDirectory, int nShowCmd) {
-        WinShellApi.INSTANCE.ShellExecuteW(
+        WinShellNativeApi.INSTANCE.ShellExecuteW(
                 null,
                 new WString("runas"),
                 new WString(lpFile),

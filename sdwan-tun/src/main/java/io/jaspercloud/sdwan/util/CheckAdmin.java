@@ -5,8 +5,8 @@ import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinNT;
 import com.sun.jna.ptr.IntByReference;
 import io.jaspercloud.sdwan.exception.ProcessException;
-import io.jaspercloud.sdwan.tun.linux.NativeLinuxApi;
-import io.jaspercloud.sdwan.tun.osx.NativeOsxApi;
+import io.jaspercloud.sdwan.tun.linux.LinuxNativeApi;
+import io.jaspercloud.sdwan.tun.osx.OsxNativeApi;
 import io.netty.util.internal.PlatformDependent;
 
 public class CheckAdmin {
@@ -25,7 +25,7 @@ public class CheckAdmin {
         }
     }
 
-    private static boolean checkWindows() {
+    public static boolean checkWindows() {
         WinNT.HANDLE processHandle = Kernel32.INSTANCE.GetCurrentProcess();
         WinNT.HANDLEByReference phToken = new WinNT.HANDLEByReference();
         if (!Advapi32.INSTANCE.OpenProcessToken(processHandle, WinNT.TOKEN_QUERY, phToken)) {
@@ -43,10 +43,10 @@ public class CheckAdmin {
     }
 
     private static boolean checkOsx() {
-        return 0 == NativeOsxApi.geteuid();
+        return 0 == OsxNativeApi.geteuid();
     }
 
     private static boolean checkLinux() {
-        return 0 == NativeLinuxApi.geteuid();
+        return 0 == LinuxNativeApi.geteuid();
     }
 }

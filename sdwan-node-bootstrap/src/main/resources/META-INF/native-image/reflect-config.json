@@ -169,6 +169,11 @@
   "allDeclaredFields":true
 },
 {
+  "name":"com.sun.jna.platform.win32.WinDef$UINTByReference",
+  "fields":[{"name":"OPTIONS"}, {"name":"STRING_ENCODING"}, {"name":"STRUCTURE_ALIGNMENT"}, {"name":"TYPE_MAPPER"}],
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
   "name":"com.sun.jna.platform.win32.WinNT$HANDLE",
   "fields":[{"name":"OPTIONS"}, {"name":"STRING_ENCODING"}, {"name":"STRUCTURE_ALIGNMENT"}, {"name":"TYPE_MAPPER"}],
   "methods":[{"name":"<init>","parameterTypes":[] }]
@@ -287,7 +292,7 @@
   "name":"io.jaspercloud.sdwan.node.SdWanNodeConfig",
   "allDeclaredFields":true,
   "queryAllPublicMethods":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setConnectTimeout","parameterTypes":["int"] }, {"name":"setControllerServer","parameterTypes":["java.lang.String"] }, {"name":"setHeartTime","parameterTypes":["long"] }, {"name":"setMtu","parameterTypes":["int"] }, {"name":"setP2pHeartTime","parameterTypes":["long"] }, {"name":"setRelayServer","parameterTypes":["java.lang.String"] }, {"name":"setShareNetwork","parameterTypes":["java.lang.Boolean"] }, {"name":"setStunServer","parameterTypes":["java.lang.String"] }, {"name":"setTenantId","parameterTypes":["java.lang.String"] }, {"name":"setTunName","parameterTypes":["java.lang.String"] }]
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setConnectTimeout","parameterTypes":["int"] }, {"name":"setControllerServer","parameterTypes":["java.lang.String"] }, {"name":"setHeartTime","parameterTypes":["long"] }, {"name":"setMtu","parameterTypes":["int"] }, {"name":"setNetMesh","parameterTypes":["java.lang.Boolean"] }, {"name":"setP2pHeartTime","parameterTypes":["long"] }, {"name":"setRelayServer","parameterTypes":["java.lang.String"] }, {"name":"setStunServer","parameterTypes":["java.lang.String"] }, {"name":"setTenantId","parameterTypes":["java.lang.String"] }, {"name":"setTunName","parameterTypes":["java.lang.String"] }]
 },
 {
   "name":"io.jaspercloud.sdwan.node.SdWanNodeConfigBeanInfo"
@@ -403,7 +408,7 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
-  "name":"io.jaspercloud.sdwan.tun.osx.NativeOsxApi",
+  "name":"io.jaspercloud.sdwan.tun.osx.OsxNativeApi",
   "queryAllDeclaredMethods":true
 },
 {
@@ -417,7 +422,7 @@
   "fields":[{"name":"OPTIONS"}, {"name":"STRING_ENCODING"}, {"name":"STRUCTURE_ALIGNMENT"}, {"name":"TYPE_MAPPER"}]
 },
 {
-  "name":"io.jaspercloud.sdwan.tun.windows.NativeWinTunApi",
+  "name":"io.jaspercloud.sdwan.tun.windows.WinTunNativeApi",
   "queryAllDeclaredMethods":true
 },
 {
