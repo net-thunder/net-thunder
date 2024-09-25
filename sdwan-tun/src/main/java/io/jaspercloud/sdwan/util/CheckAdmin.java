@@ -42,11 +42,11 @@ public class CheckAdmin {
         return 1 == elevation.TokenIsElevated;
     }
 
-    private static boolean checkOsx() {
+    public static boolean checkOsx() {
         return 0 == OsxNativeApi.geteuid();
     }
 
-    private static boolean checkLinux() {
+    public static boolean checkLinux() {
         return 0 == LinuxNativeApi.geteuid();
     }
 }

@@ -6,6 +6,7 @@ import io.jaspercloud.sdwan.node.LoggerSystem;
 import io.jaspercloud.sdwan.node.SdWanNodeConfig;
 import io.jaspercloud.sdwan.node.TunSdWanNode;
 import io.jaspercloud.sdwan.support.Kernel32Api;
+import io.jaspercloud.sdwan.support.OsxShell;
 import io.jaspercloud.sdwan.support.WinShell;
 import io.jaspercloud.sdwan.util.CheckAdmin;
 import io.netty.util.internal.PlatformDependent;
@@ -53,6 +54,11 @@ public class SdWanNodeLauncher {
                     WinShell.ShellExecuteW(path, execArgs, null, WinShell.SW_SHOW);
                     return;
                 }
+            } else if (PlatformDependent.isOsx()) {
+                if (!CheckAdmin.checkOsx()) {
+                    return;
+                }
+                String path = OsxShell.executable();
             }
             startTunSdWanNode(logger);
             CountDownLatch latch = new CountDownLatch(1);
