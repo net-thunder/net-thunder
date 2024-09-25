@@ -2,6 +2,7 @@ package io.jaspercloud.sdwan.node.support;
 
 import io.jaspercloud.sdwan.tun.osx.OsxNativeApi;
 import io.jaspercloud.sdwan.tun.windows.Kernel32NativeApi;
+import io.jaspercloud.sdwan.util.GraalVM;
 import io.netty.util.internal.PlatformDependent;
 
 import java.io.File;
@@ -14,12 +15,17 @@ import java.util.Arrays;
 public class PathApi {
 
     public static String getExecutableParent() {
-        if (PlatformDependent.isWindows()) {
-            String path = new File(getExecutableFromWin()).getParent();
-            return path;
-        } else if (PlatformDependent.isOsx()) {
-            String path = new File(getExecutableFromOSX()).getParent();
-            return path;
+        if (GraalVM.isNative()) {
+            if (PlatformDependent.isWindows()) {
+                String path = new File(getExecutableFromWin()).getParent();
+                return path;
+            } else if (PlatformDependent.isOsx()) {
+                String path = new File(getExecutableFromOSX()).getParent();
+                return path;
+            } else {
+                String path = System.getProperty("user.dir");
+                return path;
+            }
         } else {
             String path = System.getProperty("user.dir");
             return path;

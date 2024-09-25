@@ -58,9 +58,13 @@ public class SdWanNodeConfig {
 
     public String getHostAddress() {
         try {
-            NetworkInterfaceInfo eth0 = NetworkInterfaceUtil.findEth("eth0");
-            if (null != eth0) {
-                return eth0.getInterfaceAddress().getAddress().getHostAddress();
+            NetworkInterfaceInfo eth = NetworkInterfaceUtil.findEth("eth0");
+            if (null != eth) {
+                return eth.getInterfaceAddress().getAddress().getHostAddress();
+            }
+            eth = NetworkInterfaceUtil.findEth("en0");
+            if (null != eth) {
+                return eth.getInterfaceAddress().getAddress().getHostAddress();
             }
             String hostAddress = InetAddress.getLocalHost().getHostAddress();
             return hostAddress;

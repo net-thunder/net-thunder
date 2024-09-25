@@ -6,6 +6,7 @@ import io.jaspercloud.sdwan.node.TunSdWanNode;
 import io.jaspercloud.sdwan.platform.rpc.RpcInvoker;
 import io.jaspercloud.sdwan.platform.rpc.TunnelRpc;
 import io.jaspercloud.sdwan.platform.rpc.TunnelRpcImpl;
+import io.jaspercloud.sdwan.util.GraalVM;
 import io.jaspercloud.sdwan.support.WinServiceManager;
 import io.jaspercloud.sdwan.support.WinSvcUtil;
 import io.netty.channel.Channel;
@@ -25,7 +26,7 @@ public class TunnelService {
     public static final String Type = "tunnel";
 
     public static String getTunnelServiceArgs() throws Exception {
-        if (WinSvcUtil.isNative()) {
+        if (GraalVM.isNative()) {
             List<String> argList = new ArrayList<>();
             String executePath = WinSvcUtil.getExecuteBinPath();
             String parentPath = new File(executePath).getParent();

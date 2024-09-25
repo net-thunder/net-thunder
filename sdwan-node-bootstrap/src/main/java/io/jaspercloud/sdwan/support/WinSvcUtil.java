@@ -3,6 +3,7 @@ package io.jaspercloud.sdwan.support;
 import com.sun.jna.platform.win32.Winsvc;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.util.CheckAdmin;
+import io.jaspercloud.sdwan.util.GraalVM;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,15 +18,6 @@ public final class WinSvcUtil {
 
     private WinSvcUtil() {
 
-    }
-
-    public static boolean isNative() {
-        String kind = System.getProperties().getProperty("org.graalvm.nativeimage.kind");
-        if ("executable".equals(kind)) {
-            return true;
-        } else {
-            return false;
-        }
     }
 
     public static String getJavaPath() {
@@ -47,7 +39,7 @@ public final class WinSvcUtil {
     }
 
     public static String getManageServiceArgs(String action, String serviceName, String logPath) {
-        if (WinSvcUtil.isNative()) {
+        if (GraalVM.isNative()) {
             List<String> argList = new ArrayList<>();
             argList.add(getExecuteBinPath());
             argList.add("-t");

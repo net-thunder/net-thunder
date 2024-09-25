@@ -3,6 +3,7 @@ package io.jaspercloud.sdwan.service;
 import io.jaspercloud.sdwan.platform.rpc.RpcInvoker;
 import io.jaspercloud.sdwan.platform.rpc.WinSvcRpc;
 import io.jaspercloud.sdwan.platform.rpc.WinSvcRpcImpl;
+import io.jaspercloud.sdwan.util.GraalVM;
 import io.jaspercloud.sdwan.support.WinServiceManager;
 import io.jaspercloud.sdwan.support.WinShell;
 import io.jaspercloud.sdwan.support.WinSvcUtil;
@@ -24,7 +25,7 @@ public class ManagerService {
     private static final String ServiceName = "NetThunderManager";
 
     public static void executeInstall() {
-        if (WinSvcUtil.isNative()) {
+        if (GraalVM.isNative()) {
             List<String> argList = new ArrayList<>();
             String executePath = WinSvcUtil.getExecuteBinPath();
             String parentPath = new File(executePath).getParent();
@@ -59,7 +60,7 @@ public class ManagerService {
     }
 
     public static void executeUnInstall() {
-        if (WinSvcUtil.isNative()) {
+        if (GraalVM.isNative()) {
             List<String> argList = new ArrayList<>();
             String executePath = WinSvcUtil.getExecuteBinPath();
             String parentPath = new File(executePath).getParent();
