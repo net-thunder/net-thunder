@@ -54,11 +54,6 @@ public class SdWanNodeLauncher {
                     WinShell.ShellExecuteW(path, execArgs, null, WinShell.SW_SHOW);
                     return;
                 }
-            } else if (PlatformDependent.isOsx()) {
-                if (!CheckAdmin.checkOsx()) {
-                    return;
-                }
-                String path = OsxShell.executable();
             }
             startTunSdWanNode(logger);
             CountDownLatch latch = new CountDownLatch(1);

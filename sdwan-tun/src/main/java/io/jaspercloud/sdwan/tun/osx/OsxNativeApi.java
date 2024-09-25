@@ -32,6 +32,8 @@ public class OsxNativeApi {
 
     public static native int geteuid() throws LastErrorException;
 
+    public static native int getpid() throws LastErrorException;
+
     public static native int socket(int domain, int type, int protocol) throws LastErrorException;
 
     public static native int close(int fd) throws LastErrorException;
