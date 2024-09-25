@@ -168,7 +168,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         });
         virtualRouter = new VirtualRouter();
         install();
-        log.info("SdWanNode started");
+        log.info("SdWanNode started: vip={}", getLocalVip());
         loopStatus.set(true);
         loopThread = new Thread(this, "loop");
         loopThread.start();
