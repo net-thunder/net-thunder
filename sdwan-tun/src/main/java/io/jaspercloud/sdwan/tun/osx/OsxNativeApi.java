@@ -27,6 +27,8 @@ public class OsxNativeApi {
     public static final int O_NONBLOCK = 0x4;
     public static final int FD_CLOEXEC = 0x1;
 
+    public static final int PROC_PIDPATHINFO_MAXSIZE = 4096;
+
     public static final NativeLong CTLIOCGINFO = new NativeLong(0xc0644e03L);
     public static final NativeLong SIOCSIFMTU = new NativeLong(0x80206934L);
 
@@ -50,4 +52,5 @@ public class OsxNativeApi {
 
     public static native int write(int fd, byte[] buf, int nbytes) throws LastErrorException;
 
+    public static native int proc_pidpath(int pid, byte[] buf, int size) throws LastErrorException;
 }

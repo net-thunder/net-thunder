@@ -1,10 +1,7 @@
 package io.jaspercloud.sdwan.support;
 
-import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.tun.osx.OsxNativeApi;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -16,50 +13,25 @@ public final class OsxShell {
     }
 
     public static String executable() throws Exception {
-        String pid = String.valueOf(OsxNativeApi.getpid());
-        List<String> list = new ArrayList<>(Arrays.asList("bash", "-c"));
-        String cmd = String.format("ps -p %s", pid);
-        list.add(cmd);
-        Process process = new ProcessBuilder(list)
-                .redirectErrorStream(true)
-                .start();
-        try {
-            process.waitFor();
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                String line;
-                while (null != (line = reader.readLine())) {
-                    if (line.contains(pid)) {
-                        int s = line.indexOf("/");
-                        int e = line.indexOf(" ", s);
-                        if (e == -1) {
-                            e = line.length();
-                        }
-                        String path = line.substring(s, e);
-                        return path;
-                    }
-                }
-            }
-        } finally {
-            process.destroy();
-        }
-        throw new ProcessException("not found executable");
+        byte[] bytes = new byte[OsxNativeApi.PROC_PIDPATHINFO_MAXSIZE];
+        int len = OsxNativeApi.proc_pidpath(OsxNativeApi.getpid(), bytes, bytes.length);
+        String path = new String(Arrays.copyOf(bytes, len));
+        return path;
     }
 
-    public static void execute(String path, String[] args) throws Exception {
+    public static void executeWaitFor(String path, String[] args) throws Exception {
         List<String> list = new ArrayList<>(Arrays.asList("bash", "-c"));
-        list.add(path);
+        list.add(String.format("sudo -S %s", path));
         list.addAll(Arrays.asList(args));
         Process process = new ProcessBuilder(list)
-                .redirectErrorStream(true)
+                .inheritIO()
                 .start();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-            String line;
-            while (null != (line = reader.readLine())) {
-                System.out.println(line);
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                process.destroy();
             }
-            process.waitFor();
-        } finally {
-            process.destroy();
-        }
+        });
+        process.waitFor();
     }
 }

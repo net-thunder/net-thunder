@@ -5,7 +5,6 @@ import io.jaspercloud.sdwan.node.ConfigSystem;
 import io.jaspercloud.sdwan.node.LoggerSystem;
 import io.jaspercloud.sdwan.node.SdWanNodeConfig;
 import io.jaspercloud.sdwan.node.TunSdWanNode;
-import io.jaspercloud.sdwan.support.Kernel32Api;
 import io.jaspercloud.sdwan.support.OsxShell;
 import io.jaspercloud.sdwan.support.WinShell;
 import io.jaspercloud.sdwan.util.CheckAdmin;
@@ -49,9 +48,16 @@ public class SdWanNodeLauncher {
         try {
             if (PlatformDependent.isWindows()) {
                 if (!CheckAdmin.checkWindows()) {
-                    String path = Kernel32Api.GetModuleFileNameA();
+                    String path = WinShell.GetModuleFileNameA();
                     String execArgs = StringUtils.join(args, " ");
                     WinShell.ShellExecuteW(path, execArgs, null, WinShell.SW_SHOW);
+                    return;
+                }
+            } else if (PlatformDependent.isOsx()) {
+                if (!CheckAdmin.checkOsx()) {
+                    String path = OsxShell.executable();
+                    System.out.println("path: " + path);
+                    OsxShell.executeWaitFor(path, args);
                     return;
                 }
             }
@@ -59,6 +65,7 @@ public class SdWanNodeLauncher {
             CountDownLatch latch = new CountDownLatch(1);
             latch.await();
 
+            //fixme 只启用console
 //            if (cmd.hasOption("f")) {
 //                startTunSdWanNode(logger);
 //                CountDownLatch latch = new CountDownLatch(1);
