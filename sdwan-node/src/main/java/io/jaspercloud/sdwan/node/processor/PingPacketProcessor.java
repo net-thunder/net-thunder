@@ -40,7 +40,9 @@ public class PingPacketProcessor implements IpLayerPacketProcessor {
                 packet.setPayload(encode);
                 encode.release();
                 long e = System.nanoTime();
-                log.info("ping: {}", 1.0 * (e - s) / 1000 / 1000);
+                String src = packet.getDstIP();
+                String dst = packet.getSrcIP();
+                log.info("ping: {} -> {}, time={}", src, dst, 1.0 * (e - s) / 1000 / 1000);
                 break;
             }
         }
