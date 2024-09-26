@@ -585,6 +585,9 @@
   "fields":[{"name":"producerLimit"}]
 },
 {
+  "name":"java.awt.SequencedEvent"
+},
+{
   "name":"java.beans.PropertyVetoException"
 },
 {
@@ -967,6 +970,16 @@
   "name":"javax.crypto.spec.GCMParameterSpec"
 },
 {
+  "name":"javax.imageio.spi.ImageReaderSpi"
+},
+{
+  "name":"javax.imageio.spi.ImageReaderWriterSpi",
+  "methods":[{"name":"getFileSuffixes","parameterTypes":[] }, {"name":"getFormatNames","parameterTypes":[] }, {"name":"getMIMETypes","parameterTypes":[] }]
+},
+{
+  "name":"javax.imageio.spi.ImageWriterSpi"
+},
+{
   "name":"javax.management.ObjectName"
 },
 {
@@ -1347,6 +1360,18 @@
 },
 {
   "name":"org.bouncycastle.jcajce.provider.symmetric.Zuc$Mappings",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.awt.Symbol",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.awt.windows.WingDings",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.java2d.marlin.DMarlinRenderingEngine",
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
