@@ -33,7 +33,7 @@ public class TransferTest {
         SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
                 .port(1800)
                 .heartTimeout(30 * 1000)
-                .tenantConfig(Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
+                .tenantConfig(Collections.singletonMap("default", SdWanServerConfig.TenantConfig.builder()
                         .stunServer("127.0.0.1:3478")
                         .relayServer("127.0.0.1:2478")
                         .vipCidr("10.5.0.0/24")
@@ -44,7 +44,7 @@ public class TransferTest {
         sdWanServer.start();
         RelayServer relayServer = new RelayServer(RelayServerConfig.builder()
                 .bindPort(2478)
-                .heartTimeout(15000)
+                .heartTimeout(15 * 1000)
                 .build(), () -> new ChannelInboundHandlerAdapter());
         relayServer.start();
         StunServer stunServer = new StunServer(StunServerConfig.builder()
@@ -53,14 +53,15 @@ public class TransferTest {
                 .build(), () -> new ChannelInboundHandlerAdapter());
         stunServer.start();
         TestSdWanNode sdWanNode1 = new TestSdWanNode(SdWanNodeConfig.builder()
+                .onlyRelayTransport(true)
                 .controllerServer(address + ":1800")
-                .relayServer(address + ":2478")
-                .stunServer("127.0.0.1:3478")
+                .tunName("tun1")
                 .p2pPort(1001)
-                .heartTime(15 * 1000)
-                .p2pHeartTime(10 * 1000)
-                .tenantId("tenant1")
-                .connectTimeout(30 * 1000)
+                .tenantId("default")
+                .connectTimeout(5 * 1000)
+                .heartTime(5 * 1000)
+                .p2pHeartTime(5 * 1000)
+                .p2pTimeout(5 * 1000)
                 .netMesh(false)
                 .build()) {
             @Override
@@ -70,14 +71,15 @@ public class TransferTest {
         };
         sdWanNode1.start();
         TestSdWanNode sdWanNode2 = new TestSdWanNode(SdWanNodeConfig.builder()
+                .onlyRelayTransport(true)
                 .controllerServer(address + ":1800")
-                .relayServer(address + ":2478")
-                .stunServer("127.0.0.1:3478")
+                .tunName("tun2")
                 .p2pPort(1002)
-                .heartTime(15 * 1000)
-                .p2pHeartTime(10 * 1000)
-                .tenantId("tenant1")
-                .connectTimeout(30 * 1000)
+                .tenantId("default")
+                .connectTimeout(5 * 1000)
+                .heartTime(5 * 1000)
+                .p2pHeartTime(5 * 1000)
+                .p2pTimeout(5 * 1000)
                 .netMesh(false)
                 .build()) {
             @Override
@@ -88,8 +90,8 @@ public class TransferTest {
         sdWanNode2.start();
         while (true) {
             sdWanNode1.sendIpPacket(SDWanProtos.IpPacket.newBuilder()
-                    .setSrcIP("10.5.0.1")
-                    .setDstIP("10.5.0.2")
+                    .setSrcIP("10.5.0.11")
+                    .setDstIP("10.5.0.12")
                     .setPayload(ByteString.copyFrom("hello".getBytes()))
                     .build());
             Thread.sleep(1000);

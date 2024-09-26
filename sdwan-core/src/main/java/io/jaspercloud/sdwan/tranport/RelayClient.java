@@ -79,16 +79,16 @@ public class RelayClient implements TransportLifecycle, Runnable {
         });
     }
 
-    public void transfer(String vip, String token, byte[] bytes) {
+    public void transfer(String vip, InetSocketAddress address, String token, byte[] bytes) {
         if (log.isTraceEnabled()) {
-            log.trace("relay send transfer: {}", SocketAddressUtil.toAddress(relayAddress));
+            log.trace("relay send transfer: {}", SocketAddressUtil.toAddress(address));
         }
         StunMessage message = new StunMessage(MessageType.Transfer);
         message.setAttr(AttrType.TransferType, new StringAttr("relay"));
         message.setAttr(AttrType.RelayToken, new StringAttr(token));
         message.setAttr(AttrType.SrcVip, new StringAttr(vip));
         message.setAttr(AttrType.Data, new BytesAttr(bytes));
-        StunPacket request = new StunPacket(message, relayAddress);
+        StunPacket request = new StunPacket(message, address);
         localChannel.writeAndFlush(request);
     }
 

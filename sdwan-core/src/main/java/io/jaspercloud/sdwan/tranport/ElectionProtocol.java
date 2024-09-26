@@ -66,14 +66,12 @@ public abstract class ElectionProtocol {
                 AddressUri uri = e.getAddressUri();
                 log.info("pong: uri={}", uri.toString());
                 if (AddressType.RELAY.equals(uri.getScheme())) {
-                    String token = uri.getParams().get("token");
                     long order = System.currentTimeMillis() - ((LongAttr) pingResp.content().getAttr(AttrType.Time)).getData();
-                    DataTransport dataTransport = new RelayTransport(uri, relayClient, token, order);
+                    DataTransport dataTransport = new RelayTransport(uri, relayClient, order);
                     queue.add(dataTransport);
                 } else if (AddressType.HOST.equals(uri.getScheme()) || AddressType.SRFLX.equals(uri.getScheme())) {
-                    InetSocketAddress sender = pingResp.sender();
                     long order = System.currentTimeMillis() - ((LongAttr) pingResp.content().getAttr(AttrType.Time)).getData();
-                    DataTransport dataTransport = new P2pTransport(uri, p2pClient, sender, order);
+                    DataTransport dataTransport = new P2pTransport(uri, p2pClient, order);
                     queue.add(dataTransport);
                 } else {
                     throw new UnsupportedOperationException();
@@ -136,14 +134,12 @@ public abstract class ElectionProtocol {
                     AddressUri uri = req.getAddressUri();
                     log.info("pong: uri={}", uri.toString());
                     if (AddressType.RELAY.equals(uri.getScheme())) {
-                        String token = uri.getParams().get("token");
                         long order = System.currentTimeMillis() - ((LongAttr) pingResp.content().getAttr(AttrType.Time)).getData();
-                        DataTransport dataTransport = new RelayTransport(uri, relayClient, token, order);
+                        DataTransport dataTransport = new RelayTransport(uri, relayClient, order);
                         countBarrier.add(dataTransport);
                     } else if (AddressType.HOST.equals(uri.getScheme()) || AddressType.SRFLX.equals(uri.getScheme())) {
-                        InetSocketAddress sender = pingResp.sender();
                         long order = System.currentTimeMillis() - ((LongAttr) pingResp.content().getAttr(AttrType.Time)).getData();
-                        DataTransport dataTransport = new P2pTransport(uri, p2pClient, sender, order);
+                        DataTransport dataTransport = new P2pTransport(uri, p2pClient, order);
                         countBarrier.add(dataTransport);
                     } else {
                         throw new UnsupportedOperationException();
@@ -238,15 +234,15 @@ public abstract class ElectionProtocol {
 
         private AddressUri addressUri;
         private P2pClient p2pClient;
-        private InetSocketAddress address;
         private SecretKey secretKey;
         private long order;
+        private InetSocketAddress address;
 
-        public P2pTransport(AddressUri addressUri, P2pClient p2pClient, InetSocketAddress address, long order) {
+        public P2pTransport(AddressUri addressUri, P2pClient p2pClient, long order) {
             this.addressUri = addressUri;
             this.p2pClient = p2pClient;
-            this.address = address;
             this.order = -order;
+            address = new InetSocketAddress(addressUri.getHost(), addressUri.getPort());
         }
 
         @Override
@@ -294,15 +290,17 @@ public abstract class ElectionProtocol {
 
         private AddressUri addressUri;
         private RelayClient relayClient;
-        private String token;
         private SecretKey secretKey;
         private long order;
+        private InetSocketAddress address;
+        private String token;
 
-        public RelayTransport(AddressUri addressUri, RelayClient relayClient, String token, long order) {
+        public RelayTransport(AddressUri addressUri, RelayClient relayClient, long order) {
             this.addressUri = addressUri;
             this.relayClient = relayClient;
-            this.token = token;
             this.order = -order;
+            address = new InetSocketAddress(addressUri.getHost(), addressUri.getPort());
+            token = addressUri.getParams().get("token");
         }
 
         @Override
@@ -329,7 +327,7 @@ public abstract class ElectionProtocol {
         public void transfer(String vip, byte[] bytes) {
             try {
                 byte[] encodeData = Ecdh.encryptAES(bytes, secretKey);
-                relayClient.transfer(vip, token, encodeData);
+                relayClient.transfer(vip, address, token, encodeData);
             } catch (Exception e) {
                 throw new ProcessException(e.getMessage(), e);
             }

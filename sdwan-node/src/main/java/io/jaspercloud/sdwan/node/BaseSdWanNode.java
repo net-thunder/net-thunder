@@ -230,9 +230,6 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                 .build();
         Ipv4Packet ipv4Packet = new Ipv4Packet(packet);
         IpLayerPacket ipLayerPacket = new IpLayerPacket(ipv4Packet.encode());
-        ipLayerPacket.setSrcIP(ipPacket.getSrcIP());
-        ipLayerPacket.setDstIP(ipPacket.getDstIP());
-        ipLayerPacket.setPayload(ByteBufUtil.toByteBuf(ipPacket.getPayload().toByteArray()));
         sendIpLayerPacket(ipLayerPacket);
     }
 
