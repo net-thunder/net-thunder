@@ -78,11 +78,12 @@ public class MainWindow2Controller implements EventHandler<ActionEvent> {
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("提示");
         dialog.setHeaderText("是否后台运行？");
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        dialog.setContentText("是: 后台运行 否: 结束程序");
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.YES, ButtonType.NO, ButtonType.CANCEL);
         dialog.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
+            if (response == ButtonType.YES) {
                 primaryStage.hide();
-            } else {
+            } else if (response == ButtonType.NO) {
                 System.exit(0);
             }
         });

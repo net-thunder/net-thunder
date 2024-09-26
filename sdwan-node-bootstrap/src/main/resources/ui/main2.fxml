@@ -15,7 +15,7 @@
                 <RowConstraints/>
                 <RowConstraints/>
             </rowConstraints>
-            <Label text="状态:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="0"/>
+            <Label text="当前状态:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="0"/>
             <Label fx:id="statusLab" text="已断开" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
             <Label text="本地虚拟IP:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="1"/>
             <Label fx:id="vipLab" text="-" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
