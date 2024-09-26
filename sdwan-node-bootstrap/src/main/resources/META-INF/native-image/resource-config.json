@@ -185,13 +185,13 @@
   }]},
   "bundles":[{
     "name":"com.sun.javafx.tk.quantum.QuantumMessagesBundle",
-    "locales":["", "und", "zh-CN"]
+    "locales":["und", "zh-CN"]
   }, {
     "name":"com/sun/glass/ui/win/themes",
-    "locales":["", "und", "zh-CN"]
+    "locales":["und", "zh-CN"]
   }, {
     "name":"com/sun/javafx/scene/control/skin/resources/controls",
-    "locales":["", "zh-CN"]
+    "locales":["und", "zh-CN"]
   }, {
     "name":"sun.awt.resources.awt",
     "classNames":["sun.awt.resources.awt", "sun.awt.resources.awt_zh_CN"]
