@@ -267,6 +267,10 @@
   "fields":[{"name":"CONSOLE"}, {"name":"LOCK"}, {"name":"REMOTE"}, {"name":"UNSPECIFIED"}]
 },
 {
+  "name":"java.awt.event.ActionEvent",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Object","int","java.lang.String","long","int"] }]
+},
+{
   "name":"java.awt.event.ComponentEvent",
   "methods":[{"name":"<init>","parameterTypes":["java.awt.Component","int"] }]
 },

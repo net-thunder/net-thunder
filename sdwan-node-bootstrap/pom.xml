@@ -107,19 +107,29 @@
                             <agent>
                                 <enabled>false</enabled>
                             </agent>
-                            <buildArgs>
-                                <buildArg>-H:+AddAllCharsets</buildArg>
-<!--                                <buildArg>-Djava.awt.headless=false</buildArg>-->
-<!--                                <buildArg>-H:NativeLinkerOption=/MANIFEST:EMBED</buildArg>-->
-<!--                                <buildArg>-H:NativeLinkerOption=/MANIFESTUAC:level='requireAdministrator'</buildArg>-->
-<!--                                <buildArg>-H:NativeLinkerOption=/SUBSYSTEM:WINDOWS</buildArg>-->
-<!--                                <buildArg>-H:NativeLinkerOption=/ENTRY:mainCRTStartup</buildArg>-->
-<!--                                <buildArg>-H:NativeLinkerOption=${project.basedir}\src\main\resources\ui\mainicon.res</buildArg>-->
-                            </buildArgs>
                             <!-- imageName用于设置生成的二进制文件名称 -->
                             <imageName>${project.artifactId}</imageName>
                             <!-- mainClass用于指定main方法类路径 -->
                             <mainClass>io.jaspercloud.sdwan.SdWanNodeLauncher</mainClass>
+                            <!--                            <metadataRepository>-->
+                            <!--                                <enabled>true</enabled>-->
+                            <!--                            </metadataRepository>-->
+                            <buildArgs>
+                                <!-- optimization level "b", "0" - "3" -->
+                                <!-- b = fastest, 3 = most optimized -->
+                                <!-- you probably want b for debug and 3 for production -->
+                                <buildArg>-Ob</buildArg>
+                                <!--                                <buildArg>-Djava.awt.headless=false</buildArg>-->
+                                <buildArg>-H:+AddAllCharsets</buildArg>
+                                <!--request admin-->
+                                <!--                                <buildArg>-H:NativeLinkerOption=/MANIFEST:EMBED</buildArg>-->
+                                <!--                                <buildArg>-H:NativeLinkerOption=/MANIFESTUAC:level='requireAdministrator'</buildArg>-->
+                                <!--start windows-->
+                                <buildArg>-H:NativeLinkerOption=/SUBSYSTEM:WINDOWS</buildArg>
+                                <buildArg>-H:NativeLinkerOption=/ENTRY:mainCRTStartup</buildArg>
+                                <!--                                <buildArg>-Djava.awt.headless=false</buildArg>-->
+                                <!--                                <buildArg>-H:NativeLinkerOption=${project.basedir}\src\main\resources\ui\mainicon.res</buildArg>-->
+                            </buildArgs>
                         </configuration>
                     </plugin>
                 </plugins>

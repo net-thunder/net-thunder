@@ -129,6 +129,8 @@
   }, {
     "pattern":"\\Qcom/sun/prism/d3d/hlsl/FillPgram_Color.obj\\E"
   }, {
+    "pattern":"\\Qcom/sun/prism/d3d/hlsl/FillPgram_LinearGradient_PAD.obj\\E"
+  }, {
     "pattern":"\\Qcom/sun/prism/d3d/hlsl/Solid_TextureFirstPassLCD.obj\\E"
   }, {
     "pattern":"\\Qcom/sun/prism/d3d/hlsl/Solid_TextureRGB.obj\\E"
@@ -167,6 +169,8 @@
   }, {
     "pattern":"\\Qui/main.fxml\\E"
   }, {
+    "pattern":"\\Qui/main2.fxml\\E"
+  }, {
     "pattern":"\\Qvcruntime140.dll\\E"
   }, {
     "pattern":"\\Qvcruntime140_1.dll\\E"
@@ -176,13 +180,18 @@
     "pattern":"java.base:\\Qjdk/internal/icu/impl/data/icudt72b/nfkc.nrm\\E"
   }, {
     "pattern":"java.base:\\Qjdk/internal/icu/impl/data/icudt72b/ubidi.icu\\E"
+  }, {
+    "pattern":"java.base:\\Qsun/text/resources/LineBreakIteratorData\\E"
   }]},
   "bundles":[{
     "name":"com.sun.javafx.tk.quantum.QuantumMessagesBundle",
-    "locales":["und", "zh-CN"]
+    "locales":["", "und", "zh-CN"]
   }, {
     "name":"com/sun/glass/ui/win/themes",
-    "locales":["und", "zh-CN"]
+    "locales":["", "und", "zh-CN"]
+  }, {
+    "name":"com/sun/javafx/scene/control/skin/resources/controls",
+    "locales":["", "zh-CN"]
   }, {
     "name":"sun.awt.resources.awt",
     "classNames":["sun.awt.resources.awt", "sun.awt.resources.awt_zh_CN"]

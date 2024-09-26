@@ -1,11 +1,11 @@
 package io.jaspercloud.sdwan;
 
-import ch.qos.logback.classic.Logger;
 import io.jaspercloud.sdwan.node.ConfigSystem;
 import io.jaspercloud.sdwan.node.LoggerSystem;
 import io.jaspercloud.sdwan.node.SdWanNodeConfig;
 import io.jaspercloud.sdwan.node.TunSdWanNode;
 import io.jaspercloud.sdwan.node.support.PathApi;
+import io.jaspercloud.sdwan.platform.WindowsPlatform2Launcher;
 import io.jaspercloud.sdwan.support.OsxShell;
 import io.jaspercloud.sdwan.support.WinShell;
 import io.jaspercloud.sdwan.util.CheckAdmin;
@@ -15,6 +15,7 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.util.concurrent.CountDownLatch;
@@ -54,6 +55,7 @@ public class SdWanNodeLauncher {
                     WinShell.ShellExecuteW(path, execArgs, null, WinShell.SW_SHOW);
                     return;
                 }
+                WindowsPlatform2Launcher.startup(cmd);
             } else if (PlatformDependent.isOsx()) {
                 if (!CheckAdmin.checkOsx()) {
                     System.out.println("sdwan需要root用户运行，请输入密码");
@@ -61,10 +63,14 @@ public class SdWanNodeLauncher {
                     OsxShell.executeWaitFor(path, args);
                     return;
                 }
+                startTunSdWanNode(logger);
+                CountDownLatch latch = new CountDownLatch(1);
+                latch.await();
+            } else {
+                startTunSdWanNode(logger);
+                CountDownLatch latch = new CountDownLatch(1);
+                latch.await();
             }
-            startTunSdWanNode(logger);
-            CountDownLatch latch = new CountDownLatch(1);
-            latch.await();
 
             //fixme 只启用console
 //            if (cmd.hasOption("f")) {
