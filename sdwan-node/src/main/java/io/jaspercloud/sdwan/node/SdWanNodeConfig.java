@@ -36,7 +36,7 @@ public class SdWanNodeConfig {
     private boolean onlyRelayTransport = false;
 
     private String tunName = "net-thunder";
-    private int mtu = 1440;
+    private int mtu = 1280;
     private Boolean netMesh = false;
 
     private List<String> ifaceBlackList = Arrays.asList(

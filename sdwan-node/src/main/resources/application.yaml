@@ -6,5 +6,5 @@ heartTime: 15000
 p2pHeartTime: 10000
 #
 tunName: net-thunder
-mtu: 1440
+mtu: 1280
 netMesh: true
