@@ -47,13 +47,22 @@ public class MainWindow2Controller implements EventHandler<ActionEvent> {
                         Platform.runLater(() -> {
                             statusLab.setText("连接中");
                         });
-                        tunSdWanNode.start();
-                        Platform.runLater(() -> {
-                            statusLab.setText("已连接");
-                            startBtn.setDisable(true);
-                            stopBtn.setDisable(false);
-                            vipLab.setText(tunSdWanNode.getLocalVip());
-                        });
+                        try {
+                            tunSdWanNode.start();
+                            Platform.runLater(() -> {
+                                statusLab.setText("已连接");
+                                startBtn.setDisable(true);
+                                stopBtn.setDisable(false);
+                                vipLab.setText(tunSdWanNode.getLocalVip());
+                            });
+                        } catch (Exception e) {
+                            Platform.runLater(() -> {
+                                statusLab.setText("连接异常");
+                                startBtn.setDisable(false);
+                                stopBtn.setDisable(true);
+                            });
+                            throw e;
+                        }
                     } else if ("stop".equals(action)) {
                         Platform.runLater(() -> {
                             statusLab.setText("断开中");

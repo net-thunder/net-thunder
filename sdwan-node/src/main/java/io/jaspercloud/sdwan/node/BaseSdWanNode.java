@@ -169,7 +169,9 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         virtualRouter = new VirtualRouter();
         install();
         log.info("SdWanNode started: vip={}", getLocalVip());
-        loopStatus.set(true);
+        if (config.getAutoReconnect()) {
+            loopStatus.set(true);
+        }
         loopThread = new Thread(this, "loop");
         loopThread.start();
     }
@@ -354,6 +356,11 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                 install();
                 status = true;
             } catch (InterruptedException e) {
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+            try {
+                Thread.sleep(5000);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }

@@ -38,6 +38,7 @@ public class SdWanNodeConfig {
     private String tunName = "net-thunder";
     private int mtu = 1280;
     private Boolean netMesh = false;
+    private Boolean autoReconnect = false;
 
     private List<String> ifaceBlackList = Arrays.asList(
             "wt0",

@@ -79,6 +79,7 @@ public class SdWanNodeLauncher {
     private static TunSdWanNode startTunSdWanNode(Logger logger) throws Exception {
         logger.info("startTunSdWanNode");
         SdWanNodeConfig config = new ConfigSystem().initUserDir();
+        config.setAutoReconnect(true);
         TunSdWanNode tunSdWanNode = new TunSdWanNode(config);
         tunSdWanNode.start();
         return tunSdWanNode;
