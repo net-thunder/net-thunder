@@ -5,10 +5,11 @@ import io.jaspercloud.sdwan.node.LoggerSystem;
 import io.jaspercloud.sdwan.node.SdWanNodeConfig;
 import io.jaspercloud.sdwan.node.TunSdWanNode;
 import io.jaspercloud.sdwan.node.support.PathApi;
-import io.jaspercloud.sdwan.platform.WindowsPlatform2Launcher;
+import io.jaspercloud.sdwan.platform.JavaFxMiniLauncher;
 import io.jaspercloud.sdwan.support.OsxShell;
 import io.jaspercloud.sdwan.support.WinShell;
 import io.jaspercloud.sdwan.util.CheckAdmin;
+import io.jaspercloud.sdwan.util.Jpackage;
 import io.netty.util.internal.PlatformDependent;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -55,17 +56,15 @@ public class SdWanNodeLauncher {
                     WinShell.ShellExecuteW(path, execArgs, null, WinShell.SW_SHOW);
                     return;
                 }
-                WindowsPlatform2Launcher.startup(cmd);
+                JavaFxMiniLauncher.startup(cmd);
             } else if (PlatformDependent.isOsx()) {
                 if (!CheckAdmin.checkOsx()) {
-                    System.out.println("sdwan需要root用户运行，请输入密码");
-                    String path = PathApi.getExecutableFromOSX();
-                    OsxShell.executeWaitFor(path, args);
+                    String path = Jpackage.getAppPath();
+                    OsxShell.execute(path, args);
+                    System.exit(0);
                     return;
                 }
-                startTunSdWanNode(logger);
-                CountDownLatch latch = new CountDownLatch(1);
-                latch.await();
+                JavaFxMiniLauncher.startup(cmd);
             } else {
                 startTunSdWanNode(logger);
                 CountDownLatch latch = new CountDownLatch(1);

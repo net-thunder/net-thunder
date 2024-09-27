@@ -7,14 +7,14 @@ import org.apache.commons.cli.CommandLine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class WindowsPlatform2Launcher {
+public class JavaFxMiniLauncher {
 
-    private static final Logger logger = LoggerFactory.getLogger(WindowsPlatform2Launcher.class);
+    private static final Logger logger = LoggerFactory.getLogger(JavaFxMiniLauncher.class);
 
     public static void startup(CommandLine cmd) {
         try {
             Platform.setImplicitExit(false);
-            new WindowsPlatform2Launcher().run(cmd);
+            new JavaFxMiniLauncher().run(cmd);
         } catch (Throwable e) {
             logger.error(e.getMessage(), e);
         }

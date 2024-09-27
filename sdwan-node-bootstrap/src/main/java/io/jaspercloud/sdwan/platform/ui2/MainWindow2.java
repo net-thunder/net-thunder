@@ -29,7 +29,11 @@ public class MainWindow2 extends Application {
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent windowEvent) {
-                controller.handleWindowClose(primaryStage, windowEvent);
+                if (SystemTray.isSupported()) {
+                    controller.handleWindowClose(primaryStage, windowEvent);
+                } else {
+                    System.exit(0);
+                }
             }
         });
         primaryStage.setTitle("net-thunder");
@@ -37,22 +41,24 @@ public class MainWindow2 extends Application {
         primaryStage.setScene(new Scene(root, 400, 350));
         primaryStage.show();
         //tray
-        SystemTray tray = SystemTray.getSystemTray();
-        PopupMenu menu = new PopupMenu();
-        BufferedImage trayImage = ImageIO.read(getClass().getClassLoader().getResourceAsStream("ui/favicon.ico"));
-        TrayIcon trayIcon = new TrayIcon(trayImage, "net-thunder", menu);
-        trayIcon.setImageAutoSize(true);
-        trayIcon.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    Platform.runLater(() -> {
-                        primaryStage.show();
-                    });
+        if (SystemTray.isSupported()) {
+            SystemTray tray = SystemTray.getSystemTray();
+            PopupMenu menu = new PopupMenu();
+            BufferedImage trayImage = ImageIO.read(getClass().getClassLoader().getResourceAsStream("ui/favicon.ico"));
+            TrayIcon trayIcon = new TrayIcon(trayImage, "net-thunder", menu);
+            trayIcon.setImageAutoSize(true);
+            trayIcon.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (e.getClickCount() == 2) {
+                        Platform.runLater(() -> {
+                            primaryStage.show();
+                        });
+                    }
                 }
-            }
-        });
-        tray.add(trayIcon);
+            });
+            tray.add(trayIcon);
+        }
     }
 
 }

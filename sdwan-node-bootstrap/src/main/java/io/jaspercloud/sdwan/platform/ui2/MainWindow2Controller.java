@@ -36,6 +36,17 @@ public class MainWindow2Controller implements EventHandler<ActionEvent> {
         startBtn.setOnAction(this);
         stopBtn.setOnAction(this);
         stopBtn.setDisable(true);
+        queue = new SynchronousQueue<>();
+        new Thread(() -> {
+            try {
+                runService();
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+        }).start();
+    }
+
+    private void runService() throws Exception {
         SdWanNodeConfig config = new ConfigSystem().initUserDir();
         TunSdWanNode tunSdWanNode = new TunSdWanNode(config) {
             @Override
@@ -48,48 +59,45 @@ public class MainWindow2Controller implements EventHandler<ActionEvent> {
                 });
             }
         };
-        queue = new SynchronousQueue<>();
-        new Thread(() -> {
-            while (true) {
-                try {
-                    String action = queue.take();
-                    if ("start".equals(action)) {
+        while (true) {
+            try {
+                String action = queue.take();
+                if ("start".equals(action)) {
+                    Platform.runLater(() -> {
+                        statusLab.setText("连接中");
+                    });
+                    try {
+                        tunSdWanNode.start();
                         Platform.runLater(() -> {
-                            statusLab.setText("连接中");
+                            statusLab.setText("已连接");
+                            startBtn.setDisable(true);
+                            stopBtn.setDisable(false);
+                            vipLab.setText(tunSdWanNode.getLocalVip());
                         });
-                        try {
-                            tunSdWanNode.start();
-                            Platform.runLater(() -> {
-                                statusLab.setText("已连接");
-                                startBtn.setDisable(true);
-                                stopBtn.setDisable(false);
-                                vipLab.setText(tunSdWanNode.getLocalVip());
-                            });
-                        } catch (Exception e) {
-                            Platform.runLater(() -> {
-                                statusLab.setText("连接异常");
-                                startBtn.setDisable(false);
-                                stopBtn.setDisable(true);
-                            });
-                            throw e;
-                        }
-                    } else if ("stop".equals(action)) {
+                    } catch (Exception e) {
                         Platform.runLater(() -> {
-                            statusLab.setText("断开中");
-                        });
-                        tunSdWanNode.stop();
-                        Platform.runLater(() -> {
-                            statusLab.setText("已断开");
+                            statusLab.setText("连接异常");
                             startBtn.setDisable(false);
                             stopBtn.setDisable(true);
-                            vipLab.setText("-");
                         });
+                        throw e;
                     }
-                } catch (Throwable e) {
-                    log.error(e.getMessage(), e);
+                } else if ("stop".equals(action)) {
+                    Platform.runLater(() -> {
+                        statusLab.setText("断开中");
+                    });
+                    tunSdWanNode.stop();
+                    Platform.runLater(() -> {
+                        statusLab.setText("已断开");
+                        startBtn.setDisable(false);
+                        stopBtn.setDisable(true);
+                        vipLab.setText("-");
+                    });
                 }
+            } catch (Throwable e) {
+                log.error(e.getMessage(), e);
             }
-        }).start();
+        }
     }
 
     public void handleWindowClose(Stage primaryStage, WindowEvent event) {

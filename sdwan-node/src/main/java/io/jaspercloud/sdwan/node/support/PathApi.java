@@ -28,7 +28,7 @@ public class PathApi {
                 return path;
             }
         } else if (Jpackage.isJpackage()) {
-            String path = new File(System.getProperty("user.dir"), "app").getAbsolutePath();
+            String path = new File(System.getProperty("java.class.path")).getParent();
             return path;
         } else {
             String path = System.getProperty("user.dir");

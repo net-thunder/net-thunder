@@ -8,9 +8,13 @@ public final class Jpackage {
 
     }
 
+    public static String getAppPath() {
+        String appPath = System.getProperty("jpackage.app-path");
+        return appPath;
+    }
+
     public static boolean isJpackage() {
-        String property = System.getProperty("jpackage.app-path");
-        boolean isJpackage = StringUtils.isNotEmpty(property);
+        boolean isJpackage = StringUtils.isNotEmpty(getAppPath());
         return isJpackage;
     }
 }
