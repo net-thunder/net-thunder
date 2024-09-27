@@ -37,7 +37,17 @@ public class MainWindow2Controller implements EventHandler<ActionEvent> {
         stopBtn.setOnAction(this);
         stopBtn.setDisable(true);
         SdWanNodeConfig config = new ConfigSystem().initUserDir();
-        TunSdWanNode tunSdWanNode = new TunSdWanNode(config);
+        TunSdWanNode tunSdWanNode = new TunSdWanNode(config) {
+            @Override
+            protected void onErrorDisconnected() throws Exception {
+                super.onErrorDisconnected();
+                Platform.runLater(() -> {
+                    statusLab.setText("连接异常");
+                    startBtn.setDisable(false);
+                    stopBtn.setDisable(true);
+                });
+            }
+        };
         queue = new SynchronousQueue<>();
         new Thread(() -> {
             while (true) {

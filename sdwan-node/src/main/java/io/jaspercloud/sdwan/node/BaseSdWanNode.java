@@ -109,6 +109,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                     @Override
                     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
                         signalAll();
+                        onErrorDisconnected();
                     }
 
                     @Override
@@ -161,6 +162,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                     @Override
                     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
                         signalAll();
+                        onErrorDisconnected();
                         ctx.fireChannelInactive();
                     }
                 });
@@ -341,6 +343,10 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         } finally {
             lock.unlock();
         }
+    }
+
+    protected void onErrorDisconnected() throws Exception {
+        uninstall();
     }
 
     @Override
