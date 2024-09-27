@@ -40,7 +40,6 @@ public class MainWindow2 extends Application {
         primaryStage.setResizable(false);
         primaryStage.setScene(new Scene(root, 400, 350));
         primaryStage.show();
-        primaryStage.requestFocus();
         //tray
         if (SystemTray.isSupported()) {
             SystemTray tray = SystemTray.getSystemTray();

@@ -60,7 +60,7 @@ public class SdWanNodeLauncher {
             } else if (PlatformDependent.isOsx()) {
                 if (!CheckAdmin.checkOsx()) {
                     String path = Jpackage.getAppPath();
-                    OsxShell.execute(path, args);
+                    OsxShell.executeRoot(path, args);
                     System.exit(0);
                     return;
                 }

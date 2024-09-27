@@ -12,18 +12,16 @@ public final class OsxShell {
 
     }
 
+    public static void executeRoot(String path, String[] args) throws Exception {
+        String format = "osascript -e 'do shell script \"%s %s\" with administrator privileges' &";
+        String cmd = String.format(format, path, StringUtils.join(args, " "));
+        execute(cmd, new String[0]);
+    }
+
     public static void execute(String path, String[] args) throws Exception {
         List<String> list = new ArrayList<>(Arrays.asList("bash", "-c"));
-        String format = "osascript -e 'do shell script \"%s %s\" with administrator privileges'";
-        String cmd = String.format(format, path, StringUtils.join(args, " "));
-        list.add(cmd);
-        Process process = new ProcessBuilder(list)
-                .inheritIO()
-                .start();
-        try {
-            process.waitFor();
-        } finally {
-            process.destroy();
-        }
+        list.add(path);
+        list.addAll(Arrays.asList(args));
+        new ProcessBuilder(list).start();
     }
 }
