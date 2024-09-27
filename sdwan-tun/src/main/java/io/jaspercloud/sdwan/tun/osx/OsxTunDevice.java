@@ -13,12 +13,14 @@ import io.netty.buffer.ByteBufAllocator;
 import lombok.extern.slf4j.Slf4j;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
+
 @Slf4j
 public class OsxTunDevice extends TunDevice {
 
     private int fd;
     private int mtu = 65535;
     private boolean closing = false;
+    private String deviceName;
 
     public OsxTunDevice(String tunName, String type, String guid) {
         super(tunName, type, guid);
@@ -26,11 +28,17 @@ public class OsxTunDevice extends TunDevice {
 
     @Override
     public void open() throws Exception {
+        //fd
         fd = OsxNativeApi.socket(OsxNativeApi.AF_SYSTEM, OsxNativeApi.SOCK_DGRAM, OsxNativeApi.SYSPROTO_CONTROL);
         CtlInfo ctlInfo = new CtlInfo(OsxNativeApi.UTUN_CONTROL_NAME);
         OsxNativeApi.ioctl(fd, OsxNativeApi.CTLIOCGINFO, ctlInfo);
         SockaddrCtl address = new SockaddrCtl(OsxNativeApi.AF_SYSTEM, (short) OsxNativeApi.SYSPROTO_CONTROL, ctlInfo.ctl_id, 0);
         OsxNativeApi.connect(fd, address, address.sc_len);
+        //deviceName
+        SockName sockName = new SockName();
+        IntByReference sockNameLen = new IntByReference(SockName.LENGTH);
+        OsxNativeApi.getsockopt(fd, OsxNativeApi.SYSPROTO_CONTROL, OsxNativeApi.UTUN_OPT_IFNAME, sockName, sockNameLen);
+        deviceName = Native.toString(sockName.name, US_ASCII);
         setActive(true);
     }
 
@@ -57,16 +65,11 @@ public class OsxTunDevice extends TunDevice {
 
     @Override
     public void setMTU(int mtu) throws Exception {
-        String deviceName = getEthName();
         Ifreq ifreq = new Ifreq(deviceName, mtu);
         OsxNativeApi.ioctl(fd, OsxNativeApi.SIOCSIFMTU, ifreq);
     }
 
     public String getEthName() {
-        SockName sockName = new SockName();
-        IntByReference sockNameLen = new IntByReference(SockName.LENGTH);
-        OsxNativeApi.getsockopt(fd, OsxNativeApi.SYSPROTO_CONTROL, OsxNativeApi.UTUN_OPT_IFNAME, sockName, sockNameLen);
-        String deviceName = Native.toString(sockName.name, US_ASCII);
         return deviceName;
     }
 

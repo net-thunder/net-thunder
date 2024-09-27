@@ -50,6 +50,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
     private int maskBits;
     private String vipCidr;
     private VirtualRouter virtualRouter;
+    private AtomicBoolean status = new AtomicBoolean(false);
     private AtomicBoolean loopStatus = new AtomicBoolean(false);
     private Thread loopThread;
     private ReentrantLock lock = new ReentrantLock();
@@ -176,11 +177,16 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         }
         loopThread = new Thread(this, "loop");
         loopThread.start();
+        status.set(true);
     }
 
     @Override
     public void stop() throws Exception {
+        if (!status.get()) {
+            return;
+        }
         log.info("SdWanNode stopping");
+        status.set(false);
         loopStatus.set(false);
         loopThread.interrupt();
         uninstall();
@@ -346,7 +352,6 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
     }
 
     protected void onErrorDisconnected() throws Exception {
-        uninstall();
     }
 
     @Override

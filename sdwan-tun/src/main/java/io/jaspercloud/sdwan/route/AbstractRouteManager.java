@@ -57,6 +57,9 @@ public abstract class AbstractRouteManager implements RouteManager, Consumer<Lis
     public void stop() {
         lock.lock();
         try {
+            if (!status.get()) {
+                return;
+            }
             status.set(false);
             virtualRouter.removeListener(this);
             for (SDWanProtos.Route route : cache.get()) {

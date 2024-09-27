@@ -119,8 +119,8 @@ public class TunSdWanNode extends BaseSdWanNode {
 
     @Override
     protected void uninstall() throws Exception {
+        super.uninstall();
         routeManager.stop();
         tunTransport.stop();
-        super.uninstall();
     }
 }
