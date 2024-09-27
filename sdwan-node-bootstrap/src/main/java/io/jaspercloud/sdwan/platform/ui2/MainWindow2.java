@@ -20,6 +20,22 @@ public class MainWindow2 extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        //windows
+        FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("ui/main2.fxml"));
+        Parent root = loader.load();
+        Image icon = new Image(getClass().getClassLoader().getResourceAsStream("ui/favicon.ico"));
+        primaryStage.getIcons().add(icon);
+        MainWindow2Controller controller = loader.getController();
+        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent windowEvent) {
+                controller.handleWindowClose(primaryStage, windowEvent);
+            }
+        });
+        primaryStage.setTitle("net-thunder");
+        primaryStage.setResizable(false);
+        primaryStage.setScene(new Scene(root, 400, 350));
+        primaryStage.show();
         //tray
         SystemTray tray = SystemTray.getSystemTray();
         PopupMenu menu = new PopupMenu();
@@ -37,22 +53,6 @@ public class MainWindow2 extends Application {
             }
         });
         tray.add(trayIcon);
-        //windows
-        FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("ui/main2.fxml"));
-        Parent root = loader.load();
-        Image icon = new Image(getClass().getClassLoader().getResourceAsStream("ui/favicon.ico"));
-        primaryStage.getIcons().add(icon);
-        MainWindow2Controller controller = loader.getController();
-        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-            @Override
-            public void handle(WindowEvent windowEvent) {
-                controller.handleWindowClose(primaryStage, windowEvent);
-            }
-        });
-        primaryStage.setTitle("net-thunder");
-        primaryStage.setResizable(false);
-        primaryStage.setScene(new Scene(root, 400, 350));
-        primaryStage.show();
     }
 
 }
