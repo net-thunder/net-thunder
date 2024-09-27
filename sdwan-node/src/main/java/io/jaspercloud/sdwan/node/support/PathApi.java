@@ -3,6 +3,7 @@ package io.jaspercloud.sdwan.node.support;
 import io.jaspercloud.sdwan.tun.osx.OsxNativeApi;
 import io.jaspercloud.sdwan.tun.windows.Kernel32NativeApi;
 import io.jaspercloud.sdwan.util.GraalVM;
+import io.jaspercloud.sdwan.util.Jpackage;
 import io.netty.util.internal.PlatformDependent;
 
 import java.io.File;
@@ -26,6 +27,9 @@ public class PathApi {
                 String path = System.getProperty("user.dir");
                 return path;
             }
+        } else if (Jpackage.isJpackage()) {
+            String path = new File(System.getProperty("user.dir"), "app").getAbsolutePath();
+            return path;
         } else {
             String path = System.getProperty("user.dir");
             return path;

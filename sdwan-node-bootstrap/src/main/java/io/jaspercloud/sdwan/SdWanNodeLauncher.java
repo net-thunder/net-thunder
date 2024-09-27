@@ -36,18 +36,18 @@ public class SdWanNodeLauncher {
         options.addOption("debug", "debug", false, "debug");
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
-        Logger logger;
-        if (cmd.hasOption("log")) {
-            String logFile = cmd.getOptionValue("log");
-            logger = new LoggerSystem().init(logFile);
-        } else {
-            if (cmd.hasOption("debug")) {
-                logger = new LoggerSystem().initUserDir(false);
-            } else {
-                logger = new LoggerSystem().initUserDir(true);
-            }
-        }
         try {
+            Logger logger;
+            if (cmd.hasOption("log")) {
+                String logFile = cmd.getOptionValue("log");
+                logger = new LoggerSystem().init(logFile);
+            } else {
+                if (cmd.hasOption("debug")) {
+                    logger = new LoggerSystem().initUserDir(false);
+                } else {
+                    logger = new LoggerSystem().initUserDir(true);
+                }
+            }
             if (PlatformDependent.isWindows()) {
                 if (!CheckAdmin.checkWindows()) {
                     String path = PathApi.getExecutableFromWin();
@@ -71,21 +71,8 @@ public class SdWanNodeLauncher {
                 CountDownLatch latch = new CountDownLatch(1);
                 latch.await();
             }
-
-            //fixme 只启用console
-//            if (cmd.hasOption("f")) {
-//                startTunSdWanNode(logger);
-//                CountDownLatch latch = new CountDownLatch(1);
-//                latch.await();
-//            } else if (PlatformDependent.isWindows()) {
-//                WindowsPlatformLauncher.startup(cmd);
-//            } else {
-//                startTunSdWanNode(logger);
-//                CountDownLatch latch = new CountDownLatch(1);
-//                latch.await();
-//            }
         } catch (Throwable e) {
-            logger.error(e.getMessage(), e);
+            e.printStackTrace();
         }
     }
 
