@@ -51,12 +51,14 @@ public class MainWindow2Controller implements EventHandler<ActionEvent> {
         TunSdWanNode tunSdWanNode = new TunSdWanNode(config) {
             @Override
             protected void onErrorDisconnected() throws Exception {
-                stop();
-                Platform.runLater(() -> {
-                    statusLab.setText("连接异常");
-                    startBtn.setDisable(false);
-                    stopBtn.setDisable(true);
-                });
+                if (getStatus()) {
+                    stop();
+                    Platform.runLater(() -> {
+                        statusLab.setText("连接异常");
+                        startBtn.setDisable(false);
+                        stopBtn.setDisable(true);
+                    });
+                }
             }
         };
         while (true) {

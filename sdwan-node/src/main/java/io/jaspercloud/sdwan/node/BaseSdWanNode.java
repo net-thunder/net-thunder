@@ -57,6 +57,10 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
     private Condition condition = lock.newCondition();
     private Map<String, SDWanProtos.NodeInfo> nodeInfoMap = new ConcurrentHashMap<>();
 
+    public boolean getStatus() {
+        return status.get();
+    }
+
     public List<String> getLocalAddressUriList() {
         return localAddressUriList;
     }
@@ -98,7 +102,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
     }
 
     @Override
-    public void start() throws Exception {
+    public synchronized void start() throws Exception {
         CheckAdmin.check();
         sdWanClient = new SdWanClient(SdWanClientConfig.builder()
                 .controllerServer(config.getControllerServer())
@@ -109,8 +113,8 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                 () -> new SimpleChannelInboundHandler<SDWanProtos.Message>() {
                     @Override
                     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-                        signalAll();
                         onErrorDisconnected();
+                        signalAll();
                     }
 
                     @Override
@@ -162,8 +166,8 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                 pipeline.addLast(new ChannelInboundHandlerAdapter() {
                     @Override
                     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-                        signalAll();
                         onErrorDisconnected();
+                        signalAll();
                         ctx.fireChannelInactive();
                     }
                 });
@@ -181,7 +185,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
     }
 
     @Override
-    public void stop() throws Exception {
+    public synchronized void stop() throws Exception {
         if (!status.get()) {
             return;
         }
