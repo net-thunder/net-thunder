@@ -113,7 +113,9 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                 () -> new SimpleChannelInboundHandler<SDWanProtos.Message>() {
                     @Override
                     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-                        onErrorDisconnected();
+                        if (getStatus()) {
+                            onErrorDisconnected();
+                        }
                         signalAll();
                     }
 
@@ -166,7 +168,9 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                 pipeline.addLast(new ChannelInboundHandlerAdapter() {
                     @Override
                     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-                        onErrorDisconnected();
+                        if (getStatus()) {
+                            onErrorDisconnected();
+                        }
                         signalAll();
                         ctx.fireChannelInactive();
                     }
