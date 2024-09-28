@@ -1,6 +1,6 @@
 package io.jaspercloud.sdwan.platform;
 
-import io.jaspercloud.sdwan.platform.ui2.MainWindow2;
+import io.jaspercloud.sdwan.platform.ui2.MainWindow;
 import javafx.application.Application;
 import javafx.application.Platform;
 import org.apache.commons.cli.CommandLine;
@@ -21,6 +21,6 @@ public class JavaFxMiniLauncher {
     }
 
     private void run(CommandLine cmd) throws Exception {
-        Application.launch(MainWindow2.class, new String[0]);
+        Application.launch(MainWindow.class, new String[0]);
     }
 }

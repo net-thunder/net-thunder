@@ -21,7 +21,7 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class MainWindow2Controller implements EventHandler<ActionEvent> {
+public class MainWindowController implements EventHandler<ActionEvent> {
 
     @FXML
     private Label statusLab;

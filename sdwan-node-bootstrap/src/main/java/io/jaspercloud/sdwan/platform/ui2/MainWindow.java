@@ -16,7 +16,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
-public class MainWindow2 extends Application {
+public class MainWindow extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -25,7 +25,7 @@ public class MainWindow2 extends Application {
         Parent root = loader.load();
         Image icon = new Image(getClass().getClassLoader().getResourceAsStream("ui/favicon.ico"));
         primaryStage.getIcons().add(icon);
-        MainWindow2Controller controller = loader.getController();
+        MainWindowController controller = loader.getController();
         controller.initStage(primaryStage);
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override

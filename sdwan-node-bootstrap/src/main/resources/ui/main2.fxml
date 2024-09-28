@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 
 <FlowPane alignment="CENTER" columnHalignment="CENTER" orientation="VERTICAL" xmlns="http://javafx.com/javafx/17.0.2-ea"
-          xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.jaspercloud.sdwan.platform.ui2.MainWindow2Controller">
+          xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.jaspercloud.sdwan.platform.ui2.MainWindowController">
     <VBox alignment="CENTER" spacing="20">
         <GridPane hgap="10.0" vgap="5.0">
             <columnConstraints>
