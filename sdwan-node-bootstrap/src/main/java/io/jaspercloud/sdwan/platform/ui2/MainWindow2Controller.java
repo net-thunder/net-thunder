@@ -45,12 +45,11 @@ public class MainWindow2Controller implements EventHandler<ActionEvent> {
     private Button settingBtn;
 
     private Stage primaryStage;
-    private SdWanNodeConfig config;
     private SynchronousQueue<String> queue;
+    private String localIp;
 
     @FXML
     public void initialize() throws Exception {
-        config = new ConfigSystem().initUserDir();
         queue = new SynchronousQueue<>();
         startBtn.setOnAction(this);
         stopBtn.setOnAction(this);
@@ -59,8 +58,7 @@ public class MainWindow2Controller implements EventHandler<ActionEvent> {
         netSelect.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observableValue, String oldValue, String newValue) {
-                String ip = observableValue.getValue();
-                config.setLocalAddress(ip);
+                localIp = observableValue.getValue();
             }
         });
         refreshNetList();
@@ -94,7 +92,7 @@ public class MainWindow2Controller implements EventHandler<ActionEvent> {
     }
 
     private void runService() throws Exception {
-        TunSdWanNode tunSdWanNode = new TunSdWanNode(config) {
+        TunSdWanNode tunSdWanNode = new TunSdWanNode(new ConfigSystem().initUserDir()) {
             @Override
             protected void onErrorDisconnected() throws Exception {
                 stop();
@@ -112,6 +110,9 @@ public class MainWindow2Controller implements EventHandler<ActionEvent> {
             try {
                 String action = queue.take();
                 if ("start".equals(action)) {
+                    SdWanNodeConfig config = new ConfigSystem().initUserDir();
+                    config.setLocalAddress(localIp);
+                    tunSdWanNode.setConfig(config);
                     Platform.runLater(() -> {
                         statusLab.setText("连接中");
                         startBtn.setDisable(true);
