@@ -1,5 +1,6 @@
 package io.jaspercloud.sdwan.node;
 
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.setting.yaml.YamlUtil;
 import io.jaspercloud.sdwan.node.support.PathApi;
 
@@ -20,6 +21,17 @@ public class ConfigSystem {
 
     public SdWanNodeConfig initUserDir() throws Exception {
         return initUserDir("application.yaml");
+    }
+
+    public static String getConfigText() throws Exception {
+        File file = new File(PathApi.getExecutableParent(), "application.yaml");
+        String text = FileUtil.readUtf8String(file);
+        return text;
+    }
+
+    public static void saveConfig(String configText) {
+        File file = new File(PathApi.getExecutableParent(), "application.yaml");
+        FileUtil.writeUtf8String(configText, file);
     }
 
     public SdWanNodeConfig initUserDir(String configFile) throws Exception {

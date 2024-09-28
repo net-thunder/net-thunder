@@ -26,6 +26,7 @@ public class MainWindow2 extends Application {
         Image icon = new Image(getClass().getClassLoader().getResourceAsStream("ui/favicon.ico"));
         primaryStage.getIcons().add(icon);
         MainWindow2Controller controller = loader.getController();
+        controller.initStage(primaryStage);
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent windowEvent) {
@@ -60,5 +61,4 @@ public class MainWindow2 extends Application {
             tray.add(trayIcon);
         }
     }
-
 }

@@ -41,6 +41,10 @@ public class MainWindow2Controller implements EventHandler<ActionEvent> {
     @FXML
     private Button stopBtn;
 
+    @FXML
+    private Button settingBtn;
+
+    private Stage primaryStage;
     private SdWanNodeConfig config;
     private SynchronousQueue<String> queue;
 
@@ -51,6 +55,7 @@ public class MainWindow2Controller implements EventHandler<ActionEvent> {
         startBtn.setOnAction(this);
         stopBtn.setOnAction(this);
         stopBtn.setDisable(true);
+        settingBtn.setOnAction(this);
         netSelect.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observableValue, String oldValue, String newValue) {
@@ -66,6 +71,10 @@ public class MainWindow2Controller implements EventHandler<ActionEvent> {
                 log.error(e.getMessage(), e);
             }
         }).start();
+    }
+
+    public void initStage(Stage primaryStage) {
+        this.primaryStage = primaryStage;
     }
 
     private void refreshNetList() {
@@ -93,6 +102,9 @@ public class MainWindow2Controller implements EventHandler<ActionEvent> {
                     statusLab.setText("连接异常");
                     startBtn.setDisable(false);
                     stopBtn.setDisable(true);
+                    netSelect.setDisable(false);
+                    refreshBtn.setDisable(false);
+                    settingBtn.setDisable(false);
                 });
             }
         };
@@ -102,12 +114,16 @@ public class MainWindow2Controller implements EventHandler<ActionEvent> {
                 if ("start".equals(action)) {
                     Platform.runLater(() -> {
                         statusLab.setText("连接中");
+                        startBtn.setDisable(true);
+                        stopBtn.setDisable(true);
+                        netSelect.setDisable(true);
+                        refreshBtn.setDisable(true);
+                        settingBtn.setDisable(true);
                     });
                     try {
                         tunSdWanNode.start();
                         Platform.runLater(() -> {
                             statusLab.setText("已连接");
-                            startBtn.setDisable(true);
                             stopBtn.setDisable(false);
                             vipLab.setText(tunSdWanNode.getLocalVip());
                         });
@@ -116,6 +132,9 @@ public class MainWindow2Controller implements EventHandler<ActionEvent> {
                             statusLab.setText("连接异常");
                             startBtn.setDisable(false);
                             stopBtn.setDisable(true);
+                            netSelect.setDisable(false);
+                            refreshBtn.setDisable(false);
+                            settingBtn.setDisable(false);
                         });
                         throw e;
                     }
@@ -128,6 +147,9 @@ public class MainWindow2Controller implements EventHandler<ActionEvent> {
                         statusLab.setText("已断开");
                         startBtn.setDisable(false);
                         stopBtn.setDisable(true);
+                        netSelect.setDisable(false);
+                        refreshBtn.setDisable(false);
+                        settingBtn.setDisable(false);
                         vipLab.setText("-");
                     });
                 }
@@ -155,15 +177,19 @@ public class MainWindow2Controller implements EventHandler<ActionEvent> {
 
     @Override
     public void handle(ActionEvent event) {
-        Control target = (Control) event.getTarget();
-        startBtn.setDisable(true);
-        stopBtn.setDisable(true);
-        if (target == startBtn) {
-            queue.offer("start");
-        } else if (target == stopBtn) {
-            queue.offer("stop");
-        } else if (target == refreshBtn) {
-            refreshNetList();
+        try {
+            Control target = (Control) event.getTarget();
+            if (target == startBtn) {
+                queue.offer("start");
+            } else if (target == stopBtn) {
+                queue.offer("stop");
+            } else if (target == refreshBtn) {
+                refreshNetList();
+            } else if (target == settingBtn) {
+                SettingController.showAndWait(primaryStage);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
         }
     }
 }
