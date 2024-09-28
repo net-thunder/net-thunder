@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<FlowPane alignment="CENTER" columnHalignment="CENTER" orientation="VERTICAL" xmlns="http://javafx.com/javafx/11.0.1"
+
+<FlowPane alignment="CENTER" columnHalignment="CENTER" orientation="VERTICAL" xmlns="http://javafx.com/javafx/17.0.2-ea"
           xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.jaspercloud.sdwan.platform.ui2.MainWindow2Controller">
     <VBox alignment="CENTER" spacing="20">
         <GridPane hgap="10.0" vgap="5.0">
             <columnConstraints>
+                <ColumnConstraints prefWidth="80"/>
                 <ColumnConstraints prefWidth="120"/>
-                <ColumnConstraints prefWidth="120"/>
+                <ColumnConstraints prefWidth="80"/>
             </columnConstraints>
             <rowConstraints>
+                <RowConstraints/>
                 <RowConstraints/>
                 <RowConstraints/>
             </rowConstraints>
@@ -19,6 +22,9 @@
             <Label fx:id="statusLab" text="已断开" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
             <Label text="本地虚拟IP:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="1"/>
             <Label fx:id="vipLab" text="-" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+            <Label text="出口IP:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="2"/>
+            <ChoiceBox fx:id="netSelect" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+            <Button fx:id="refreshBtn" text="刷新" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
         </GridPane>
         <Button fx:id="startBtn" prefHeight="30" prefWidth="120" text="启动">
         </Button>

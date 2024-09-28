@@ -1,8 +1,6 @@
 package io.jaspercloud.sdwan.node;
 
 import io.jaspercloud.sdwan.exception.ProcessException;
-import io.jaspercloud.sdwan.util.NetworkInterfaceInfo;
-import io.jaspercloud.sdwan.util.NetworkInterfaceUtil;
 import lombok.*;
 
 import java.net.InetAddress;
@@ -59,15 +57,10 @@ public class SdWanNodeConfig {
 
     public String getHostAddress() {
         try {
-            NetworkInterfaceInfo eth = NetworkInterfaceUtil.findEth("eth0");
-            if (null != eth) {
-                return eth.getInterfaceAddress().getAddress().getHostAddress();
-            }
-            eth = NetworkInterfaceUtil.findEth("en0");
-            if (null != eth) {
-                return eth.getInterfaceAddress().getAddress().getHostAddress();
-            }
-            String hostAddress = InetAddress.getLocalHost().getHostAddress();
+            String hostAddress = Arrays.asList(InetAddress.getAllByName(InetAddress.getLocalHost().getHostName()))
+                    .stream().filter(e -> !"127.0.0.1".equals(e.getHostAddress()))
+                    .findAny().stream().findFirst()
+                    .get().getHostAddress();
             return hostAddress;
         } catch (Exception e) {
             throw new ProcessException(e.getMessage(), e);

@@ -3,7 +3,10 @@ package io.jaspercloud.sdwan.platform.ui2;
 import io.jaspercloud.sdwan.node.ConfigSystem;
 import io.jaspercloud.sdwan.node.SdWanNodeConfig;
 import io.jaspercloud.sdwan.node.TunSdWanNode;
+import io.jaspercloud.sdwan.util.NetworkInterfaceUtil;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -11,8 +14,11 @@ import javafx.scene.control.*;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
+import java.util.List;
 import java.util.concurrent.SynchronousQueue;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class MainWindow2Controller implements EventHandler<ActionEvent> {
@@ -24,19 +30,35 @@ public class MainWindow2Controller implements EventHandler<ActionEvent> {
     private Label vipLab;
 
     @FXML
+    private ChoiceBox<String> netSelect;
+
+    @FXML
+    private Button refreshBtn;
+
+    @FXML
     private Button startBtn;
 
     @FXML
     private Button stopBtn;
 
+    private SdWanNodeConfig config;
     private SynchronousQueue<String> queue;
 
     @FXML
     public void initialize() throws Exception {
+        config = new ConfigSystem().initUserDir();
+        queue = new SynchronousQueue<>();
         startBtn.setOnAction(this);
         stopBtn.setOnAction(this);
         stopBtn.setDisable(true);
-        queue = new SynchronousQueue<>();
+        netSelect.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observableValue, String oldValue, String newValue) {
+                String ip = observableValue.getValue();
+                config.setLocalAddress(ip);
+            }
+        });
+        refreshNetList();
         new Thread(() -> {
             try {
                 runService();
@@ -46,8 +68,23 @@ public class MainWindow2Controller implements EventHandler<ActionEvent> {
         }).start();
     }
 
+    private void refreshNetList() {
+        try {
+            List<String> netList = NetworkInterfaceUtil.findIpv4NetworkInterfaceInfo(true)
+                    .stream()
+                    .filter(e -> StringUtils.isNotEmpty(e.getHardwareAddress()))
+                    .map(e -> e.getIp())
+                    .collect(Collectors.toList());
+            netSelect.getItems().addAll(netList);
+            if (!netList.isEmpty()) {
+                netSelect.getSelectionModel().select(0);
+            }
+        } catch (Throwable e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
     private void runService() throws Exception {
-        SdWanNodeConfig config = new ConfigSystem().initUserDir();
         TunSdWanNode tunSdWanNode = new TunSdWanNode(config) {
             @Override
             protected void onErrorDisconnected() throws Exception {
@@ -106,7 +143,7 @@ public class MainWindow2Controller implements EventHandler<ActionEvent> {
         dialog.setTitle("提示");
         dialog.setHeaderText("是否后台运行？");
         dialog.setContentText("是: 后台运行 否: 结束程序");
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.YES, ButtonType.NO, ButtonType.CANCEL);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.YES, ButtonType.NO);
         dialog.showAndWait().ifPresent(response -> {
             if (response == ButtonType.YES) {
                 primaryStage.hide();
@@ -125,6 +162,8 @@ public class MainWindow2Controller implements EventHandler<ActionEvent> {
             queue.offer("start");
         } else if (target == stopBtn) {
             queue.offer("stop");
+        } else if (target == refreshBtn) {
+            refreshNetList();
         }
     }
 }
