@@ -25,6 +25,9 @@ public class ConfigSystem {
 
     public static String getConfigText() throws Exception {
         File file = new File(PathApi.getExecutableParent(), "application.yaml");
+        if (!file.exists()) {
+            return null;
+        }
         String text = FileUtil.readUtf8String(file);
         return text;
     }

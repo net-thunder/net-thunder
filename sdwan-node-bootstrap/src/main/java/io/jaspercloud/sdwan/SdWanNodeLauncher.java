@@ -6,10 +6,8 @@ import io.jaspercloud.sdwan.node.SdWanNodeConfig;
 import io.jaspercloud.sdwan.node.TunSdWanNode;
 import io.jaspercloud.sdwan.node.support.PathApi;
 import io.jaspercloud.sdwan.platform.JavaFxMiniLauncher;
-import io.jaspercloud.sdwan.support.OsxShell;
 import io.jaspercloud.sdwan.support.WinShell;
 import io.jaspercloud.sdwan.util.CheckAdmin;
-import io.jaspercloud.sdwan.util.Jpackage;
 import io.netty.util.internal.PlatformDependent;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -58,12 +56,6 @@ public class SdWanNodeLauncher {
                 }
                 JavaFxMiniLauncher.startup(cmd);
             } else if (PlatformDependent.isOsx()) {
-                if (!CheckAdmin.checkOsx()) {
-                    String path = Jpackage.getAppPath();
-                    OsxShell.executeRoot(path, args);
-                    System.exit(0);
-                    return;
-                }
                 JavaFxMiniLauncher.startup(cmd);
             } else {
                 startTunSdWanNode(logger);

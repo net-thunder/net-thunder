@@ -3,6 +3,9 @@ package io.jaspercloud.sdwan.platform.ui2;
 import io.jaspercloud.sdwan.node.ConfigSystem;
 import io.jaspercloud.sdwan.node.SdWanNodeConfig;
 import io.jaspercloud.sdwan.node.TunSdWanNode;
+import io.jaspercloud.sdwan.support.OsxShell;
+import io.jaspercloud.sdwan.util.CheckAdmin;
+import io.jaspercloud.sdwan.util.Jpackage;
 import io.jaspercloud.sdwan.util.NetworkInterfaceUtil;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -196,13 +199,24 @@ public class MainWindowController implements EventHandler<ActionEvent> {
         try {
             Control target = (Control) event.getTarget();
             if (target == startBtn) {
+                if (!CheckAdmin.checkOsx()) {
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("提示");
+                    alert.setHeaderText("需要以root权限启动");
+                    alert.getButtonTypes().setAll(new ButtonType("是"));
+                    alert.showAndWait();
+                    String path = Jpackage.getAppPath();
+                    OsxShell.executeRoot(path, new String[0]);
+                    System.exit(0);
+                    return;
+                }
                 queue.offer("start");
             } else if (target == stopBtn) {
                 queue.offer("stop");
             } else if (target == refreshBtn) {
                 refreshNetList();
             } else if (target == settingBtn) {
-                SettingController.showAndWait(primaryStage);
+                SettingWindowController.showAndWait(primaryStage);
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
