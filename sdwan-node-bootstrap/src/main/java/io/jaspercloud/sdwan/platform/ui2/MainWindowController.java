@@ -47,6 +47,7 @@ public class MainWindowController implements EventHandler<ActionEvent> {
     private Stage primaryStage;
     private SynchronousQueue<String> queue;
     private String localIp;
+    private TunSdWanNode tunSdWanNode;
 
     @FXML
     public void initialize() throws Exception {
@@ -92,10 +93,61 @@ public class MainWindowController implements EventHandler<ActionEvent> {
     }
 
     private void runService() throws Exception {
-        TunSdWanNode tunSdWanNode = new TunSdWanNode(new ConfigSystem().initUserDir()) {
-            @Override
-            protected void onErrorDisconnected() throws Exception {
-                stop();
+        while (true) {
+            try {
+                String action = queue.take();
+                runAction(action);
+            } catch (Throwable e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+    }
+
+    private void runAction(String action) throws Exception {
+        if ("start".equals(action)) {
+            SdWanNodeConfig config = new ConfigSystem().initUserDir();
+            if (null == config) {
+                Platform.runLater(() -> {
+                    statusLab.setText("未配置接入信息");
+                    startBtn.setDisable(false);
+                    stopBtn.setDisable(true);
+                    netSelect.setDisable(false);
+                    refreshBtn.setDisable(false);
+                    settingBtn.setDisable(false);
+                });
+                return;
+            }
+            tunSdWanNode = new TunSdWanNode(config) {
+                @Override
+                protected void onErrorDisconnected() throws Exception {
+                    stop();
+                    Platform.runLater(() -> {
+                        statusLab.setText("连接异常");
+                        startBtn.setDisable(false);
+                        stopBtn.setDisable(true);
+                        netSelect.setDisable(false);
+                        refreshBtn.setDisable(false);
+                        settingBtn.setDisable(false);
+                    });
+                }
+            };
+            config.setLocalAddress(localIp);
+            Platform.runLater(() -> {
+                statusLab.setText("连接中");
+                startBtn.setDisable(true);
+                stopBtn.setDisable(true);
+                netSelect.setDisable(true);
+                refreshBtn.setDisable(true);
+                settingBtn.setDisable(true);
+            });
+            try {
+                tunSdWanNode.start();
+                Platform.runLater(() -> {
+                    statusLab.setText("已连接");
+                    stopBtn.setDisable(false);
+                    vipLab.setText(tunSdWanNode.getLocalVip());
+                });
+            } catch (Exception e) {
                 Platform.runLater(() -> {
                     statusLab.setText("连接异常");
                     startBtn.setDisable(false);
@@ -104,59 +156,22 @@ public class MainWindowController implements EventHandler<ActionEvent> {
                     refreshBtn.setDisable(false);
                     settingBtn.setDisable(false);
                 });
+                throw e;
             }
-        };
-        while (true) {
-            try {
-                String action = queue.take();
-                if ("start".equals(action)) {
-                    SdWanNodeConfig config = new ConfigSystem().initUserDir();
-                    config.setLocalAddress(localIp);
-                    tunSdWanNode.setConfig(config);
-                    Platform.runLater(() -> {
-                        statusLab.setText("连接中");
-                        startBtn.setDisable(true);
-                        stopBtn.setDisable(true);
-                        netSelect.setDisable(true);
-                        refreshBtn.setDisable(true);
-                        settingBtn.setDisable(true);
-                    });
-                    try {
-                        tunSdWanNode.start();
-                        Platform.runLater(() -> {
-                            statusLab.setText("已连接");
-                            stopBtn.setDisable(false);
-                            vipLab.setText(tunSdWanNode.getLocalVip());
-                        });
-                    } catch (Exception e) {
-                        Platform.runLater(() -> {
-                            statusLab.setText("连接异常");
-                            startBtn.setDisable(false);
-                            stopBtn.setDisable(true);
-                            netSelect.setDisable(false);
-                            refreshBtn.setDisable(false);
-                            settingBtn.setDisable(false);
-                        });
-                        throw e;
-                    }
-                } else if ("stop".equals(action)) {
-                    Platform.runLater(() -> {
-                        statusLab.setText("断开中");
-                    });
-                    tunSdWanNode.stop();
-                    Platform.runLater(() -> {
-                        statusLab.setText("已断开");
-                        startBtn.setDisable(false);
-                        stopBtn.setDisable(true);
-                        netSelect.setDisable(false);
-                        refreshBtn.setDisable(false);
-                        settingBtn.setDisable(false);
-                        vipLab.setText("-");
-                    });
-                }
-            } catch (Throwable e) {
-                log.error(e.getMessage(), e);
-            }
+        } else if ("stop".equals(action)) {
+            Platform.runLater(() -> {
+                statusLab.setText("断开中");
+            });
+            tunSdWanNode.stop();
+            Platform.runLater(() -> {
+                statusLab.setText("已断开");
+                startBtn.setDisable(false);
+                stopBtn.setDisable(true);
+                netSelect.setDisable(false);
+                refreshBtn.setDisable(false);
+                settingBtn.setDisable(false);
+                vipLab.setText("-");
+            });
         }
     }
 
