@@ -216,6 +216,14 @@ public class MainWindowController implements EventHandler<ActionEvent> {
             } else if (target == refreshBtn) {
                 refreshNetList();
             } else if (target == settingBtn) {
+                if (CheckAdmin.checkOsx()) {
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("提示");
+                    alert.setHeaderText("需要普通用户权限编辑");
+                    alert.getButtonTypes().setAll(new ButtonType("是"));
+                    alert.showAndWait();
+                    return;
+                }
                 SettingWindowController.showAndWait(primaryStage);
             }
         } catch (Exception e) {
