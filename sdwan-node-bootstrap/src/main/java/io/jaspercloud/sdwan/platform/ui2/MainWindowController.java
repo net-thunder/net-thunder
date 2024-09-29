@@ -7,6 +7,7 @@ import io.jaspercloud.sdwan.support.OsxShell;
 import io.jaspercloud.sdwan.util.CheckAdmin;
 import io.jaspercloud.sdwan.util.Jpackage;
 import io.jaspercloud.sdwan.util.NetworkInterfaceUtil;
+import io.netty.util.internal.PlatformDependent;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -199,7 +200,7 @@ public class MainWindowController implements EventHandler<ActionEvent> {
         try {
             Control target = (Control) event.getTarget();
             if (target == startBtn) {
-                if (!CheckAdmin.checkOsx()) {
+                if (PlatformDependent.isOsx() && !CheckAdmin.checkOsx()) {
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
                     alert.setTitle("提示");
                     alert.setHeaderText("需要以root权限启动");
@@ -216,7 +217,7 @@ public class MainWindowController implements EventHandler<ActionEvent> {
             } else if (target == refreshBtn) {
                 refreshNetList();
             } else if (target == settingBtn) {
-                if (CheckAdmin.checkOsx()) {
+                if (PlatformDependent.isOsx() && CheckAdmin.checkOsx()) {
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
                     alert.setTitle("提示");
                     alert.setHeaderText("需要普通用户权限编辑");
@@ -226,7 +227,7 @@ public class MainWindowController implements EventHandler<ActionEvent> {
                 }
                 SettingWindowController.showAndWait(primaryStage);
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             log.error(e.getMessage(), e);
         }
     }
