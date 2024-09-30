@@ -272,6 +272,10 @@
   "methods":[{"name":"createRenderer","parameterTypes":["com.sun.scenario.effect.FilterContext"] }]
 },
 {
+  "name":"com.sun.scenario.effect.impl.prism.ps.PPSLinearConvolveShadowPeer",
+  "methods":[{"name":"<init>","parameterTypes":["com.sun.scenario.effect.FilterContext","com.sun.scenario.effect.impl.Renderer","java.lang.String"] }]
+},
+{
   "name":"com.sun.scenario.effect.impl.prism.ps.PPSRenderer",
   "methods":[{"name":"createRenderer","parameterTypes":["com.sun.scenario.effect.FilterContext"] }]
 },
@@ -321,6 +325,10 @@
 },
 {
   "name":"io.jaspercloud.sdwan.node.TunSdWanNode$2"
+},
+{
+  "name":"io.jaspercloud.sdwan.platform.JavaFxMiniLauncher",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
   "name":"io.jaspercloud.sdwan.platform.rpc.RpcChannel$1"
@@ -374,6 +382,18 @@
 },
 {
   "name":"io.jaspercloud.sdwan.platform.ui2.MainWindow2Controller",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"initialize","parameterTypes":[] }]
+},
+{
+  "name":"io.jaspercloud.sdwan.platform.ui2.MainWindowController",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"initialize","parameterTypes":[] }]
+},
+{
+  "name":"io.jaspercloud.sdwan.platform.ui2.SettingWindowController",
   "allDeclaredFields":true,
   "queryAllDeclaredMethods":true,
   "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"initialize","parameterTypes":[] }]
@@ -832,6 +852,9 @@
   "name":"javafx.geometry.Button"
 },
 {
+  "name":"javafx.geometry.ChoiceBox"
+},
+{
   "name":"javafx.geometry.ColumnConstraints"
 },
 {
@@ -871,6 +894,9 @@
   "name":"javafx.scene.Camera"
 },
 {
+  "name":"javafx.scene.Group"
+},
+{
   "name":"javafx.scene.Node",
   "queryAllDeclaredMethods":true,
   "methods":[{"name":"getId","parameterTypes":[] }, {"name":"setId","parameterTypes":["java.lang.String"] }]
@@ -894,6 +920,12 @@
 {
   "name":"javafx.scene.control.ButtonBase",
   "queryAllDeclaredMethods":true
+},
+{
+  "name":"javafx.scene.control.ChoiceBox",
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
   "name":"javafx.scene.control.ColumnConstraints"
@@ -923,10 +955,29 @@
   "name":"javafx.scene.control.RowConstraints"
 },
 {
+  "name":"javafx.scene.control.TextArea",
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"javafx.scene.control.TextInputControl",
+  "queryAllDeclaredMethods":true
+},
+{
   "name":"javafx.scene.control.VBox"
 },
 {
+  "name":"javafx.scene.effect.Effect"
+},
+{
   "name":"javafx.scene.image.Image"
+},
+{
+  "name":"javafx.scene.layout.BorderPane",
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"getAlignment","parameterTypes":["javafx.scene.Node"] }, {"name":"getAlignment","parameterTypes":["javafx.scene.Parent"] }, {"name":"getAlignment","parameterTypes":["javafx.scene.control.Control"] }, {"name":"getAlignment","parameterTypes":["javafx.scene.control.Label"] }, {"name":"getAlignment","parameterTypes":["javafx.scene.control.Labeled"] }, {"name":"getAlignment","parameterTypes":["javafx.scene.control.Skinnable"] }, {"name":"getAlignment","parameterTypes":["javafx.scene.control.TextArea"] }, {"name":"getAlignment","parameterTypes":["javafx.scene.control.TextInputControl"] }, {"name":"getAlignment","parameterTypes":["javafx.scene.layout.Region"] }, {"name":"isAlignment","parameterTypes":["javafx.scene.Parent"] }, {"name":"isAlignment","parameterTypes":["javafx.scene.control.Control"] }, {"name":"isAlignment","parameterTypes":["javafx.scene.control.Label"] }, {"name":"isAlignment","parameterTypes":["javafx.scene.control.Labeled"] }, {"name":"isAlignment","parameterTypes":["javafx.scene.control.Skinnable"] }, {"name":"isAlignment","parameterTypes":["javafx.scene.control.TextArea"] }, {"name":"isAlignment","parameterTypes":["javafx.scene.control.TextInputControl"] }, {"name":"isAlignment","parameterTypes":["javafx.scene.layout.Region"] }, {"name":"setAlignment","parameterTypes":["java.lang.Object","java.lang.String"] }, {"name":"setAlignment","parameterTypes":["javafx.css.Styleable","java.lang.String"] }, {"name":"setAlignment","parameterTypes":["javafx.event.EventTarget","java.lang.String"] }, {"name":"setAlignment","parameterTypes":["javafx.scene.Node","java.lang.String"] }, {"name":"setAlignment","parameterTypes":["javafx.scene.Node","javafx.geometry.Pos"] }, {"name":"setAlignment","parameterTypes":["javafx.scene.Parent","java.lang.String"] }, {"name":"setAlignment","parameterTypes":["javafx.scene.Parent","javafx.geometry.Pos"] }, {"name":"setAlignment","parameterTypes":["javafx.scene.control.Control","java.lang.String"] }, {"name":"setAlignment","parameterTypes":["javafx.scene.control.Control","javafx.geometry.Pos"] }, {"name":"setAlignment","parameterTypes":["javafx.scene.control.Label","java.lang.String"] }, {"name":"setAlignment","parameterTypes":["javafx.scene.control.Label","javafx.geometry.Pos"] }, {"name":"setAlignment","parameterTypes":["javafx.scene.control.Labeled","java.lang.String"] }, {"name":"setAlignment","parameterTypes":["javafx.scene.control.Labeled","javafx.geometry.Pos"] }, {"name":"setAlignment","parameterTypes":["javafx.scene.control.Skinnable","java.lang.String"] }, {"name":"setAlignment","parameterTypes":["javafx.scene.control.Skinnable","javafx.geometry.Pos"] }, {"name":"setAlignment","parameterTypes":["javafx.scene.control.TextArea","java.lang.String"] }, {"name":"setAlignment","parameterTypes":["javafx.scene.control.TextArea","javafx.geometry.Pos"] }, {"name":"setAlignment","parameterTypes":["javafx.scene.control.TextInputControl","java.lang.String"] }, {"name":"setAlignment","parameterTypes":["javafx.scene.control.TextInputControl","javafx.geometry.Pos"] }, {"name":"setAlignment","parameterTypes":["javafx.scene.layout.Region","java.lang.String"] }, {"name":"setAlignment","parameterTypes":["javafx.scene.layout.Region","javafx.geometry.Pos"] }, {"name":"setBottom","parameterTypes":["javafx.scene.Node"] }, {"name":"setCenter","parameterTypes":["javafx.scene.Node"] }, {"name":"setMargin","parameterTypes":["javafx.scene.Node","javafx.geometry.Insets"] }, {"name":"setMargin","parameterTypes":["javafx.scene.Parent","javafx.geometry.Insets"] }, {"name":"setMargin","parameterTypes":["javafx.scene.control.Control","javafx.geometry.Insets"] }, {"name":"setMargin","parameterTypes":["javafx.scene.control.Label","javafx.geometry.Insets"] }, {"name":"setMargin","parameterTypes":["javafx.scene.control.Labeled","javafx.geometry.Insets"] }, {"name":"setMargin","parameterTypes":["javafx.scene.control.Skinnable","javafx.geometry.Insets"] }, {"name":"setMargin","parameterTypes":["javafx.scene.layout.Pane","javafx.geometry.Insets"] }, {"name":"setMargin","parameterTypes":["javafx.scene.layout.Region","javafx.geometry.Insets"] }, {"name":"setMargin","parameterTypes":["javafx.scene.layout.VBox","javafx.geometry.Insets"] }, {"name":"setTop","parameterTypes":["javafx.scene.Node"] }]
 },
 {
   "name":"javafx.scene.layout.ColumnConstraints",
@@ -948,7 +999,7 @@
   "name":"javafx.scene.layout.GridPane",
   "queryAllDeclaredMethods":true,
   "queryAllPublicConstructors":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"getColumnConstraints","parameterTypes":[] }, {"name":"getColumnIndex","parameterTypes":["javafx.scene.Node"] }, {"name":"getColumnIndex","parameterTypes":["javafx.scene.Parent"] }, {"name":"getColumnIndex","parameterTypes":["javafx.scene.control.Control"] }, {"name":"getColumnIndex","parameterTypes":["javafx.scene.control.Label"] }, {"name":"getColumnIndex","parameterTypes":["javafx.scene.control.Labeled"] }, {"name":"getColumnIndex","parameterTypes":["javafx.scene.control.Skinnable"] }, {"name":"getColumnIndex","parameterTypes":["javafx.scene.layout.Region"] }, {"name":"getHalignment","parameterTypes":["javafx.scene.Node"] }, {"name":"getHalignment","parameterTypes":["javafx.scene.Parent"] }, {"name":"getHalignment","parameterTypes":["javafx.scene.control.Control"] }, {"name":"getHalignment","parameterTypes":["javafx.scene.control.Label"] }, {"name":"getHalignment","parameterTypes":["javafx.scene.control.Labeled"] }, {"name":"getHalignment","parameterTypes":["javafx.scene.control.Skinnable"] }, {"name":"getHalignment","parameterTypes":["javafx.scene.layout.Region"] }, {"name":"getRowConstraints","parameterTypes":[] }, {"name":"getRowIndex","parameterTypes":["javafx.scene.Node"] }, {"name":"getRowIndex","parameterTypes":["javafx.scene.Parent"] }, {"name":"getRowIndex","parameterTypes":["javafx.scene.control.Control"] }, {"name":"getRowIndex","parameterTypes":["javafx.scene.control.Label"] }, {"name":"getRowIndex","parameterTypes":["javafx.scene.control.Labeled"] }, {"name":"getRowIndex","parameterTypes":["javafx.scene.control.Skinnable"] }, {"name":"getRowIndex","parameterTypes":["javafx.scene.layout.Region"] }, {"name":"isColumnIndex","parameterTypes":["javafx.scene.Parent"] }, {"name":"isColumnIndex","parameterTypes":["javafx.scene.control.Control"] }, {"name":"isColumnIndex","parameterTypes":["javafx.scene.control.Label"] }, {"name":"isColumnIndex","parameterTypes":["javafx.scene.control.Labeled"] }, {"name":"isColumnIndex","parameterTypes":["javafx.scene.control.Skinnable"] }, {"name":"isColumnIndex","parameterTypes":["javafx.scene.layout.Region"] }, {"name":"isHalignment","parameterTypes":["javafx.scene.Parent"] }, {"name":"isHalignment","parameterTypes":["javafx.scene.control.Control"] }, {"name":"isHalignment","parameterTypes":["javafx.scene.control.Label"] }, {"name":"isHalignment","parameterTypes":["javafx.scene.control.Labeled"] }, {"name":"isHalignment","parameterTypes":["javafx.scene.control.Skinnable"] }, {"name":"isHalignment","parameterTypes":["javafx.scene.layout.Region"] }, {"name":"isRowIndex","parameterTypes":["javafx.scene.Parent"] }, {"name":"isRowIndex","parameterTypes":["javafx.scene.control.Control"] }, {"name":"isRowIndex","parameterTypes":["javafx.scene.control.Label"] }, {"name":"isRowIndex","parameterTypes":["javafx.scene.control.Labeled"] }, {"name":"isRowIndex","parameterTypes":["javafx.scene.control.Skinnable"] }, {"name":"isRowIndex","parameterTypes":["javafx.scene.layout.Region"] }, {"name":"setColumnIndex","parameterTypes":["java.lang.Object","java.lang.String"] }, {"name":"setColumnIndex","parameterTypes":["javafx.css.Styleable","java.lang.String"] }, {"name":"setColumnIndex","parameterTypes":["javafx.event.EventTarget","java.lang.String"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.Node","java.lang.Integer"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.Node","java.lang.String"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.Parent","java.lang.Integer"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.Parent","java.lang.String"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.control.Control","java.lang.Integer"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.control.Control","java.lang.String"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.control.Label","java.lang.Integer"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.control.Label","java.lang.String"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.control.Labeled","java.lang.Integer"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.control.Labeled","java.lang.String"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.control.Skinnable","java.lang.Integer"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.control.Skinnable","java.lang.String"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.layout.Region","java.lang.Integer"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.layout.Region","java.lang.String"] }, {"name":"setHalignment","parameterTypes":["java.lang.Object","java.lang.String"] }, {"name":"setHalignment","parameterTypes":["javafx.css.Styleable","java.lang.String"] }, {"name":"setHalignment","parameterTypes":["javafx.event.EventTarget","java.lang.String"] }, {"name":"setHalignment","parameterTypes":["javafx.scene.Node","java.lang.String"] }, {"name":"setHalignment","parameterTypes":["javafx.scene.Node","javafx.geometry.HPos"] }, {"name":"setHalignment","parameterTypes":["javafx.scene.Parent","java.lang.String"] }, {"name":"setHalignment","parameterTypes":["javafx.scene.Parent","javafx.geometry.HPos"] }, {"name":"setHalignment","parameterTypes":["javafx.scene.control.Control","java.lang.String"] }, {"name":"setHalignment","parameterTypes":["javafx.scene.control.Control","javafx.geometry.HPos"] }, {"name":"setHalignment","parameterTypes":["javafx.scene.control.Label","java.lang.String"] }, {"name":"setHalignment","parameterTypes":["javafx.scene.control.Label","javafx.geometry.HPos"] }, {"name":"setHalignment","parameterTypes":["javafx.scene.control.Labeled","java.lang.String"] }, {"name":"setHalignment","parameterTypes":["javafx.scene.control.Labeled","javafx.geometry.HPos"] }, {"name":"setHalignment","parameterTypes":["javafx.scene.control.Skinnable","java.lang.String"] }, {"name":"setHalignment","parameterTypes":["javafx.scene.control.Skinnable","javafx.geometry.HPos"] }, {"name":"setHalignment","parameterTypes":["javafx.scene.layout.Region","java.lang.String"] }, {"name":"setHalignment","parameterTypes":["javafx.scene.layout.Region","javafx.geometry.HPos"] }, {"name":"setHgap","parameterTypes":["double"] }, {"name":"setRowIndex","parameterTypes":["java.lang.Object","java.lang.String"] }, {"name":"setRowIndex","parameterTypes":["javafx.css.Styleable","java.lang.String"] }, {"name":"setRowIndex","parameterTypes":["javafx.event.EventTarget","java.lang.String"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.Node","java.lang.Integer"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.Node","java.lang.String"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.Parent","java.lang.Integer"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.Parent","java.lang.String"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.control.Control","java.lang.Integer"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.control.Control","java.lang.String"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.control.Label","java.lang.Integer"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.control.Label","java.lang.String"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.control.Labeled","java.lang.Integer"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.control.Labeled","java.lang.String"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.control.Skinnable","java.lang.Integer"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.control.Skinnable","java.lang.String"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.layout.Region","java.lang.Integer"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.layout.Region","java.lang.String"] }, {"name":"setVgap","parameterTypes":["double"] }]
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"getColumnConstraints","parameterTypes":[] }, {"name":"getColumnIndex","parameterTypes":["javafx.scene.Node"] }, {"name":"getColumnIndex","parameterTypes":["javafx.scene.Parent"] }, {"name":"getColumnIndex","parameterTypes":["javafx.scene.control.Button"] }, {"name":"getColumnIndex","parameterTypes":["javafx.scene.control.ButtonBase"] }, {"name":"getColumnIndex","parameterTypes":["javafx.scene.control.ChoiceBox"] }, {"name":"getColumnIndex","parameterTypes":["javafx.scene.control.Control"] }, {"name":"getColumnIndex","parameterTypes":["javafx.scene.control.Label"] }, {"name":"getColumnIndex","parameterTypes":["javafx.scene.control.Labeled"] }, {"name":"getColumnIndex","parameterTypes":["javafx.scene.control.Skinnable"] }, {"name":"getColumnIndex","parameterTypes":["javafx.scene.layout.Region"] }, {"name":"getHalignment","parameterTypes":["javafx.scene.Node"] }, {"name":"getHalignment","parameterTypes":["javafx.scene.Parent"] }, {"name":"getHalignment","parameterTypes":["javafx.scene.control.Control"] }, {"name":"getHalignment","parameterTypes":["javafx.scene.control.Label"] }, {"name":"getHalignment","parameterTypes":["javafx.scene.control.Labeled"] }, {"name":"getHalignment","parameterTypes":["javafx.scene.control.Skinnable"] }, {"name":"getHalignment","parameterTypes":["javafx.scene.layout.Region"] }, {"name":"getRowConstraints","parameterTypes":[] }, {"name":"getRowIndex","parameterTypes":["javafx.scene.Node"] }, {"name":"getRowIndex","parameterTypes":["javafx.scene.Parent"] }, {"name":"getRowIndex","parameterTypes":["javafx.scene.control.Button"] }, {"name":"getRowIndex","parameterTypes":["javafx.scene.control.ButtonBase"] }, {"name":"getRowIndex","parameterTypes":["javafx.scene.control.ChoiceBox"] }, {"name":"getRowIndex","parameterTypes":["javafx.scene.control.Control"] }, {"name":"getRowIndex","parameterTypes":["javafx.scene.control.Label"] }, {"name":"getRowIndex","parameterTypes":["javafx.scene.control.Labeled"] }, {"name":"getRowIndex","parameterTypes":["javafx.scene.control.Skinnable"] }, {"name":"getRowIndex","parameterTypes":["javafx.scene.layout.Region"] }, {"name":"isColumnIndex","parameterTypes":["javafx.scene.Parent"] }, {"name":"isColumnIndex","parameterTypes":["javafx.scene.control.Button"] }, {"name":"isColumnIndex","parameterTypes":["javafx.scene.control.ButtonBase"] }, {"name":"isColumnIndex","parameterTypes":["javafx.scene.control.ChoiceBox"] }, {"name":"isColumnIndex","parameterTypes":["javafx.scene.control.Control"] }, {"name":"isColumnIndex","parameterTypes":["javafx.scene.control.Label"] }, {"name":"isColumnIndex","parameterTypes":["javafx.scene.control.Labeled"] }, {"name":"isColumnIndex","parameterTypes":["javafx.scene.control.Skinnable"] }, {"name":"isColumnIndex","parameterTypes":["javafx.scene.layout.Region"] }, {"name":"isHalignment","parameterTypes":["javafx.scene.Parent"] }, {"name":"isHalignment","parameterTypes":["javafx.scene.control.Control"] }, {"name":"isHalignment","parameterTypes":["javafx.scene.control.Label"] }, {"name":"isHalignment","parameterTypes":["javafx.scene.control.Labeled"] }, {"name":"isHalignment","parameterTypes":["javafx.scene.control.Skinnable"] }, {"name":"isHalignment","parameterTypes":["javafx.scene.layout.Region"] }, {"name":"isRowIndex","parameterTypes":["javafx.scene.Parent"] }, {"name":"isRowIndex","parameterTypes":["javafx.scene.control.Button"] }, {"name":"isRowIndex","parameterTypes":["javafx.scene.control.ButtonBase"] }, {"name":"isRowIndex","parameterTypes":["javafx.scene.control.ChoiceBox"] }, {"name":"isRowIndex","parameterTypes":["javafx.scene.control.Control"] }, {"name":"isRowIndex","parameterTypes":["javafx.scene.control.Label"] }, {"name":"isRowIndex","parameterTypes":["javafx.scene.control.Labeled"] }, {"name":"isRowIndex","parameterTypes":["javafx.scene.control.Skinnable"] }, {"name":"isRowIndex","parameterTypes":["javafx.scene.layout.Region"] }, {"name":"setColumnIndex","parameterTypes":["java.lang.Object","java.lang.String"] }, {"name":"setColumnIndex","parameterTypes":["javafx.css.Styleable","java.lang.String"] }, {"name":"setColumnIndex","parameterTypes":["javafx.event.EventTarget","java.lang.String"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.Node","java.lang.Integer"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.Node","java.lang.String"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.Parent","java.lang.Integer"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.Parent","java.lang.String"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.control.Button","java.lang.Integer"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.control.Button","java.lang.String"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.control.ButtonBase","java.lang.Integer"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.control.ButtonBase","java.lang.String"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.control.ChoiceBox","java.lang.Integer"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.control.ChoiceBox","java.lang.String"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.control.Control","java.lang.Integer"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.control.Control","java.lang.String"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.control.Label","java.lang.Integer"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.control.Label","java.lang.String"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.control.Labeled","java.lang.Integer"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.control.Labeled","java.lang.String"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.control.Skinnable","java.lang.Integer"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.control.Skinnable","java.lang.String"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.layout.Region","java.lang.Integer"] }, {"name":"setColumnIndex","parameterTypes":["javafx.scene.layout.Region","java.lang.String"] }, {"name":"setHalignment","parameterTypes":["java.lang.Object","java.lang.String"] }, {"name":"setHalignment","parameterTypes":["javafx.css.Styleable","java.lang.String"] }, {"name":"setHalignment","parameterTypes":["javafx.event.EventTarget","java.lang.String"] }, {"name":"setHalignment","parameterTypes":["javafx.scene.Node","java.lang.String"] }, {"name":"setHalignment","parameterTypes":["javafx.scene.Node","javafx.geometry.HPos"] }, {"name":"setHalignment","parameterTypes":["javafx.scene.Parent","java.lang.String"] }, {"name":"setHalignment","parameterTypes":["javafx.scene.Parent","javafx.geometry.HPos"] }, {"name":"setHalignment","parameterTypes":["javafx.scene.control.Control","java.lang.String"] }, {"name":"setHalignment","parameterTypes":["javafx.scene.control.Control","javafx.geometry.HPos"] }, {"name":"setHalignment","parameterTypes":["javafx.scene.control.Label","java.lang.String"] }, {"name":"setHalignment","parameterTypes":["javafx.scene.control.Label","javafx.geometry.HPos"] }, {"name":"setHalignment","parameterTypes":["javafx.scene.control.Labeled","java.lang.String"] }, {"name":"setHalignment","parameterTypes":["javafx.scene.control.Labeled","javafx.geometry.HPos"] }, {"name":"setHalignment","parameterTypes":["javafx.scene.control.Skinnable","java.lang.String"] }, {"name":"setHalignment","parameterTypes":["javafx.scene.control.Skinnable","javafx.geometry.HPos"] }, {"name":"setHalignment","parameterTypes":["javafx.scene.layout.Region","java.lang.String"] }, {"name":"setHalignment","parameterTypes":["javafx.scene.layout.Region","javafx.geometry.HPos"] }, {"name":"setHgap","parameterTypes":["double"] }, {"name":"setRowIndex","parameterTypes":["java.lang.Object","java.lang.String"] }, {"name":"setRowIndex","parameterTypes":["javafx.css.Styleable","java.lang.String"] }, {"name":"setRowIndex","parameterTypes":["javafx.event.EventTarget","java.lang.String"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.Node","java.lang.Integer"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.Node","java.lang.String"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.Parent","java.lang.Integer"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.Parent","java.lang.String"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.control.Button","java.lang.Integer"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.control.Button","java.lang.String"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.control.ButtonBase","java.lang.Integer"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.control.ButtonBase","java.lang.String"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.control.ChoiceBox","java.lang.Integer"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.control.ChoiceBox","java.lang.String"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.control.Control","java.lang.Integer"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.control.Control","java.lang.String"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.control.Label","java.lang.Integer"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.control.Label","java.lang.String"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.control.Labeled","java.lang.Integer"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.control.Labeled","java.lang.String"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.control.Skinnable","java.lang.Integer"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.control.Skinnable","java.lang.String"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.layout.Region","java.lang.Integer"] }, {"name":"setRowIndex","parameterTypes":["javafx.scene.layout.Region","java.lang.String"] }, {"name":"setVgap","parameterTypes":["double"] }]
 },
 {
   "name":"javafx.scene.layout.Pane",
@@ -958,7 +1009,7 @@
 {
   "name":"javafx.scene.layout.Region",
   "queryAllDeclaredMethods":true,
-  "methods":[{"name":"setPrefHeight","parameterTypes":["double"] }, {"name":"setPrefWidth","parameterTypes":["double"] }]
+  "methods":[{"name":"setPadding","parameterTypes":["javafx.geometry.Insets"] }, {"name":"setPrefHeight","parameterTypes":["double"] }, {"name":"setPrefWidth","parameterTypes":["double"] }]
 },
 {
   "name":"javafx.scene.layout.RowConstraints",
@@ -972,7 +1023,22 @@
   "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setAlignment","parameterTypes":["javafx.geometry.Pos"] }, {"name":"setSpacing","parameterTypes":["double"] }]
 },
 {
+  "name":"javafx.scene.shape.LineTo"
+},
+{
+  "name":"javafx.scene.shape.MoveTo"
+},
+{
+  "name":"javafx.scene.shape.Path"
+},
+{
+  "name":"javafx.scene.shape.PathElement"
+},
+{
   "name":"javafx.scene.shape.Rectangle"
+},
+{
+  "name":"javafx.scene.shape.SVGPath"
 },
 {
   "name":"javafx.scene.shape.Shape"
@@ -988,6 +1054,9 @@
 },
 {
   "name":"javafx.scene.web.WebView"
+},
+{
+  "name":"javafx.stage.PopupWindow"
 },
 {
   "name":"javafx.stage.Stage"

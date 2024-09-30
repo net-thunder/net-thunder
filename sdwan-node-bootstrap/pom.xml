@@ -57,6 +57,12 @@
             <artifactId>javafx-fxml</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.graalvm.nativeimage</groupId>
+            <artifactId>svm</artifactId>
+            <version>23.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.graalvm.sdk</groupId>
             <artifactId>graal-sdk</artifactId>
             <version>23.0.1</version>

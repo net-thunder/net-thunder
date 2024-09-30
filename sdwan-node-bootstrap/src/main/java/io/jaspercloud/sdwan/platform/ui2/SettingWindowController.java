@@ -57,11 +57,8 @@ public class SettingWindowController implements EventHandler<ActionEvent> {
 
     @Override
     public void handle(ActionEvent event) {
-        log.info("handle");
         Control target = (Control) event.getTarget();
-        log.info("test: {} {}", target.getId(), saveBtn.getId());
         if (target == saveBtn) {
-            log.info("saveBtn");
             String configText = settingText.getText();
             ConfigSystem.saveConfig(configText);
             primaryStage.close();

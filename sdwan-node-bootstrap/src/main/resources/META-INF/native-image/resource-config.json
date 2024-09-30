@@ -141,6 +141,8 @@
   }, {
     "pattern":"\\Qcom/sun/prism/d3d/hlsl/Texture_LinearGradient_PAD.obj\\E"
   }, {
+    "pattern":"\\Qcom/sun/scenario/effect/impl/hw/d3d/hlsl/LinearConvolveShadow_28.obj\\E"
+  }, {
     "pattern":"\\Qglass.dll\\E"
   }, {
     "pattern":"\\Qjavafx_font.dll\\E"
@@ -171,6 +173,8 @@
   }, {
     "pattern":"\\Qui/main2.fxml\\E"
   }, {
+    "pattern":"\\Qui/setting.fxml\\E"
+  }, {
     "pattern":"\\Qvcruntime140.dll\\E"
   }, {
     "pattern":"\\Qvcruntime140_1.dll\\E"
@@ -185,18 +189,15 @@
   }]},
   "bundles":[{
     "name":"com.sun.javafx.tk.quantum.QuantumMessagesBundle",
-    "locales":["und", "zh-CN"]
+    "locales":["", "zh-CN"]
   }, {
     "name":"com/sun/glass/ui/win/themes",
-    "locales":["und", "zh-CN"]
+    "locales":["", "zh-CN"]
   }, {
     "name":"com/sun/javafx/scene/control/skin/resources/controls",
-    "locales":["und", "zh-CN"]
+    "locales":["", "zh-CN"]
   }, {
     "name":"sun.awt.resources.awt",
     "classNames":["sun.awt.resources.awt", "sun.awt.resources.awt_zh_CN"]
-  }, {
-    "name":"sun.awt.windows.awtLocalization",
-    "classNames":["sun.awt.windows.awtLocalization", "sun.awt.windows.awtLocalization_zh_CN"]
   }]
 }
