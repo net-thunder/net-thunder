@@ -59,6 +59,7 @@ public class MainWindowController implements EventHandler<ActionEvent> {
         startBtn.setOnAction(this);
         stopBtn.setOnAction(this);
         stopBtn.setDisable(true);
+        refreshBtn.setOnAction(this);
         settingBtn.setOnAction(this);
         netSelect.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
             @Override
@@ -87,6 +88,7 @@ public class MainWindowController implements EventHandler<ActionEvent> {
                     .filter(e -> StringUtils.isNotEmpty(e.getHardwareAddress()))
                     .map(e -> e.getIp())
                     .collect(Collectors.toList());
+            netSelect.getItems().clear();
             netSelect.getItems().addAll(netList);
             if (!netList.isEmpty()) {
                 netSelect.getSelectionModel().select(0);
