@@ -86,7 +86,7 @@ public class OsxTunDevice extends TunDevice {
             }
             ByteBuf byteBuf = alloc.buffer(read);
             //process loopback
-            byteBuf.writeBytes(bytes, 4, read);
+            byteBuf.writeBytes(bytes, 4, read - 4);
             return byteBuf;
         }
     }
