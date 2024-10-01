@@ -1,10 +1,6 @@
 {
   "resources":{
   "includes":[{
-    "pattern":"\\QMETA-INF/hessian/deserializers\\E"
-  }, {
-    "pattern":"\\QMETA-INF/hessian/serializers\\E"
-  }, {
     "pattern":"\\QMETA-INF/native/wintun/amd64/wintun.dll\\E"
   }, {
     "pattern":"\\QMETA-INF/services/ch.qos.logback.classic.spi.Configurator\\E"
@@ -12,8 +8,6 @@
     "pattern":"\\QMETA-INF/services/java.awt.im.spi.InputMethodDescriptor\\E"
   }, {
     "pattern":"\\QMETA-INF/services/java.lang.System$LoggerFinder\\E"
-  }, {
-    "pattern":"\\QMETA-INF/services/java.net.spi.InetAddressResolverProvider\\E"
   }, {
     "pattern":"\\QMETA-INF/services/java.net.spi.URLStreamHandlerProvider\\E"
   }, {
@@ -123,8 +117,6 @@
   }, {
     "pattern":"\\Qcom/sun/javafx/scene/control/skin/modena/modena.bss\\E"
   }, {
-    "pattern":"\\Qcom/sun/jna/darwin-x86-64/libjnidispatch.jnilib\\E"
-  }, {
     "pattern":"\\Qcom/sun/jna/win32-x86-64/jnidispatch.dll\\E"
   }, {
     "pattern":"\\Qcom/sun/prism/d3d/hlsl/FillPgram_Color.obj\\E"
@@ -163,13 +155,9 @@
   }, {
     "pattern":"\\Qprism_d3d.dll\\E"
   }, {
-    "pattern":"\\Qscript/ics.vbs\\E"
-  }, {
     "pattern":"\\Qucrtbase.dll\\E"
   }, {
     "pattern":"\\Qui/favicon.ico\\E"
-  }, {
-    "pattern":"\\Qui/main.fxml\\E"
   }, {
     "pattern":"\\Qui/main2.fxml\\E"
   }, {
@@ -178,8 +166,6 @@
     "pattern":"\\Qvcruntime140.dll\\E"
   }, {
     "pattern":"\\Qvcruntime140_1.dll\\E"
-  }, {
-    "pattern":"java.base:\\Qjdk/internal/icu/impl/data/icudt72b/nfc.nrm\\E"
   }, {
     "pattern":"java.base:\\Qjdk/internal/icu/impl/data/icudt72b/nfkc.nrm\\E"
   }, {

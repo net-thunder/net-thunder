@@ -3,9 +3,6 @@
   "name":"[Lcom.sun.glass.ui.Screen;"
 },
 {
-  "name":"[Ljava.lang.Object;"
-},
-{
   "name":"[Lsun.java2d.loops.GraphicsPrimitive;"
 },
 {
@@ -88,10 +85,6 @@
   "name":"com.sun.jna.Callback"
 },
 {
-  "name":"com.sun.jna.CallbackProxy",
-  "methods":[{"name":"callback","parameterTypes":["java.lang.Object[]"] }]
-},
-{
   "name":"com.sun.jna.CallbackReference",
   "methods":[{"name":"getCallback","parameterTypes":["java.lang.Class","com.sun.jna.Pointer","boolean"] }, {"name":"getFunctionPointer","parameterTypes":["com.sun.jna.Callback","boolean"] }, {"name":"getNativeString","parameterTypes":["java.lang.Object","boolean"] }, {"name":"initializeThread","parameterTypes":["com.sun.jna.Callback","com.sun.jna.CallbackReference$AttachOptions"] }]
 },
@@ -155,21 +148,6 @@
   "fields":[{"name":"disableD3D9Ex"}, {"name":"forceGPU"}, {"name":"isVsyncEnabled"}, {"name":"verbose"}]
 },
 {
-  "name":"io.jaspercloud.sdwan.platform.WindowsTrayLauncher$1"
-},
-{
-  "name":"io.jaspercloud.sdwan.platform.WindowsTrayLauncher$2"
-},
-{
-  "name":"io.jaspercloud.sdwan.platform.WindowsTrayLauncher$3"
-},
-{
-  "name":"io.jaspercloud.sdwan.platform.WindowsTrayLauncher$4"
-},
-{
-  "name":"io.jaspercloud.sdwan.platform.WindowsTrayLauncher$5"
-},
-{
   "name":"java.awt.AWTEvent",
   "fields":[{"name":"bdata"}, {"name":"consumed"}, {"name":"id"}]
 },
@@ -196,18 +174,9 @@
   "methods":[{"name":"setPData","parameterTypes":["long"] }]
 },
 {
-  "name":"java.awt.Event",
-  "fields":[{"name":"target"}, {"name":"x"}, {"name":"y"}]
-},
-{
   "name":"java.awt.Font",
   "fields":[{"name":"name"}, {"name":"pData"}, {"name":"size"}, {"name":"style"}],
-  "methods":[{"name":"getFont","parameterTypes":["java.lang.String"] }, {"name":"getFontPeer","parameterTypes":[] }, {"name":"getName","parameterTypes":[] }]
-},
-{
-  "name":"java.awt.FontMetrics",
-  "fields":[{"name":"font"}],
-  "methods":[{"name":"getHeight","parameterTypes":[] }]
+  "methods":[{"name":"getFont","parameterTypes":["java.lang.String"] }, {"name":"getFontPeer","parameterTypes":[] }]
 },
 {
   "name":"java.awt.Frame",
@@ -223,10 +192,6 @@
   "methods":[{"name":"countItemsImpl","parameterTypes":[] }, {"name":"getItemImpl","parameterTypes":["int"] }]
 },
 {
-  "name":"java.awt.MenuComponent",
-  "methods":[{"name":"getFont_NoClientCode","parameterTypes":[] }]
-},
-{
   "name":"java.awt.MenuItem",
   "fields":[{"name":"enabled"}, {"name":"label"}]
 },
@@ -235,16 +200,8 @@
   "fields":[{"name":"x"}, {"name":"y"}]
 },
 {
-  "name":"java.awt.PopupMenu",
-  "fields":[{"name":"isTrayIconPopup"}]
-},
-{
   "name":"java.awt.Rectangle",
   "methods":[{"name":"<init>","parameterTypes":["int","int","int","int"] }]
-},
-{
-  "name":"java.awt.SequencedEvent",
-  "methods":[{"name":"<init>","parameterTypes":["java.awt.AWTEvent"] }]
 },
 {
   "name":"java.awt.Toolkit",
@@ -265,10 +222,6 @@
 {
   "name":"java.awt.desktop.UserSessionEvent$Reason",
   "fields":[{"name":"CONSOLE"}, {"name":"LOCK"}, {"name":"REMOTE"}, {"name":"UNSPECIFIED"}]
-},
-{
-  "name":"java.awt.event.ActionEvent",
-  "methods":[{"name":"<init>","parameterTypes":["java.lang.Object","int","java.lang.String","long","int"] }]
 },
 {
   "name":"java.awt.event.ComponentEvent",
@@ -399,11 +352,11 @@
 },
 {
   "name":"java.lang.String",
-  "methods":[{"name":"<init>","parameterTypes":["byte[]"] }, {"name":"<init>","parameterTypes":["byte[]","java.lang.String"] }, {"name":"getBytes","parameterTypes":[] }, {"name":"getBytes","parameterTypes":["java.lang.String"] }, {"name":"lastIndexOf","parameterTypes":["int"] }, {"name":"substring","parameterTypes":["int"] }, {"name":"toCharArray","parameterTypes":[] }, {"name":"toLowerCase","parameterTypes":["java.util.Locale"] }]
+  "methods":[{"name":"<init>","parameterTypes":["byte[]"] }, {"name":"<init>","parameterTypes":["byte[]","java.lang.String"] }, {"name":"getBytes","parameterTypes":[] }, {"name":"getBytes","parameterTypes":["java.lang.String"] }, {"name":"toCharArray","parameterTypes":[] }, {"name":"toLowerCase","parameterTypes":["java.util.Locale"] }]
 },
 {
   "name":"java.lang.System",
-  "methods":[{"name":"getProperty","parameterTypes":["java.lang.String"] }, {"name":"setProperty","parameterTypes":["java.lang.String","java.lang.String"] }]
+  "methods":[{"name":"getProperty","parameterTypes":["java.lang.String"] }]
 },
 {
   "name":"java.lang.Thread",
@@ -462,10 +415,6 @@
   "methods":[{"name":"containsKey","parameterTypes":["java.lang.Object"] }, {"name":"put","parameterTypes":["java.lang.Object","java.lang.Object"] }]
 },
 {
-  "name":"org.springframework.boot.loader.launch.JarLauncher",
-  "methods":[{"name":"main","parameterTypes":["java.lang.String[]"] }]
-},
-{
   "name":"sun.awt.AWTAutoShutdown",
   "methods":[{"name":"notifyToolkitThreadBusy","parameterTypes":[] }, {"name":"notifyToolkitThreadFree","parameterTypes":[] }]
 },
@@ -495,10 +444,6 @@
 {
   "name":"sun.awt.SunToolkit",
   "methods":[{"name":"isTouchKeyboardAutoShowEnabled","parameterTypes":[] }]
-},
-{
-  "name":"sun.awt.TimedWindowEvent",
-  "methods":[{"name":"<init>","parameterTypes":["java.awt.Window","int","java.awt.Window","int","int","long"] }]
 },
 {
   "name":"sun.awt.Win32GraphicsConfig",
@@ -554,11 +499,6 @@
   "methods":[{"name":"getExtendedState","parameterTypes":[] }]
 },
 {
-  "name":"sun.awt.windows.WMenuItemPeer",
-  "fields":[{"name":"isCheckbox"}, {"name":"shortcutLabel"}],
-  "methods":[{"name":"getDefaultFont","parameterTypes":[] }, {"name":"handleAction","parameterTypes":["long","int"] }]
-},
-{
   "name":"sun.awt.windows.WObjectPeer",
   "fields":[{"name":"createError"}, {"name":"destroyed"}, {"name":"pData"}, {"name":"target"}],
   "methods":[{"name":"getPeerForTarget","parameterTypes":["java.lang.Object"] }]
@@ -573,7 +513,7 @@
 },
 {
   "name":"sun.awt.windows.WTrayIconPeer",
-  "methods":[{"name":"postEvent","parameterTypes":["java.awt.AWTEvent"] }, {"name":"showPopupMenu","parameterTypes":["int","int"] }, {"name":"updateImage","parameterTypes":[] }]
+  "methods":[{"name":"postEvent","parameterTypes":["java.awt.AWTEvent"] }, {"name":"updateImage","parameterTypes":[] }]
 },
 {
   "name":"sun.awt.windows.WWindowPeer",
@@ -589,20 +529,8 @@
   "methods":[{"name":"canDisplay","parameterTypes":["char"] }, {"name":"charToGlyph","parameterTypes":["int"] }, {"name":"charToVariationGlyph","parameterTypes":["int","int"] }, {"name":"getMapper","parameterTypes":[] }, {"name":"getTableBytes","parameterTypes":["int"] }]
 },
 {
-  "name":"sun.font.FontDesignMetrics",
-  "methods":[{"name":"getHeight","parameterTypes":[] }]
-},
-{
   "name":"sun.font.FontStrike",
   "methods":[{"name":"getGlyphMetrics","parameterTypes":["int"] }]
-},
-{
-  "name":"sun.font.FontUtilities",
-  "methods":[{"name":"debugFonts","parameterTypes":[] }]
-},
-{
-  "name":"sun.font.FreetypeFontScaler",
-  "methods":[{"name":"invalidateScaler","parameterTypes":[] }]
 },
 {
   "name":"sun.font.GlyphList",

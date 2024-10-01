@@ -6,12 +6,6 @@
     "interfaces":["com.sun.jna.platform.win32.Kernel32"]
   },
   {
-    "interfaces":["io.jaspercloud.sdwan.platform.rpc.TunnelRpc"]
-  },
-  {
-    "interfaces":["io.jaspercloud.sdwan.platform.rpc.WinSvcRpc"]
-  },
-  {
     "interfaces":["io.jaspercloud.sdwan.support.WinShellNativeApi"]
   },
   {

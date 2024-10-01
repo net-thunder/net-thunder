@@ -3,16 +3,6 @@
   "name":"[B"
 },
 {
-  "name":"[Lcom.sun.jna.platform.win32.Winsvc$SERVICE_TABLE_ENTRY;"
-},
-{
-  "name":"[Ljava.lang.Class;",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"[Ljava.lang.Class;HessianSerializer"
-},
-{
   "name":"[Ljava.lang.String;"
 },
 {
@@ -20,10 +10,6 @@
 },
 {
   "name":"android.content.Context"
-},
-{
-  "name":"apple.security.AppleProvider",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
   "name":"ch.qos.logback.classic.BasicConfigurator",
@@ -55,42 +41,6 @@
 },
 {
   "name":"ch.qos.logback.classic.util.DefaultJoranConfigurator",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"com.caucho.burlap.io.BurlapRemoteObject"
-},
-{
-  "name":"com.caucho.hessian.io.BigDecimalDeserializer",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"com.caucho.hessian.io.FileDeserializer",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"com.caucho.hessian.io.HessianRemote",
-  "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
-},
-{
-  "name":"com.caucho.hessian.io.HessianRemoteObject"
-},
-{
-  "name":"com.caucho.hessian.io.LocaleSerializer",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"com.caucho.hessian.io.ObjectNameDeserializer",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"com.caucho.hessian.io.RemoteSerializer",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"com.caucho.hessian.io.StringValueSerializer",
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
@@ -146,10 +96,6 @@
   "methods":[{"name":"callback","parameterTypes":["java.lang.Object[]"] }]
 },
 {
-  "name":"com.sun.jna.NativeLong",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
   "name":"com.sun.jna.Pointer",
   "fields":[{"name":"OPTIONS"}, {"name":"STRING_ENCODING"}, {"name":"STRUCTURE_ALIGNMENT"}, {"name":"TYPE_MAPPER"}]
 },
@@ -163,10 +109,6 @@
 {
   "name":"com.sun.jna.Structure$FFIType$size_t",
   "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"com.sun.jna.Union",
-  "allDeclaredFields":true
 },
 {
   "name":"com.sun.jna.platform.win32.WinDef$UINTByReference",
@@ -188,40 +130,7 @@
   "fields":[{"name":"OPTIONS"}, {"name":"STRING_ENCODING"}, {"name":"STRUCTURE_ALIGNMENT"}, {"name":"TYPE_MAPPER"}]
 },
 {
-  "name":"com.sun.jna.platform.win32.Winsvc$HandlerEx",
-  "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true,
-  "methods":[{"name":"callback","parameterTypes":["int","int","com.sun.jna.Pointer","com.sun.jna.Pointer"] }]
-},
-{
-  "name":"com.sun.jna.platform.win32.Winsvc$SC_HANDLE",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"com.sun.jna.platform.win32.Winsvc$SERVICE_MAIN_FUNCTION",
-  "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true,
-  "methods":[{"name":"callback","parameterTypes":["int","com.sun.jna.Pointer"] }]
-},
-{
-  "name":"com.sun.jna.platform.win32.Winsvc$SERVICE_STATUS",
-  "allDeclaredFields":true,
-  "fields":[{"name":"OPTIONS"}, {"name":"STRING_ENCODING"}, {"name":"STRUCTURE_ALIGNMENT"}, {"name":"TYPE_MAPPER"}]
-},
-{
-  "name":"com.sun.jna.platform.win32.Winsvc$SERVICE_STATUS_HANDLE",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"com.sun.jna.platform.win32.Winsvc$SERVICE_TABLE_ENTRY",
-  "allDeclaredFields":true,
-  "queryAllPublicConstructors":true,
-  "fields":[{"name":"OPTIONS"}, {"name":"STRING_ENCODING"}, {"name":"STRUCTURE_ALIGNMENT"}, {"name":"TYPE_MAPPER"}],
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
   "name":"com.sun.jna.ptr.IntByReference",
-  "fields":[{"name":"OPTIONS"}, {"name":"STRING_ENCODING"}, {"name":"STRUCTURE_ALIGNMENT"}, {"name":"TYPE_MAPPER"}],
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
@@ -312,7 +221,7 @@
   "name":"io.jaspercloud.sdwan.node.SdWanNodeConfig",
   "allDeclaredFields":true,
   "queryAllPublicMethods":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setConnectTimeout","parameterTypes":["int"] }, {"name":"setControllerServer","parameterTypes":["java.lang.String"] }, {"name":"setHeartTime","parameterTypes":["long"] }, {"name":"setMtu","parameterTypes":["int"] }, {"name":"setNetMesh","parameterTypes":["java.lang.Boolean"] }, {"name":"setP2pHeartTime","parameterTypes":["long"] }, {"name":"setRelayServer","parameterTypes":["java.lang.String"] }, {"name":"setStunServer","parameterTypes":["java.lang.String"] }, {"name":"setTenantId","parameterTypes":["java.lang.String"] }, {"name":"setTunName","parameterTypes":["java.lang.String"] }]
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setControllerServer","parameterTypes":["java.lang.String"] }, {"name":"setTenantId","parameterTypes":["java.lang.String"] }]
 },
 {
   "name":"io.jaspercloud.sdwan.node.SdWanNodeConfigBeanInfo"
@@ -331,62 +240,6 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
-  "name":"io.jaspercloud.sdwan.platform.rpc.RpcChannel$1"
-},
-{
-  "name":"io.jaspercloud.sdwan.platform.rpc.RpcInvoker$1$1"
-},
-{
-  "name":"io.jaspercloud.sdwan.platform.rpc.RpcRequest",
-  "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"io.jaspercloud.sdwan.platform.rpc.RpcRequestHessianSerializer"
-},
-{
-  "name":"io.jaspercloud.sdwan.platform.rpc.RpcResponse",
-  "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true,
-  "unsafeAllocated":true
-},
-{
-  "name":"io.jaspercloud.sdwan.platform.rpc.RpcResponseHessianDeserializer"
-},
-{
-  "name":"io.jaspercloud.sdwan.platform.rpc.TunnelInfo",
-  "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true,
-  "unsafeAllocated":true
-},
-{
-  "name":"io.jaspercloud.sdwan.platform.rpc.TunnelInfoHessianDeserializer"
-},
-{
-  "name":"io.jaspercloud.sdwan.platform.rpc.WinSvcRpc",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"io.jaspercloud.sdwan.platform.ui.MainWindow",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"io.jaspercloud.sdwan.platform.ui.MainWindowController",
-  "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"initialize","parameterTypes":[] }]
-},
-{
-  "name":"io.jaspercloud.sdwan.platform.ui2.MainWindow2",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"io.jaspercloud.sdwan.platform.ui2.MainWindow2Controller",
-  "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"initialize","parameterTypes":[] }]
-},
-{
   "name":"io.jaspercloud.sdwan.platform.ui2.MainWindowController",
   "allDeclaredFields":true,
   "queryAllDeclaredMethods":true,
@@ -399,18 +252,10 @@
   "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"initialize","parameterTypes":[] }]
 },
 {
-  "name":"io.jaspercloud.sdwan.service.ManagerService$1",
-  "fields":[{"name":"OPTIONS"}, {"name":"STRING_ENCODING"}, {"name":"STRUCTURE_ALIGNMENT"}, {"name":"TYPE_MAPPER"}]
-},
-{
   "name":"io.jaspercloud.sdwan.stun.StunDecoder"
 },
 {
   "name":"io.jaspercloud.sdwan.stun.StunEncoder"
-},
-{
-  "name":"io.jaspercloud.sdwan.support.WinServiceManager$WinServiceProc",
-  "fields":[{"name":"OPTIONS"}, {"name":"STRING_ENCODING"}, {"name":"STRUCTURE_ALIGNMENT"}, {"name":"TYPE_MAPPER"}]
 },
 {
   "name":"io.jaspercloud.sdwan.tranport.P2pClient$1"
@@ -438,45 +283,8 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
-  "name":"io.jaspercloud.sdwan.tun.osx.CtlInfo",
-  "allDeclaredFields":true,
-  "fields":[{"name":"OPTIONS"}, {"name":"STRING_ENCODING"}, {"name":"STRUCTURE_ALIGNMENT"}, {"name":"TYPE_MAPPER"}]
-},
-{
-  "name":"io.jaspercloud.sdwan.tun.osx.Ifreq",
-  "allDeclaredFields":true,
-  "allPublicFields":true
-},
-{
-  "name":"io.jaspercloud.sdwan.tun.osx.Ifreq$FfrIfru",
-  "allDeclaredFields":true,
-  "queryAllPublicConstructors":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"io.jaspercloud.sdwan.tun.osx.OsxNativeApi",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"io.jaspercloud.sdwan.tun.osx.SockName",
-  "allDeclaredFields":true,
-  "fields":[{"name":"OPTIONS"}, {"name":"STRING_ENCODING"}, {"name":"STRUCTURE_ALIGNMENT"}, {"name":"TYPE_MAPPER"}]
-},
-{
-  "name":"io.jaspercloud.sdwan.tun.osx.SockaddrCtl",
-  "allDeclaredFields":true,
-  "fields":[{"name":"OPTIONS"}, {"name":"STRING_ENCODING"}, {"name":"STRUCTURE_ALIGNMENT"}, {"name":"TYPE_MAPPER"}]
-},
-{
   "name":"io.jaspercloud.sdwan.tun.windows.WinTunNativeApi",
   "queryAllDeclaredMethods":true
-},
-{
-  "name":"io.netty.bootstrap.ServerBootstrap$1"
-},
-{
-  "name":"io.netty.bootstrap.ServerBootstrap$ServerBootstrapAcceptor",
-  "methods":[{"name":"channelRead","parameterTypes":["io.netty.channel.ChannelHandlerContext","java.lang.Object"] }, {"name":"exceptionCaught","parameterTypes":["io.netty.channel.ChannelHandlerContext","java.lang.Throwable"] }]
 },
 {
   "name":"io.netty.buffer.AbstractByteBufAllocator",
@@ -536,10 +344,6 @@
 },
 {
   "name":"io.netty.channel.socket.nio.NioDatagramChannel",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"io.netty.channel.socket.nio.NioServerSocketChannel",
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
@@ -637,9 +441,6 @@
   "name":"java.beans.PropertyVetoException"
 },
 {
-  "name":"java.io.File"
-},
-{
   "name":"java.io.FilePermission"
 },
 {
@@ -654,19 +455,13 @@
   "name":"java.lang.ClassLoader"
 },
 {
-  "name":"java.lang.Long",
-  "fields":[{"name":"OPTIONS"}, {"name":"STRING_ENCODING"}, {"name":"STRUCTURE_ALIGNMENT"}, {"name":"TYPE_MAPPER"}]
-},
-{
   "name":"java.lang.Module",
   "methods":[{"name":"getResourceAsStream","parameterTypes":["java.lang.String"] }]
 },
 {
   "name":"java.lang.Object",
   "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true,
   "queryAllPublicMethods":true,
-  "queryAllDeclaredConstructors":true,
   "methods":[{"name":"equals","parameterTypes":["java.lang.Object"] }, {"name":"hashCode","parameterTypes":[] }, {"name":"toString","parameterTypes":[] }]
 },
 {
@@ -681,11 +476,6 @@
 },
 {
   "name":"java.lang.RuntimePermission"
-},
-{
-  "name":"java.lang.StackTraceElement",
-  "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true
 },
 {
   "name":"java.lang.String"
@@ -722,9 +512,6 @@
 {
   "name":"java.lang.reflect.Method",
   "methods":[{"name":"isDefault","parameterTypes":[] }, {"name":"isVarArgs","parameterTypes":[] }]
-},
-{
-  "name":"java.math.BigDecimal"
 },
 {
   "name":"java.net.NetPermission"
@@ -769,7 +556,7 @@
 },
 {
   "name":"java.nio.channels.spi.SelectorProvider",
-  "methods":[{"name":"openServerSocketChannel","parameterTypes":["java.net.ProtocolFamily"] }, {"name":"openSocketChannel","parameterTypes":["java.net.ProtocolFamily"] }]
+  "methods":[{"name":"openSocketChannel","parameterTypes":["java.net.ProtocolFamily"] }]
 },
 {
   "name":"java.security.AlgorithmParametersSpi"
@@ -805,22 +592,13 @@
   "name":"java.security.spec.DSAParameterSpec"
 },
 {
-  "name":"java.sql.Date",
-  "methods":[{"name":"<init>","parameterTypes":["long"] }]
+  "name":"java.sql.Date"
 },
 {
-  "name":"java.sql.Time",
-  "methods":[{"name":"<init>","parameterTypes":["long"] }]
-},
-{
-  "name":"java.sql.Timestamp",
-  "methods":[{"name":"<init>","parameterTypes":["long"] }]
+  "name":"java.sql.Timestamp"
 },
 {
   "name":"java.util.Date"
-},
-{
-  "name":"java.util.Locale"
 },
 {
   "name":"java.util.PropertyPermission"
@@ -840,10 +618,6 @@
 {
   "name":"java.util.concurrent.atomic.Striped64",
   "fields":[{"name":"base"}, {"name":"cellsBusy"}]
-},
-{
-  "name":"java.util.concurrent.atomic.Striped64$Cell",
-  "fields":[{"name":"value"}]
 },
 {
   "name":"javafx.fxml.FXMLLoader"
@@ -1076,9 +850,6 @@
 },
 {
   "name":"javax.imageio.spi.ImageWriterSpi"
-},
-{
-  "name":"javax.management.ObjectName"
 },
 {
   "name":"javax.security.auth.x500.X500Principal",
@@ -1504,10 +1275,6 @@
 {
   "name":"sun.security.provider.MD5",
   "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"sun.security.provider.NativePRNG",
-  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"<init>","parameterTypes":["java.security.SecureRandomParameters"] }]
 },
 {
   "name":"sun.security.provider.SHA",
