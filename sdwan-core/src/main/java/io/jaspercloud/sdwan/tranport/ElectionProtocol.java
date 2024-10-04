@@ -18,9 +18,7 @@ import javax.crypto.SecretKey;
 import java.net.InetSocketAddress;
 import java.security.KeyPair;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -63,7 +61,7 @@ public abstract class ElectionProtocol {
             }
         }).collect(Collectors.toList());
         //wait ping resp
-        BlockingQueue<DataTransport> queue = new LinkedBlockingQueue<>();
+        CompletableFuture<DataTransport> future = new CompletableFuture<>();
         pingRequestList.forEach(e -> {
             e.execute().thenAccept(pingResp -> {
                 AddressUri uri = e.getAddressUri();
@@ -71,11 +69,11 @@ public abstract class ElectionProtocol {
                 if (AddressType.RELAY.equals(uri.getScheme())) {
                     long order = System.currentTimeMillis() - ((LongAttr) pingResp.content().getAttr(AttrType.Time)).getData();
                     DataTransport dataTransport = new RelayTransport(uri, relayClient, order);
-                    queue.add(dataTransport);
+                    future.complete(dataTransport);
                 } else if (AddressType.HOST.equals(uri.getScheme()) || AddressType.SRFLX.equals(uri.getScheme())) {
                     long order = System.currentTimeMillis() - ((LongAttr) pingResp.content().getAttr(AttrType.Time)).getData();
                     DataTransport dataTransport = new P2pTransport(uri, p2pClient, order);
-                    queue.add(dataTransport);
+                    future.complete(dataTransport);
                 } else {
                     throw new UnsupportedOperationException();
                 }
@@ -88,10 +86,11 @@ public abstract class ElectionProtocol {
                 .addAllAddressUri(getLocalAddressUriList())
                 .setPublicKey(ByteString.copyFrom(encryptionKeyPair.getPublic().getEncoded()))
                 .build();
-        return sendOffer(p2pOffer, electionTimeout)
+        //sendOffer = 3 * electionTimeout
+        return sendOffer(p2pOffer, 3 * electionTimeout)
                 .thenApply(resp -> {
                     try {
-                        DataTransport transport = queue.poll();
+                        DataTransport transport = future.getNow(null);
                         if (null == transport) {
                             throw new ProcessException("not found transport");
                         }
