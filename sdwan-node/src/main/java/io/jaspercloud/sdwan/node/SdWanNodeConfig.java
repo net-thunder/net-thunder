@@ -29,14 +29,14 @@ public class SdWanNodeConfig {
     private String localAddress;
     private int p2pPort = 0;
     private int relayPort = 0;
-    private long p2pHeartTime = 500;
-    private long p2pTimeout = 5000;
+    private long p2pHeartTime = 1000;
+    private long p2pTimeout = 15 * 1000;
     private boolean onlyRelayTransport = false;
 
     private String tunName = "net-thunder";
     private int mtu = 1280;
     private Boolean netMesh = false;
-    private Boolean autoReconnect = false;
+    private Boolean autoReconnect = true;
 
     private List<String> ifaceBlackList = Arrays.asList(
             "wt0",

@@ -15,6 +15,7 @@ import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -187,6 +188,9 @@ public class SdWanClient implements TransportLifecycle, Runnable {
             });
         } catch (Exception e) {
             bossGroup.shutdownGracefully();
+            if (e instanceof ConnectException) {
+                throw new ProcessException("ConnectException: " + socketAddress.toString());
+            }
             throw e;
         }
     }
