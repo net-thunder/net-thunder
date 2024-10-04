@@ -1,5 +1,6 @@
 package io.jaspercloud.sdwan.platform.ui2;
 
+import io.jaspercloud.sdwan.node.BaseSdWanNode;
 import io.jaspercloud.sdwan.node.ConfigSystem;
 import io.jaspercloud.sdwan.node.SdWanNodeConfig;
 import io.jaspercloud.sdwan.node.TunSdWanNode;
@@ -125,6 +126,13 @@ public class MainWindowController implements EventHandler<ActionEvent> {
             }
             tunSdWanNode = new TunSdWanNode(config) {
                 @Override
+                protected void onStarted(BaseSdWanNode node) {
+                    Platform.runLater(() -> {
+                        vipLab.setText(node.getLocalVip());
+                    });
+                }
+
+                @Override
                 protected void onErrorDisconnected() throws Exception {
                     stop();
                     Platform.runLater(() -> {
@@ -151,7 +159,6 @@ public class MainWindowController implements EventHandler<ActionEvent> {
                 Platform.runLater(() -> {
                     statusLab.setText("已连接");
                     stopBtn.setDisable(false);
-                    vipLab.setText(tunSdWanNode.getLocalVip());
                 });
             } catch (Exception e) {
                 Platform.runLater(() -> {
