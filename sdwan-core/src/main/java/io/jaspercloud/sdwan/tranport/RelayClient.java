@@ -25,8 +25,9 @@ import java.util.function.Supplier;
 public class RelayClient implements TransportLifecycle, Runnable {
 
     private InetSocketAddress relayAddress;
-    private int port;
+    private int localPort;
     private long heartTime;
+    private long timeout;
     private Supplier<ChannelHandler> handler;
 
     private Channel localChannel;
@@ -41,14 +42,15 @@ public class RelayClient implements TransportLifecycle, Runnable {
         return address.getPort();
     }
 
-    public RelayClient(String relayServer, long heartTime, Supplier<ChannelHandler> handler) {
-        this(relayServer, 0, heartTime, handler);
+    public RelayClient(String relayServer, long heartTime, long timeout, Supplier<ChannelHandler> handler) {
+        this(relayServer, 0, heartTime, timeout, handler);
     }
 
-    public RelayClient(String relayServer, int port, long heartTime, Supplier<ChannelHandler> handler) {
+    public RelayClient(String relayServer, int localPort, long heartTime, long timeout, Supplier<ChannelHandler> handler) {
         this.relayAddress = SocketAddressUtil.parse(relayServer);
-        this.port = port;
+        this.localPort = localPort;
         this.heartTime = heartTime;
+        this.timeout = timeout;
         this.handler = handler;
     }
 
@@ -133,7 +135,7 @@ public class RelayClient implements TransportLifecycle, Runnable {
                     }
                 });
         try {
-            localChannel = bootstrap.bind(new InetSocketAddress("0.0.0.0", port)).syncUninterruptibly().channel();
+            localChannel = bootstrap.bind(new InetSocketAddress("0.0.0.0", localPort)).syncUninterruptibly().channel();
             InetSocketAddress localAddress = (InetSocketAddress) localChannel.localAddress();
             curToken = regist(3000).get();
             log.info("RelayClient started: port={}, token={}", localAddress.getPort(), curToken);
@@ -163,7 +165,7 @@ public class RelayClient implements TransportLifecycle, Runnable {
     @Override
     public void run() {
         try {
-            String token = regist(3000).get();
+            String token = regist(timeout).get();
             if (!StringUtils.equals(token, curToken)) {
                 localChannel.close();
             }

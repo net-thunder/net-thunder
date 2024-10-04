@@ -147,7 +147,7 @@ public class IceClient implements TransportLifecycle {
         encryptionKeyPair = Ecdh.generateKeyPair();
         p2pClient = new P2pClient(config.getP2pPort(), config.getP2pHeartTime(), config.getP2pTimeout(),
                 () -> createStunPacketHandler());
-        relayClient = new RelayClient(config.getRelayServer(), config.getRelayPort(), config.getP2pHeartTime(),
+        relayClient = new RelayClient(config.getRelayServer(), config.getRelayPort(), config.getP2pHeartTime(), config.getP2pTimeout(),
                 () -> createStunPacketHandler());
         electionProtocol = new ElectionProtocol(config.getTenantId(), p2pClient, relayClient, encryptionKeyPair) {
             @Override
