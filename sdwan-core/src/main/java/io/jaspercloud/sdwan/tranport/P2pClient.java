@@ -28,7 +28,7 @@ import java.util.function.Supplier;
 @Slf4j
 public class P2pClient implements TransportLifecycle, Runnable {
 
-    private int port;
+    private int localPort;
     private long heartTime;
     private long timeout;
     private Supplier<ChannelHandler> handler;
@@ -45,8 +45,8 @@ public class P2pClient implements TransportLifecycle, Runnable {
         this(0, heartTime, 3000, handler);
     }
 
-    public P2pClient(int port, long heartTime, long timeout, Supplier<ChannelHandler> handler) {
-        this.port = port;
+    public P2pClient(int localPort, long heartTime, long timeout, Supplier<ChannelHandler> handler) {
+        this.localPort = localPort;
         this.heartTime = heartTime;
         this.timeout = timeout;
         this.handler = handler;
@@ -204,7 +204,7 @@ public class P2pClient implements TransportLifecycle, Runnable {
                     }
                 });
         try {
-            localChannel = bootstrap.bind(new InetSocketAddress("0.0.0.0", port)).sync().channel();
+            localChannel = bootstrap.bind(new InetSocketAddress("0.0.0.0", localPort)).sync().channel();
             InetSocketAddress localAddress = (InetSocketAddress) localChannel.localAddress();
             log.info("P2pClient started: port={}", localAddress.getPort());
             bossGroup.scheduleAtFixedRate(this, 0, heartTime, TimeUnit.MILLISECONDS);
