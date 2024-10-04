@@ -13,6 +13,7 @@ import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * @author jasper
@@ -100,5 +101,19 @@ public class P2pClientTest {
         p2pClient2.start();
         p2pClient1.ping(new InetSocketAddress("127.0.0.1", 1002), 3000).get();
         System.out.println();
+    }
+
+    @Test
+    public void heart() throws Exception {
+        P2pClient p2pClient = new P2pClient(0, 500, 5000, () -> new SimpleChannelInboundHandler<StunPacket>() {
+            @Override
+            protected void channelRead0(ChannelHandlerContext ctx, StunPacket msg) throws Exception {
+                System.out.println();
+            }
+        });
+        p2pClient.start();
+        p2pClient.addStunServer("139.196.183.165:13478");
+        CountDownLatch latch = new CountDownLatch(1);
+        latch.await();
     }
 }

@@ -19,7 +19,7 @@ public class RelayClientTest {
                 .build();
         RelayServer relayServer = new RelayServer(config, () -> new ChannelInboundHandlerAdapter());
         relayServer.start();
-        RelayClient relayClient = new RelayClient("127.0.0.1:1300", 1234, () -> new ChannelInboundHandlerAdapter());
+        RelayClient relayClient = new RelayClient("127.0.0.1:1300", 1234, 1000, 3000, () -> new ChannelInboundHandlerAdapter());
         relayClient.start();
         String token = relayClient.regist(3000).get();
         CountDownLatch countDownLatch = new CountDownLatch(1);
