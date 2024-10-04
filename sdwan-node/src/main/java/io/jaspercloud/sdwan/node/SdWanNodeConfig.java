@@ -29,14 +29,18 @@ public class SdWanNodeConfig {
     private String localAddress;
     private int p2pPort = 0;
     private int relayPort = 0;
+
+    private long electionTimeout = 1000;
     private long iceHeartTime = 1000;
     private long iceTimeout = 15000;
     private long p2pHeartTime = 500;
     private long p2pTimeout = 5000;
+
     private boolean onlyRelayTransport = false;
 
     private String tunName = "net-thunder";
     private int mtu = 1280;
+
     private Boolean netMesh = false;
     private Boolean autoReconnect = true;
 
