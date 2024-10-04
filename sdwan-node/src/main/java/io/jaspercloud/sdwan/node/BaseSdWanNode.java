@@ -113,6 +113,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                 () -> new SimpleChannelInboundHandler<SDWanProtos.Message>() {
                     @Override
                     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+                        log.info("sdWanClient channelInactive");
                         if (getStatus() && !config.getAutoReconnect()) {
                             onErrorDisconnected();
                         }
@@ -168,6 +169,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                 pipeline.addLast(new ChannelInboundHandlerAdapter() {
                     @Override
                     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+                        log.info("iceClient channelInactive");
                         if (getStatus() && !config.getAutoReconnect()) {
                             onErrorDisconnected();
                         }
@@ -254,9 +256,12 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
     protected void install() throws Exception {
         nodeInfoMap.clear();
         sdWanClient.start();
+        long st = System.currentTimeMillis();
         SDWanProtos.ServerConfigResp configResp = sdWanClient.getConfig(config.getConnectTimeout()).get();
+        long et = System.currentTimeMillis();
         config.setStunServer(configResp.getStunServer());
         config.setRelayServer(configResp.getRelayServer());
+        config.setElectionTimeout(et - st);
         iceClient.start();
         log.info("SdWanNode install");
         String localAddress = config.getLocalAddress();

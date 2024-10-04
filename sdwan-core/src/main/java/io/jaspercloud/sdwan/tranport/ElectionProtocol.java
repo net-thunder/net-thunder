@@ -32,17 +32,25 @@ import java.util.stream.Collectors;
 @Slf4j
 public abstract class ElectionProtocol {
 
-    private long electionTimeout = 1000;
     private String tenantId;
     private P2pClient p2pClient;
     private RelayClient relayClient;
     private KeyPair encryptionKeyPair;
+    private long electionTimeout;
+    private long pingTimeout;
 
-    public ElectionProtocol(String tenantId, P2pClient p2pClient, RelayClient relayClient, KeyPair encryptionKeyPair) {
+    public ElectionProtocol(String tenantId,
+                            P2pClient p2pClient,
+                            RelayClient relayClient,
+                            KeyPair encryptionKeyPair,
+                            long electionTimeout,
+                            long pingTimeout) {
         this.tenantId = tenantId;
         this.p2pClient = p2pClient;
         this.relayClient = relayClient;
         this.encryptionKeyPair = encryptionKeyPair;
+        this.electionTimeout = electionTimeout;
+        this.pingTimeout = pingTimeout;
     }
 
     public CompletableFuture<DataTransport> offer(SDWanProtos.NodeInfo nodeInfo) {
@@ -52,9 +60,9 @@ public abstract class ElectionProtocol {
                 .collect(Collectors.toList());
         List<PingRequest> pingRequestList = uriList.stream().map(uri -> {
             if (AddressType.HOST.equals(uri.getScheme()) || AddressType.SRFLX.equals(uri.getScheme())) {
-                return parseP2pPing(uri, electionTimeout);
+                return parseP2pPing(uri, pingTimeout);
             } else if (AddressType.RELAY.equals(uri.getScheme())) {
-                return parseRelayPing(uri, electionTimeout);
+                return parseRelayPing(uri, pingTimeout);
             } else {
                 throw new UnsupportedOperationException();
             }
@@ -106,15 +114,15 @@ public abstract class ElectionProtocol {
                 .collect(Collectors.toList());
         List<PingRequest> pingRequestList = uriList.stream().map(uri -> {
             if (AddressType.HOST.equals(uri.getScheme()) || AddressType.SRFLX.equals(uri.getScheme())) {
-                return parseP2pPing(uri, electionTimeout);
+                return parseP2pPing(uri, pingTimeout);
             } else if (AddressType.RELAY.equals(uri.getScheme())) {
-                return parseRelayPing(uri, electionTimeout);
+                return parseRelayPing(uri, pingTimeout);
             } else {
                 throw new UnsupportedOperationException();
             }
         }).collect(Collectors.toList());
         //wait ping resp
-        CompletableFuture<List<DataTransport>> future = AsyncTask.create(electionTimeout);
+        CompletableFuture<List<DataTransport>> future = AsyncTask.create(3 * electionTimeout);
         CountBarrier<DataTransport> countBarrier = new CountBarrier<>(pingRequestList.size(), new Consumer<List<DataTransport>>() {
             @Override
             public void accept(List<DataTransport> list) {

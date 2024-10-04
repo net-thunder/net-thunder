@@ -102,7 +102,7 @@ public class IceClient implements TransportLifecycle {
         }
     }
 
-    private ChannelHandler createStunPacketHandler() {
+    private ChannelHandler createStunPacketHandler(String client) {
         return new ChannelInitializer<Channel>() {
             @Override
             protected void initChannel(Channel ch) throws Exception {
@@ -131,6 +131,12 @@ public class IceClient implements TransportLifecycle {
                             ctx.fireChannelRead(packet);
                         }
                     }
+
+                    @Override
+                    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+                        log.info("{} channelInactive", client);
+                        super.channelInactive(ctx);
+                    }
                 });
                 pipeline.addLast(handler.get());
             }
@@ -146,10 +152,11 @@ public class IceClient implements TransportLifecycle {
     public void start() throws Exception {
         encryptionKeyPair = Ecdh.generateKeyPair();
         p2pClient = new P2pClient(config.getP2pPort(), config.getIceHeartTime(), config.getIceTimeout(),
-                () -> createStunPacketHandler());
+                () -> createStunPacketHandler("p2pClient"));
         relayClient = new RelayClient(config.getRelayServer(), config.getRelayPort(), config.getIceHeartTime(), config.getIceTimeout(),
-                () -> createStunPacketHandler());
-        electionProtocol = new ElectionProtocol(config.getTenantId(), p2pClient, relayClient, encryptionKeyPair) {
+                () -> createStunPacketHandler("relayClient"));
+        electionProtocol = new ElectionProtocol(config.getTenantId(), p2pClient, relayClient, encryptionKeyPair,
+                config.getElectionTimeout(), config.getP2pTimeout()) {
             @Override
             protected CompletableFuture<SDWanProtos.P2pAnswer> sendOffer(SDWanProtos.P2pOffer p2pOffer, long timeout) {
                 return sdWanNode.getSdWanClient().offer(p2pOffer, timeout);
