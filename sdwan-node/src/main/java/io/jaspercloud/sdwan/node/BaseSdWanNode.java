@@ -327,7 +327,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         virtualRouter.updateRoutes(regResp.getRouteList().getRouteList());
         virtualRouter.updateVNATs(regResp.getVnatList().getVnatList());
         log.info("SdWanNode installed");
-        onStarted(this);
+        onConnected(this);
     }
 
     protected void uninstall() throws Exception {
@@ -366,7 +366,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         }
     }
 
-    protected void onStarted(BaseSdWanNode node) {
+    protected void onConnected(BaseSdWanNode node) {
 
     }
 

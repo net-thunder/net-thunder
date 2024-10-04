@@ -126,7 +126,7 @@ public class MainWindowController implements EventHandler<ActionEvent> {
             }
             tunSdWanNode = new TunSdWanNode(config) {
                 @Override
-                protected void onStarted(BaseSdWanNode node) {
+                protected void onConnected(BaseSdWanNode node) {
                     Platform.runLater(() -> {
                         vipLab.setText(node.getLocalVip());
                     });
