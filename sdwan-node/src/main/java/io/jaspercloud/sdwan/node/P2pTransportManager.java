@@ -1,11 +1,15 @@
 package io.jaspercloud.sdwan.node;
 
+import io.jaspercloud.sdwan.stun.StunMessage;
+import io.jaspercloud.sdwan.support.AsyncTask;
 import io.jaspercloud.sdwan.tranport.DataTransport;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -17,9 +21,10 @@ import java.util.function.Consumer;
 public class P2pTransportManager implements Runnable {
 
     private long heartTime;
-
+    private long timeout;
     private ScheduledExecutorService scheduledExecutorService;
     private Map<String, AtomicReference<DataTransport>> transportMap = new ConcurrentHashMap<>();
+    private Map<String, String> heartMap = new ConcurrentHashMap<>();
 
     public void clear() {
         transportMap.clear();
@@ -53,34 +58,40 @@ public class P2pTransportManager implements Runnable {
         transportMap.remove(vip);
     }
 
-    public P2pTransportManager(long heartTime) {
+    public P2pTransportManager(long heartTime, long timeout) {
         this.heartTime = heartTime;
+        this.timeout = timeout;
     }
 
     @Override
     public void run() {
-        Iterator<String> iterator = transportMap.keySet().iterator();
-        while (iterator.hasNext()) {
-            String key = iterator.next();
-            DataTransport transport = transportMap.get(key).get();
-            if (null == transport) {
-                continue;
-            }
-            try {
-                transport.ping(3000);
-            } catch (ExecutionException e) {
-                if (e.getCause() instanceof TimeoutException) {
-                    log.info("timeout remove vip: {}", key);
-                } else {
-                    log.error(e.getMessage(), e);
-                    log.info("remove vip: {}", key);
+        try {
+            for (String vip : transportMap.keySet()) {
+                DataTransport transport = transportMap.get(vip).get();
+                if (null == transport) {
+                    continue;
                 }
-                iterator.remove();
-            } catch (Throwable e) {
-                log.error(e.getMessage(), e);
-                log.info("remove vip: {}", key);
-                iterator.remove();
+                String address = transport.addressUri().toString();
+                String id = heartMap.computeIfAbsent(address, key -> {
+                    String tranId = StunMessage.genTranId();
+                    AsyncTask.waitTask(tranId, timeout)
+                            .whenComplete((msg, ex) -> {
+                                try {
+                                    if (null == ex) {
+                                        return;
+                                    }
+                                    log.info("ping transport timeout: vip={}, address={}", vip, address);
+                                    transportMap.remove(vip);
+                                } finally {
+                                    heartMap.remove(key);
+                                }
+                            });
+                    return tranId;
+                });
+                transport.sendPingOneWay(id);
             }
+        } catch (Throwable e) {
+            log.error(e.getMessage(), e);
         }
     }
 

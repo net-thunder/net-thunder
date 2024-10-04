@@ -19,10 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.function.Supplier;
 
 @Slf4j
@@ -32,9 +29,9 @@ public class P2pClient implements TransportLifecycle, Runnable {
     private long heartTime;
     private long timeout;
     private Supplier<ChannelHandler> handler;
-
     private List<StunPing> stunServerList = new ArrayList<>();
     private Channel localChannel;
+    private Map<String, String> heartMap = new ConcurrentHashMap<>();
 
     public int getLocalPort() {
         InetSocketAddress address = (InetSocketAddress) localChannel.localAddress();
@@ -84,6 +81,19 @@ public class P2pClient implements TransportLifecycle, Runnable {
         StunPacket request = new StunPacket(message, address);
         CompletableFuture<StunPacket> future = invokeAsync(request, timeout);
         return future;
+    }
+
+    public void sendBindOneWay(InetSocketAddress address, String tranId) {
+        StunMessage message = new StunMessage(MessageType.BindRequest, tranId);
+        StunPacket request = new StunPacket(message, address);
+        localChannel.writeAndFlush(request);
+    }
+
+    public void sendPingOneWay(InetSocketAddress address, String tranId) {
+        StunMessage message = new StunMessage(MessageType.PingRequest, tranId);
+        message.setAttr(AttrType.Time, new LongAttr(System.currentTimeMillis()));
+        StunPacket request = new StunPacket(message, address);
+        localChannel.writeAndFlush(request);
     }
 
     public void transfer(String vip, InetSocketAddress toAddress, byte[] bytes) {
@@ -232,19 +242,29 @@ public class P2pClient implements TransportLifecycle, Runnable {
 
     @Override
     public void run() {
-        for (StunPing ping : stunServerList) {
-            try {
-                boolean ret = ping.ping(timeout);
-                if (!ret) {
-                    log.error("stun server error: {}", ping.getStunServer());
-                    localChannel.close();
-                }
-            } catch (ExecutionException e) {
-                log.error("stun server error: {}", ping.getStunServer());
-                localChannel.close();
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
+        try {
+            for (StunPing ping : stunServerList) {
+                String address = ping.getAddress().toString();
+                String id = heartMap.computeIfAbsent(address, key -> {
+                    String tranId = StunMessage.genTranId();
+                    AsyncTask.waitTask(tranId, timeout)
+                            .whenComplete((msg, ex) -> {
+                                try {
+                                    if (null == ex) {
+                                        return;
+                                    }
+                                    log.error("ping stunServer timeout: {}", address);
+                                    localChannel.close();
+                                } finally {
+                                    heartMap.remove(key);
+                                }
+                            });
+                    return tranId;
+                });
+                ping.sendOneWay(id);
             }
+        } catch (Throwable e) {
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -252,18 +272,16 @@ public class P2pClient implements TransportLifecycle, Runnable {
     @Setter
     private class StunPing {
 
-        private String stunServer;
+        private InetSocketAddress address;
         private NatAddress curNatAddress;
 
         public StunPing(String stunServer, NatAddress curNatAddress) {
-            this.stunServer = stunServer;
+            address = SocketAddressUtil.parse(stunServer);
             this.curNatAddress = curNatAddress;
         }
 
-        public boolean ping(long timeout) throws Exception {
-            NatAddress natAddress = parseNatAddress(stunServer, timeout);
-            boolean eq = natAddress.equals(curNatAddress);
-            return eq;
+        public void sendOneWay(String tranId) {
+            sendBindOneWay(address, tranId);
         }
     }
 }

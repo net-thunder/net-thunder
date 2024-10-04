@@ -112,7 +112,7 @@ public class P2pClientTest {
             }
         });
         p2pClient.start();
-        p2pClient.addStunServer("139.196.183.165:13478");
+        p2pClient.addStunServer("127.0.0.1:3478");
         CountDownLatch latch = new CountDownLatch(1);
         latch.await();
     }

@@ -170,7 +170,7 @@ public class IceClient implements TransportLifecycle {
                 return sdWanNode.getLocalAddressUriList();
             }
         };
-        p2pTransportManager = new P2pTransportManager(config.getP2pHeartTime());
+        p2pTransportManager = new P2pTransportManager(config.getP2pHeartTime(), config.getP2pTimeout());
         p2pTransportManager.start();
         p2pClient.start();
         relayClient.start();

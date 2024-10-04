@@ -261,8 +261,8 @@ public abstract class ElectionProtocol {
         }
 
         @Override
-        public void ping(long timeout) throws Exception {
-            p2pClient.ping(address, timeout).get();
+        public void sendPingOneWay(String tranId) {
+            p2pClient.sendPingOneWay(address, tranId);
         }
 
         @Override
@@ -319,8 +319,8 @@ public abstract class ElectionProtocol {
         }
 
         @Override
-        public void ping(long timeout) throws Exception {
-            relayClient.ping(token, timeout).get();
+        public void sendPingOneWay(String tranId) {
+            relayClient.sendPingOneWay(token, tranId);
         }
 
         @Override
