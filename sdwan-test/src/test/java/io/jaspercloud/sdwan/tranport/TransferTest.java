@@ -53,16 +53,17 @@ public class TransferTest {
                 .build(), () -> new ChannelInboundHandlerAdapter());
         stunServer.start();
         TestSdWanNode sdWanNode1 = new TestSdWanNode(SdWanNodeConfig.builder()
-                .onlyRelayTransport(true)
+                .onlyRelayTransport(false)
                 .controllerServer(address + ":1800")
                 .tunName("tun1")
                 .p2pPort(1001)
                 .tenantId("default")
                 .connectTimeout(5 * 1000)
                 .heartTime(5 * 1000)
-                .p2pHeartTime(5 * 1000)
+                .p2pHeartTime(1000)
                 .p2pTimeout(5 * 1000)
                 .netMesh(false)
+                .autoReconnect(true)
                 .build()) {
             @Override
             protected String processMacAddress(String hardwareAddress) {
@@ -71,16 +72,17 @@ public class TransferTest {
         };
         sdWanNode1.start();
         TestSdWanNode sdWanNode2 = new TestSdWanNode(SdWanNodeConfig.builder()
-                .onlyRelayTransport(true)
+                .onlyRelayTransport(false)
                 .controllerServer(address + ":1800")
                 .tunName("tun2")
                 .p2pPort(1002)
                 .tenantId("default")
                 .connectTimeout(5 * 1000)
                 .heartTime(5 * 1000)
-                .p2pHeartTime(5 * 1000)
+                .p2pHeartTime(1000)
                 .p2pTimeout(5 * 1000)
                 .netMesh(false)
+                .autoReconnect(true)
                 .build()) {
             @Override
             protected String processMacAddress(String hardwareAddress) {
@@ -94,7 +96,7 @@ public class TransferTest {
                     .setDstIP("10.5.0.12")
                     .setPayload(ByteString.copyFrom("hello".getBytes()))
                     .build());
-            Thread.sleep(1000);
+            Thread.sleep(30 * 1000);
         }
     }
 }

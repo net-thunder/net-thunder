@@ -10,7 +10,7 @@ public interface DataTransport {
 
     AddressUri addressUri();
 
-    void ping(long timeout) throws Exception;
+    void sendPingOneWay(String tranId);
 
     void setSecretKey(SecretKey secretKey);
 

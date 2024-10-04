@@ -12,8 +12,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.InetSocketAddress;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
@@ -29,9 +30,9 @@ public class RelayClient implements TransportLifecycle, Runnable {
     private long heartTime;
     private long timeout;
     private Supplier<ChannelHandler> handler;
-
     private Channel localChannel;
     private String curToken;
+    private Map<String, String> heartMap = new ConcurrentHashMap<>();
 
     public String getCurToken() {
         return curToken;
@@ -79,6 +80,20 @@ public class RelayClient implements TransportLifecycle, Runnable {
             String token = attr.getData();
             return token;
         });
+    }
+
+    public void sendBindOneWay(String tranId) {
+        StunMessage message = new StunMessage(MessageType.BindRelayRequest, tranId);
+        StunPacket request = new StunPacket(message, relayAddress);
+        localChannel.writeAndFlush(request);
+    }
+
+    public void sendPingOneWay(String token, String tranId) {
+        StunMessage message = new StunMessage(MessageType.PingRequest, tranId);
+        message.setAttr(AttrType.RelayToken, new StringAttr(token));
+        message.setAttr(AttrType.Time, new LongAttr(System.currentTimeMillis()));
+        StunPacket request = new StunPacket(message, relayAddress);
+        localChannel.writeAndFlush(request);
     }
 
     public void transfer(String vip, InetSocketAddress address, String token, byte[] bytes) {
@@ -165,13 +180,31 @@ public class RelayClient implements TransportLifecycle, Runnable {
     @Override
     public void run() {
         try {
-            String token = regist(timeout).get();
-            if (!StringUtils.equals(token, curToken)) {
-                localChannel.close();
-            }
-        } catch (ExecutionException e) {
-            localChannel.close();
-        } catch (Exception e) {
+            String address = relayAddress.toString();
+            String id = heartMap.computeIfAbsent(address, key -> {
+                String tranId = StunMessage.genTranId();
+                AsyncTask.<StunPacket>waitTask(tranId, timeout)
+                        .whenComplete((msg, ex) -> {
+                            try {
+                                if (null == ex) {
+                                    StunMessage stunMessage = msg.content();
+                                    StringAttr attr = stunMessage.getAttr(AttrType.RelayToken);
+                                    String token = attr.getData();
+                                    if (!StringUtils.equals(token, curToken)) {
+                                        localChannel.close();
+                                    }
+                                } else {
+                                    log.error("ping relayServer timeout: {}", address);
+                                    localChannel.close();
+                                }
+                            } finally {
+                                heartMap.remove(key);
+                            }
+                        });
+                return tranId;
+            });
+            sendBindOneWay(id);
+        } catch (Throwable e) {
             log.error(e.getMessage(), e);
         }
     }
