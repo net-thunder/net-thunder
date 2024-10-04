@@ -90,15 +90,18 @@ public abstract class ElectionProtocol {
                 .build();
         return sendOffer(p2pOffer, electionTimeout)
                 .thenApply(resp -> {
-                    DataTransport transport = queue.poll();
-                    if (null == transport) {
-                        throw new ProcessException("not found transport");
-                    }
                     try {
+                        DataTransport transport = queue.poll();
+                        if (null == transport) {
+                            throw new ProcessException("not found transport");
+                        }
+                        log.info("selectDataTransport: {} -> {}, uri={}", p2pOffer.getSrcVIP(), p2pOffer.getDstVIP(), transport.addressUri().toString());
                         byte[] publicKey = resp.getPublicKey().toByteArray();
                         SecretKey secretKey = Ecdh.generateAESKey(encryptionKeyPair.getPrivate(), publicKey);
                         transport.setSecretKey(secretKey);
                         return transport;
+                    } catch (ProcessException e) {
+                        throw e;
                     } catch (Exception e) {
                         throw new ProcessException(e.getMessage(), e);
                     }
@@ -139,6 +142,7 @@ public abstract class ElectionProtocol {
         });
         return future.thenApply(transport -> {
             try {
+                log.info("selectDataTransport: {} -> {}, uri={}", p2pOffer.getSrcVIP(), p2pOffer.getDstVIP(), transport.addressUri().toString());
                 byte[] publicKey = p2pOffer.getPublicKey().toByteArray();
                 SecretKey secretKey = Ecdh.generateAESKey(encryptionKeyPair.getPrivate(), publicKey);
                 transport.setSecretKey(secretKey);
