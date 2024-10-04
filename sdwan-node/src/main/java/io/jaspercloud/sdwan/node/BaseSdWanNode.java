@@ -256,12 +256,9 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
     protected void install() throws Exception {
         nodeInfoMap.clear();
         sdWanClient.start();
-        long st = System.currentTimeMillis();
         SDWanProtos.ServerConfigResp configResp = sdWanClient.getConfig(config.getConnectTimeout()).get();
-        long et = System.currentTimeMillis();
         config.setStunServer(configResp.getStunServer());
         config.setRelayServer(configResp.getRelayServer());
-        config.setElectionTimeout(et - st);
         iceClient.start();
         log.info("SdWanNode install");
         String localAddress = config.getLocalAddress();

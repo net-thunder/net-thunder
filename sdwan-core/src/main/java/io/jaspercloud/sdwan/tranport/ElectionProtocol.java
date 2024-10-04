@@ -8,24 +8,19 @@ import io.jaspercloud.sdwan.stun.LongAttr;
 import io.jaspercloud.sdwan.stun.StunPacket;
 import io.jaspercloud.sdwan.support.AddressUri;
 import io.jaspercloud.sdwan.support.AsyncTask;
-import io.jaspercloud.sdwan.support.CountBarrier;
 import io.jaspercloud.sdwan.support.Ecdh;
 import io.jaspercloud.sdwan.util.AddressType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.math.NumberUtils;
 
 import javax.crypto.SecretKey;
 import java.net.InetSocketAddress;
 import java.security.KeyPair;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -93,13 +88,15 @@ public abstract class ElectionProtocol {
                 .addAllAddressUri(getLocalAddressUriList())
                 .setPublicKey(ByteString.copyFrom(encryptionKeyPair.getPublic().getEncoded()))
                 .build();
-        return sendOffer(p2pOffer, 3 * electionTimeout)
+        return sendOffer(p2pOffer, electionTimeout)
                 .thenApply(resp -> {
+                    DataTransport transport = queue.poll();
+                    if (null == transport) {
+                        throw new ProcessException("not found transport");
+                    }
                     try {
-                        List<DataTransport> transportList = queue.stream().collect(Collectors.toList());
                         byte[] publicKey = resp.getPublicKey().toByteArray();
                         SecretKey secretKey = Ecdh.generateAESKey(encryptionKeyPair.getPrivate(), publicKey);
-                        DataTransport transport = selectDataTransport(p2pOffer.getSrcVIP(), p2pOffer.getDstVIP(), transportList);
                         transport.setSecretKey(secretKey);
                         return transport;
                     } catch (Exception e) {
@@ -122,49 +119,28 @@ public abstract class ElectionProtocol {
             }
         }).collect(Collectors.toList());
         //wait ping resp
-        CompletableFuture<List<DataTransport>> future = AsyncTask.create(3 * electionTimeout);
-        CountBarrier<DataTransport> countBarrier = new CountBarrier<>(pingRequestList.size(), new Consumer<List<DataTransport>>() {
-            @Override
-            public void accept(List<DataTransport> list) {
-                future.complete(list);
-            }
-        });
-        CompletableFuture<List<DataTransport>> collectFuture = future.handle((list, ex) -> {
-            if (null != ex) {
-                return countBarrier.toList();
-            } else {
-                return list;
-            }
-        });
+        CompletableFuture<DataTransport> future = AsyncTask.create(electionTimeout);
         pingRequestList.forEach(req -> {
             req.execute().thenAccept(pingResp -> {
-                try {
-                    AddressUri uri = req.getAddressUri();
-                    log.info("pong: uri={}", uri.toString());
-                    if (AddressType.RELAY.equals(uri.getScheme())) {
-                        long order = System.currentTimeMillis() - ((LongAttr) pingResp.content().getAttr(AttrType.Time)).getData();
-                        DataTransport dataTransport = new RelayTransport(uri, relayClient, order);
-                        countBarrier.add(dataTransport);
-                    } else if (AddressType.HOST.equals(uri.getScheme()) || AddressType.SRFLX.equals(uri.getScheme())) {
-                        long order = System.currentTimeMillis() - ((LongAttr) pingResp.content().getAttr(AttrType.Time)).getData();
-                        DataTransport dataTransport = new P2pTransport(uri, p2pClient, order);
-                        countBarrier.add(dataTransport);
-                    } else {
-                        throw new UnsupportedOperationException();
-                    }
-                } finally {
-                    countBarrier.countDown();
+                AddressUri uri = req.getAddressUri();
+                log.info("pong: uri={}", uri.toString());
+                if (AddressType.RELAY.equals(uri.getScheme())) {
+                    long order = System.currentTimeMillis() - ((LongAttr) pingResp.content().getAttr(AttrType.Time)).getData();
+                    DataTransport dataTransport = new RelayTransport(uri, relayClient, order);
+                    future.complete(dataTransport);
+                } else if (AddressType.HOST.equals(uri.getScheme()) || AddressType.SRFLX.equals(uri.getScheme())) {
+                    long order = System.currentTimeMillis() - ((LongAttr) pingResp.content().getAttr(AttrType.Time)).getData();
+                    DataTransport dataTransport = new P2pTransport(uri, p2pClient, order);
+                    future.complete(dataTransport);
+                } else {
+                    throw new UnsupportedOperationException();
                 }
             });
         });
-        return collectFuture.thenApply(transportList -> {
+        return future.thenApply(transport -> {
             try {
-                if (null == transportList) {
-                    transportList = Collections.emptyList();
-                }
                 byte[] publicKey = p2pOffer.getPublicKey().toByteArray();
                 SecretKey secretKey = Ecdh.generateAESKey(encryptionKeyPair.getPrivate(), publicKey);
-                DataTransport transport = selectDataTransport(p2pOffer.getSrcVIP(), p2pOffer.getDstVIP(), transportList);
                 transport.setSecretKey(secretKey);
                 SDWanProtos.P2pAnswer p2pAnswer = SDWanProtos.P2pAnswer.newBuilder()
                         .setTenantId(tenantId)
@@ -186,19 +162,19 @@ public abstract class ElectionProtocol {
         });
     }
 
-    private DataTransport selectDataTransport(String srcVip, String dstVip, List<DataTransport> transportList) {
-        if (transportList.isEmpty()) {
-            throw new ProcessException("not found transport");
-        }
-        Collections.sort(transportList, (o1, o2) -> NumberUtils.compare(o2.order(), o1.order()));
-        Optional<DataTransport> optional = transportList.stream().filter(e -> e instanceof P2pTransport).findFirst();
-        if (!optional.isPresent()) {
-            optional = transportList.stream().filter(e -> e instanceof RelayTransport).findFirst();
-        }
-        DataTransport transport = optional.get();
-        log.info("selectDataTransport: {} -> {}, uri={}", srcVip, dstVip, transport.addressUri().toString());
-        return transport;
-    }
+//    private DataTransport selectDataTransport(String srcVip, String dstVip, List<DataTransport> transportList) {
+//        if (transportList.isEmpty()) {
+//            throw new ProcessException("not found transport");
+//        }
+//        Collections.sort(transportList, (o1, o2) -> NumberUtils.compare(o2.order(), o1.order()));
+//        Optional<DataTransport> optional = transportList.stream().filter(e -> e instanceof P2pTransport).findFirst();
+//        if (!optional.isPresent()) {
+//            optional = transportList.stream().filter(e -> e instanceof RelayTransport).findFirst();
+//        }
+//        DataTransport transport = optional.get();
+//        log.info("selectDataTransport: {} -> {}, uri={}", srcVip, dstVip, transport.addressUri().toString());
+//        return transport;
+//    }
 
     private PingRequest parseP2pPing(AddressUri uri, long timeout) {
         log.info("ping uri: {}", uri.toString());
