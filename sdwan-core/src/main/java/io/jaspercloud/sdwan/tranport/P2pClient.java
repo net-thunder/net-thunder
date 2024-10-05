@@ -10,13 +10,9 @@ import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.*;
@@ -25,11 +21,11 @@ import java.util.function.Supplier;
 @Slf4j
 public class P2pClient implements TransportLifecycle, Runnable {
 
+    private InetSocketAddress stunAddress;
     private int localPort;
     private long heartTime;
     private long timeout;
     private Supplier<ChannelHandler> handler;
-    private List<StunPing> stunServerList = new ArrayList<>();
     private Channel localChannel;
     private Map<String, String> heartMap = new ConcurrentHashMap<>();
 
@@ -38,11 +34,12 @@ public class P2pClient implements TransportLifecycle, Runnable {
         return address.getPort();
     }
 
-    public P2pClient(long heartTime, Supplier<ChannelHandler> handler) {
-        this(0, heartTime, 3000, handler);
+    public P2pClient(String stunServer, long heartTime, Supplier<ChannelHandler> handler) {
+        this(stunServer, 0, heartTime, 3000, handler);
     }
 
-    public P2pClient(int localPort, long heartTime, long timeout, Supplier<ChannelHandler> handler) {
+    public P2pClient(String stunServer, int localPort, long heartTime, long timeout, Supplier<ChannelHandler> handler) {
+        this.stunAddress = SocketAddressUtil.parse(stunServer);
         this.localPort = localPort;
         this.heartTime = heartTime;
         this.timeout = timeout;
@@ -108,16 +105,8 @@ public class P2pClient implements TransportLifecycle, Runnable {
         localChannel.writeAndFlush(request);
     }
 
-    public NatAddress addStunServer(String stunServer) throws Exception {
-        NatAddress natAddress = parseNatAddress(stunServer, timeout);
-        StunPing stunPing = new StunPing(stunServer, natAddress);
-        stunServerList.add(stunPing);
-        return natAddress;
-    }
-
-    public NatAddress parseNatAddress(String stunServer, long timeout) throws Exception {
-        InetSocketAddress remote = SocketAddressUtil.parse(stunServer);
-        StunPacket response = sendBind(remote, timeout).get();
+    public NatAddress parseNatAddress(long timeout) throws Exception {
+        StunPacket response = sendBind(stunAddress, timeout).get();
         Map<AttrType, Attr> attrs = response.content().getAttrs();
         AddressAttr changedAddressAttr = (AddressAttr) attrs.get(AttrType.ChangedAddress);
         if (null == changedAddressAttr) {
@@ -128,9 +117,9 @@ public class P2pClient implements TransportLifecycle, Runnable {
             InetSocketAddress changedAddress = changedAddressAttr.getAddress();
             AddressAttr mappedAddressAttr = (AddressAttr) attrs.get(AttrType.MappedAddress);
             InetSocketAddress mappedAddress1 = mappedAddressAttr.getAddress();
-            if (null != (response = testChangeBind(remote, true, true, timeout))) {
+            if (null != (response = testChangeBind(stunAddress, true, true, timeout))) {
                 return new NatAddress(SDWanProtos.MappingTypeCode.FullCone, mappedAddress1);
-            } else if (null != (response = testChangeBind(remote, false, true, timeout))) {
+            } else if (null != (response = testChangeBind(stunAddress, false, true, timeout))) {
                 return new NatAddress(SDWanProtos.MappingTypeCode.RestrictedCone, mappedAddress1);
             }
             try {
@@ -243,45 +232,26 @@ public class P2pClient implements TransportLifecycle, Runnable {
     @Override
     public void run() {
         try {
-            for (StunPing ping : stunServerList) {
-                String address = ping.getAddress().toString();
-                String id = heartMap.computeIfAbsent(address, key -> {
-                    String tranId = StunMessage.genTranId();
-                    AsyncTask.waitTask(tranId, timeout)
-                            .whenComplete((msg, ex) -> {
-                                try {
-                                    if (null == ex) {
-                                        return;
-                                    }
-                                    log.error("ping stunServer timeout: {}", address);
-                                    localChannel.close();
-                                } finally {
-                                    heartMap.remove(key);
+            String address = stunAddress.toString();
+            String id = heartMap.computeIfAbsent(address, key -> {
+                String tranId = StunMessage.genTranId();
+                AsyncTask.waitTask(tranId, timeout)
+                        .whenComplete((msg, ex) -> {
+                            try {
+                                if (null == ex) {
+                                    return;
                                 }
-                            });
-                    return tranId;
-                });
-                ping.sendOneWay(id);
-            }
+                                log.error("ping stunServer timeout: {}", address);
+                                localChannel.close();
+                            } finally {
+                                heartMap.remove(key);
+                            }
+                        });
+                return tranId;
+            });
+            sendBindOneWay(stunAddress, id);
         } catch (Throwable e) {
             log.error(e.getMessage(), e);
-        }
-    }
-
-    @Getter
-    @Setter
-    private class StunPing {
-
-        private InetSocketAddress address;
-        private NatAddress curNatAddress;
-
-        public StunPing(String stunServer, NatAddress curNatAddress) {
-            address = SocketAddressUtil.parse(stunServer);
-            this.curNatAddress = curNatAddress;
-        }
-
-        public void sendOneWay(String tranId) {
-            sendBindOneWay(address, tranId);
         }
     }
 }
