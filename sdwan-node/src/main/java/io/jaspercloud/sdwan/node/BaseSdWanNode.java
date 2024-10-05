@@ -395,6 +395,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
             }
             try {
                 Thread.sleep(5000);
+            } catch (InterruptedException e) {
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
