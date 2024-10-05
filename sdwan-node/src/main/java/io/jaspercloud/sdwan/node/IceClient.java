@@ -52,12 +52,13 @@ public class IceClient implements TransportLifecycle {
         this.handler = handler;
     }
 
-    public NatAddress addStunServer(String stunServer) throws Exception {
-        return p2pClient.addStunServer(stunServer);
-    }
-
     public String registRelay(int timeout) throws Exception {
         return relayClient.regist(timeout).get();
+    }
+
+    public NatAddress parseNatAddress(int timeout) throws Exception {
+        NatAddress natAddress = p2pClient.parseNatAddress(timeout);
+        return natAddress;
     }
 
     public void sendNode(String srcVip, SDWanProtos.NodeInfo nodeInfo, byte[] bytes) {
@@ -151,7 +152,7 @@ public class IceClient implements TransportLifecycle {
     @Override
     public void start() throws Exception {
         encryptionKeyPair = Ecdh.generateKeyPair();
-        p2pClient = new P2pClient(config.getP2pPort(), config.getIceHeartTime(), config.getIceTimeout(),
+        p2pClient = new P2pClient(config.getStunServer(), config.getP2pPort(), config.getIceHeartTime(), config.getIceTimeout(),
                 () -> createStunPacketHandler("p2pClient"));
         relayClient = new RelayClient(config.getRelayServer(), config.getRelayPort(), config.getIceHeartTime(), config.getIceTimeout(),
                 () -> createStunPacketHandler("relayClient"));
@@ -200,5 +201,4 @@ public class IceClient implements TransportLifecycle {
         log.info("IceClient stopped");
         status.set(false);
     }
-
 }
