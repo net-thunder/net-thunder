@@ -23,14 +23,12 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -55,6 +53,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
     private Thread loopThread;
     private ReentrantLock lock = new ReentrantLock();
     private Condition condition = lock.newCondition();
+    private List<EventListener> eventListenerList = new ArrayList<>();
     private Map<String, SDWanProtos.NodeInfo> nodeInfoMap = new ConcurrentHashMap<>();
 
     public boolean getStatus() {
@@ -93,6 +92,10 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         return iceClient;
     }
 
+    public void addEventListener(EventListener listener) {
+        eventListenerList.add(listener);
+    }
+
     public BaseSdWanNode(SdWanNodeConfig config) {
         this.config = config;
     }
@@ -115,7 +118,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
                         log.info("sdWanClient channelInactive");
                         if (getStatus() && !config.getAutoReconnect()) {
-                            onErrorDisconnected();
+                            fireEvent(EventListener::onErrorDisconnected);
                         }
                         signalAll();
                     }
@@ -171,7 +174,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
                         log.info("iceClient channelInactive");
                         if (getStatus() && !config.getAutoReconnect()) {
-                            onErrorDisconnected();
+                            fireEvent(EventListener::onErrorDisconnected);
                         }
                         signalAll();
                         ctx.fireChannelInactive();
@@ -327,7 +330,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         virtualRouter.updateRoutes(regResp.getRouteList().getRouteList());
         virtualRouter.updateVNATs(regResp.getVnatList().getVnatList());
         log.info("SdWanNode installed");
-        onConnected(this);
+        fireEvent(EventListener::onConnected);
     }
 
     protected void uninstall() throws Exception {
@@ -366,11 +369,10 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         }
     }
 
-    protected void onConnected(BaseSdWanNode node) {
-
-    }
-
-    protected void onErrorDisconnected() throws Exception {
+    private void fireEvent(Consumer<EventListener> consumer) {
+        for (EventListener listener : eventListenerList) {
+            consumer.accept(listener);
+        }
     }
 
     @Override

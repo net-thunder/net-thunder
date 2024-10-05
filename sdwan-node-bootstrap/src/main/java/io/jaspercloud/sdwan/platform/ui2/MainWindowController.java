@@ -1,7 +1,7 @@
 package io.jaspercloud.sdwan.platform.ui2;
 
-import io.jaspercloud.sdwan.node.BaseSdWanNode;
 import io.jaspercloud.sdwan.node.ConfigSystem;
+import io.jaspercloud.sdwan.node.EventListener;
 import io.jaspercloud.sdwan.node.SdWanNodeConfig;
 import io.jaspercloud.sdwan.node.TunSdWanNode;
 import io.jaspercloud.sdwan.support.OsxShell;
@@ -124,28 +124,33 @@ public class MainWindowController implements EventHandler<ActionEvent> {
                 });
                 return;
             }
-            tunSdWanNode = new TunSdWanNode(config) {
+            tunSdWanNode = new TunSdWanNode(config);
+            config.setLocalAddress(localIp);
+            tunSdWanNode.addEventListener(new EventListener() {
                 @Override
-                protected void onConnected(BaseSdWanNode node) {
+                public void onConnected() {
                     Platform.runLater(() -> {
-                        vipLab.setText(node.getLocalVip());
+                        vipLab.setText(tunSdWanNode.getLocalVip());
                     });
                 }
 
                 @Override
-                protected void onErrorDisconnected() throws Exception {
-                    stop();
-                    Platform.runLater(() -> {
-                        statusLab.setText("连接异常");
-                        startBtn.setDisable(false);
-                        stopBtn.setDisable(true);
-                        netSelect.setDisable(false);
-                        refreshBtn.setDisable(false);
-                        settingBtn.setDisable(false);
-                    });
+                public void onErrorDisconnected() {
+                    try {
+                        tunSdWanNode.stop();
+                        Platform.runLater(() -> {
+                            statusLab.setText("连接异常");
+                            startBtn.setDisable(false);
+                            stopBtn.setDisable(true);
+                            netSelect.setDisable(false);
+                            refreshBtn.setDisable(false);
+                            settingBtn.setDisable(false);
+                        });
+                    } catch (Exception e) {
+                        log.error(e.getMessage(), e);
+                    }
                 }
-            };
-            config.setLocalAddress(localIp);
+            });
             Platform.runLater(() -> {
                 statusLab.setText("连接中");
                 startBtn.setDisable(true);
