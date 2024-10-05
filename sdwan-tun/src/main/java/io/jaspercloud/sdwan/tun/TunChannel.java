@@ -35,6 +35,7 @@ public class TunChannel extends AbstractChannel {
             }
         }
     };
+    private boolean open;
     private boolean readPending;
     private EventLoop readLoop = new DefaultEventLoop();
     private List<Object> readBuf = new ArrayList<>();
@@ -49,6 +50,7 @@ public class TunChannel extends AbstractChannel {
     public TunChannel() {
         super(null);
         channelConfig = new TunChannelConfig(this);
+        open = true;
     }
 
     @Override
@@ -111,6 +113,7 @@ public class TunChannel extends AbstractChannel {
 
     @Override
     protected void doClose() throws Exception {
+        open = false;
         tunDevice.close();
     }
 
@@ -194,22 +197,28 @@ public class TunChannel extends AbstractChannel {
     }
 
     private int doReadMessages(List<Object> readBuf) {
-        ByteBuf byteBuf = tunDevice.readPacket(config().getAllocator());
-        byteBuf.markReaderIndex();
-        byte version = (byte) (byteBuf.readUnsignedByte() >> 4);
-        if (4 != version) {
-            //read ipv4 only
-            byteBuf.release();
-            return 0;
+        try {
+            ByteBuf byteBuf = tunDevice.readPacket(config().getAllocator());
+            byteBuf.markReaderIndex();
+            byte version = (byte) (byteBuf.readUnsignedByte() >> 4);
+            if (4 != version) {
+                //read ipv4 only
+                byteBuf.release();
+                return 0;
+            }
+            byteBuf.resetReaderIndex();
+            readBuf.add(byteBuf);
+            return 1;
+        } catch (ProcessException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ProcessException("doReadMessages: " + e.getMessage(), e);
         }
-        byteBuf.resetReaderIndex();
-        readBuf.add(byteBuf);
-        return 1;
     }
 
     @Override
     protected void doWrite(ChannelOutboundBuffer in) throws Exception {
-        while (true) {
+        while (isActive()) {
             final Object msg = in.current();
             if (msg == null) {
                 break;
@@ -243,12 +252,12 @@ public class TunChannel extends AbstractChannel {
 
     @Override
     public boolean isOpen() {
-        return tunDevice == null || !tunDevice.isClosed();
+        return open;
     }
 
     @Override
     public boolean isActive() {
-        return tunDevice != null && isOpen();
+        return tunDevice != null && tunDevice.isActive();
     }
 
     @Override

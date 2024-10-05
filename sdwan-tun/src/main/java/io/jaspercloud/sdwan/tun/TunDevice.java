@@ -26,21 +26,19 @@ public abstract class TunDevice {
         return active;
     }
 
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-
     public TunDevice(String name, String type, String guid) {
         this.name = name;
         this.type = type;
         this.guid = guid;
     }
 
-    public abstract void open() throws Exception;
+    public void open() throws Exception {
+        active = true;
+    }
 
-    public abstract void close() throws Exception;
-
-    public abstract boolean isClosed();
+    public void close() throws Exception {
+        active = false;
+    }
 
     public abstract int getVersion();
 

@@ -16,7 +16,6 @@ public class LinuxTunDevice extends TunDevice {
     private int fd;
     private int mtu = 65535;
     private Timeval timeval;
-    private boolean closing = false;
 
     public LinuxTunDevice(String tunName, String type, String guid) {
         super(tunName, type, guid);
@@ -24,6 +23,7 @@ public class LinuxTunDevice extends TunDevice {
 
     @Override
     public void open() throws Exception {
+        super.open();
         fd = LinuxNativeApi.open("/dev/net/tun", LinuxNativeApi.O_RDWR);
         int flags = LinuxNativeApi.fcntl(fd, LinuxNativeApi.F_GETFL, 0);
         int noblock = LinuxNativeApi.fcntl(fd, LinuxNativeApi.F_SETFL, flags | LinuxNativeApi.O_NONBLOCK);
@@ -32,7 +32,6 @@ public class LinuxTunDevice extends TunDevice {
         timeval.tv_sec = 5;
         Ifreq ifreq = new Ifreq(getName(), (short) (LinuxNativeApi.IFF_TUN | LinuxNativeApi.IFF_NO_PI));
         LinuxNativeApi.ioctl(fd, LinuxNativeApi.TUNSETIFF, ifreq);
-        setActive(true);
     }
 
     @Override
@@ -62,10 +61,7 @@ public class LinuxTunDevice extends TunDevice {
 
     @Override
     public ByteBuf readPacket(ByteBufAllocator alloc) {
-        while (true) {
-            if (closing) {
-                throw new ProcessException("Device is closed.");
-            }
+        while (isActive()) {
             FdSet fdSet = new FdSet();
             fdSet.FD_SET(fd);
             int select = LinuxNativeApi.select(fd + 1, fdSet, null, null, timeval);
@@ -83,11 +79,12 @@ public class LinuxTunDevice extends TunDevice {
                 return byteBuf;
             }
         }
+        throw new ProcessException("Device is closed.");
     }
 
     @Override
     public void writePacket(ByteBufAllocator alloc, ByteBuf msg) {
-        if (closing) {
+        if (!isActive()) {
             throw new ProcessException("Device is closed.");
         }
         //TunChannel已回收
@@ -108,17 +105,11 @@ public class LinuxTunDevice extends TunDevice {
 
     @Override
     public void close() throws Exception {
-        if (closing) {
+        if (!isActive()) {
             return;
         }
-        closing = true;
+        super.close();
         int close = LinuxNativeApi.close(fd);
         CheckInvoke.check(close, 0);
     }
-
-    @Override
-    public boolean isClosed() {
-        return !isActive();
-    }
-
 }

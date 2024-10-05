@@ -19,8 +19,6 @@ public class WinTunDevice extends TunDevice {
 
     private WinNT.HANDLE adapter;
     private WinNT.HANDLE session;
-    private int mtu = 65535;
-    private boolean closing = false;
 
     public WinTunDevice(String name, String type, String guid) {
         super(name, type, guid);
@@ -28,13 +26,13 @@ public class WinTunDevice extends TunDevice {
 
     @Override
     public void open() throws Exception {
+        super.open();
         try {
             adapter = WinTunNativeApi.WintunOpenAdapter(new WString(getName()), new WString(getType()));
         } catch (LastErrorException e) {
             adapter = WinTunNativeApi.WintunCreateAdapter(new WString(getName()), new WString(getType()), getGuid());
         }
         session = WinTunNativeApi.WintunStartSession(adapter, WinTunNativeApi.WINTUN_MAX_RING_CAPACITY);
-        setActive(true);
     }
 
     @Override
@@ -56,15 +54,11 @@ public class WinTunDevice extends TunDevice {
         log.info("setMTU: {}", cmd);
         int code = ProcessUtil.exec(cmd);
         CheckInvoke.check(code, 0);
-        this.mtu = mtu;
     }
 
     @Override
     public ByteBuf readPacket(ByteBufAllocator alloc) {
         while (isActive()) {
-            if (closing) {
-                throw new ProcessException("Device is closed.");
-            }
             try {
                 WinDef.UINTByReference reference = new WinDef.UINTByReference();
                 Pointer packetPointer = WinTunNativeApi.WintunReceivePacket(session, reference);
@@ -90,7 +84,7 @@ public class WinTunDevice extends TunDevice {
 
     @Override
     public void writePacket(ByteBufAllocator alloc, ByteBuf msg) {
-        if (closing) {
+        if (!isActive()) {
             throw new ProcessException("Device is closed.");
         }
         //TunChannel已回收
@@ -130,20 +124,13 @@ public class WinTunDevice extends TunDevice {
     }
 
     @Override
-    public void close() {
-        if (closing) {
+    public void close() throws Exception {
+        if (!isActive()) {
             return;
         }
+        super.close();
         Kernel32.INSTANCE.SetEvent(WinTunNativeApi.WintunGetReadWaitEvent(session));
-        closing = true;
-        setActive(false);
         WinTunNativeApi.WintunEndSession(session);
         WinTunNativeApi.WintunCloseAdapter(adapter);
     }
-
-    @Override
-    public boolean isClosed() {
-        return !isActive();
-    }
-
 }

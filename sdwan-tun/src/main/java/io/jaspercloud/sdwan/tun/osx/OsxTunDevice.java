@@ -19,7 +19,6 @@ public class OsxTunDevice extends TunDevice {
 
     private int fd;
     private int mtu = 65535;
-    private boolean closing = false;
     private String deviceName;
 
     public OsxTunDevice(String tunName, String type, String guid) {
@@ -28,6 +27,7 @@ public class OsxTunDevice extends TunDevice {
 
     @Override
     public void open() throws Exception {
+        super.open();
         //fd
         fd = OsxNativeApi.socket(OsxNativeApi.AF_SYSTEM, OsxNativeApi.SOCK_DGRAM, OsxNativeApi.SYSPROTO_CONTROL);
         CtlInfo ctlInfo = new CtlInfo(OsxNativeApi.UTUN_CONTROL_NAME);
@@ -39,7 +39,6 @@ public class OsxTunDevice extends TunDevice {
         IntByReference sockNameLen = new IntByReference(SockName.LENGTH);
         OsxNativeApi.getsockopt(fd, OsxNativeApi.SYSPROTO_CONTROL, OsxNativeApi.UTUN_OPT_IFNAME, sockName, sockNameLen);
         deviceName = Native.toString(sockName.name, US_ASCII);
-        setActive(true);
     }
 
     @Override
@@ -75,10 +74,7 @@ public class OsxTunDevice extends TunDevice {
 
     @Override
     public ByteBuf readPacket(ByteBufAllocator alloc) {
-        while (true) {
-            if (closing) {
-                throw new ProcessException("Device is closed.");
-            }
+        while (isActive()) {
             byte[] bytes = new byte[mtu];
             int read = OsxNativeApi.read(fd, bytes, bytes.length);
             if (read <= 0) {
@@ -89,11 +85,12 @@ public class OsxTunDevice extends TunDevice {
             byteBuf.writeBytes(bytes, 4, read - 4);
             return byteBuf;
         }
+        throw new ProcessException("Device is closed.");
     }
 
     @Override
     public void writePacket(ByteBufAllocator alloc, ByteBuf msg) {
-        if (closing) {
+        if (!isActive()) {
             throw new ProcessException("Device is closed.");
         }
         //TunChannel已回收
@@ -116,17 +113,11 @@ public class OsxTunDevice extends TunDevice {
 
     @Override
     public void close() throws Exception {
-        if (closing) {
+        if (!isActive()) {
             return;
         }
-        closing = true;
+        super.close();
         int close = OsxNativeApi.close(fd);
         CheckInvoke.check(close, 0);
     }
-
-    @Override
-    public boolean isClosed() {
-        return !isActive();
-    }
-
 }
