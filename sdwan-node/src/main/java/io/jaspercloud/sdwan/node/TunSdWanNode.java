@@ -64,7 +64,7 @@ public class TunSdWanNode extends BaseSdWanNode {
                 }
                 SDWanProtos.IpPacket ipPacket = SDWanProtos.IpPacket.parseFrom(data);
                 if (log.isTraceEnabled()) {
-                    log.trace("recv transfer type={}, sender={}, src={}, dst={}",
+                    log.trace("recv type={}, sender={}, src={}, dst={}",
                             transferTypeAttr.getData(), SocketAddressUtil.toAddress(sender),
                             ipPacket.getSrcIP(), ipPacket.getDstIP());
                 }
@@ -107,6 +107,9 @@ public class TunSdWanNode extends BaseSdWanNode {
             @Override
             protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
                 IpLayerPacket packet = new IpLayerPacket(msg);
+                if (log.isTraceEnabled()) {
+                    log.trace("tun: src={}, dst={}", packet.getSrcIP(), packet.getDstIP());
+                }
                 ipPacketProcessor.output(packet);
                 TunSdWanNode.this.sendIpLayerPacket(packet);
             }

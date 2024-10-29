@@ -243,4 +243,9 @@ public class IpLayerPacket implements Referenced {
     public boolean release(int decrement) {
         return byteBuf.release(decrement);
     }
+
+    @Override
+    public String toString() {
+        return String.format("%s -> %s", getSrcIP(), getDstIP());
+    }
 }
