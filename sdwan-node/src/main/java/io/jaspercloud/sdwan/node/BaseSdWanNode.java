@@ -45,7 +45,6 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
 
     private SdWanClient sdWanClient;
     private IceClient iceClient;
-    private List<String> localAddressUriList;
     private String localVip;
     private int maskBits;
     private String vipCidr;
@@ -55,6 +54,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
     private Thread loopThread;
     private ReentrantLock lock = new ReentrantLock();
     private Condition condition = lock.newCondition();
+    private List<String> localAddressUriList = new ArrayList<>();
     private List<EventListener> eventListenerList = new ArrayList<>();
     private Map<String, SDWanProtos.NodeInfo> nodeInfoMap = new ConcurrentHashMap<>();
 
@@ -166,7 +166,6 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
             @Override
             protected void initChannel(Channel ch) throws Exception {
                 ChannelPipeline pipeline = ch.pipeline();
-                pipeline.addLast(getProcessHandler());
                 pipeline.addLast(new ChannelInboundHandlerAdapter() {
                     @Override
                     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
@@ -189,6 +188,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                         ctx.fireChannelInactive();
                     }
                 });
+                pipeline.addLast(getProcessHandler());
             }
         });
         virtualRouter = new VirtualRouter();
