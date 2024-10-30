@@ -133,6 +133,7 @@ public class IceClient implements TransportLifecycle {
                         super.channelInactive(ctx);
                     }
                 });
+                pipeline.addLast(handler.get());
                 pipeline.addLast(new ChannelInboundHandlerAdapter() {
                     @Override
                     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
@@ -148,7 +149,6 @@ public class IceClient implements TransportLifecycle {
                         }
                     }
                 });
-                pipeline.addLast(handler.get());
             }
         };
     }
