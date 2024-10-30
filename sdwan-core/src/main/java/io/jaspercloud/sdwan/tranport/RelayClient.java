@@ -15,10 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -69,11 +66,14 @@ public class RelayClient implements TransportLifecycle, Runnable {
                             return;
                         }
                         log.info("connect relayServer success: address={}, token={}", address, token);
+                        Map<String, String> params = new HashMap<>();
+                        params.put("server", address);
+                        params.put("token", token);
                         AddressUri addressUri = AddressUri.builder()
                                 .scheme(AddressType.RELAY)
                                 .host(socketAddress.getHostString())
                                 .port(socketAddress.getPort())
-                                .params(Collections.singletonMap("token", token))
+                                .params(params)
                                 .build();
                         natAddressMap.put(address, addressUri);
                         localChannel.pipeline().fireUserEventTriggered(new UpdateAddressUriEvent());

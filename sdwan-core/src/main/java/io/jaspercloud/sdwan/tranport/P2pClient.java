@@ -64,10 +64,13 @@ public class P2pClient implements TransportLifecycle, Runnable {
                         AddressAttr mappedAddressAttr = (AddressAttr) attrs.get(AttrType.MappedAddress);
                         InetSocketAddress natAddress = mappedAddressAttr.getAddress();
                         log.info("connect stunServer success: address={}, publicAddress={}", address, natAddress);
+                        Map<String, String> params = new HashMap<>();
+                        params.put("server", address);
                         AddressUri addressUri = AddressUri.builder()
                                 .scheme(AddressType.SRFLX)
                                 .host(natAddress.getHostString())
                                 .port(natAddress.getPort())
+                                .params(params)
                                 .build();
                         natAddressMap.put(address, addressUri);
                         localChannel.pipeline().fireUserEventTriggered(new UpdateAddressUriEvent());
