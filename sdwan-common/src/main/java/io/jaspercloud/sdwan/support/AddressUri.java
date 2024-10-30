@@ -3,6 +3,8 @@ package io.jaspercloud.sdwan.support;
 import lombok.*;
 
 import java.net.URI;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,7 +33,7 @@ public class AddressUri {
                 if (param.length == 1) {
                     params.put(param[0], null);
                 } else {
-                    params.put(param[0], param[1]);
+                    params.put(param[0], URLDecoder.decode(param[1]));
                 }
             }
         }
@@ -50,7 +52,7 @@ public class AddressUri {
         if (null != params && params.size() > 0) {
             builder.append("?");
             for (Map.Entry<String, String> entry : params.entrySet()) {
-                builder.append(entry.getKey()).append("=").append(null == entry.getValue() ? "" : entry.getValue());
+                builder.append(entry.getKey()).append("=").append(null == entry.getValue() ? "" : URLEncoder.encode(entry.getValue()));
                 builder.append("&");
             }
             builder.deleteCharAt(builder.length() - 1);
