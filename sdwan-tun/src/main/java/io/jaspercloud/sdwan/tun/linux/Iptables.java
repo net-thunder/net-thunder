@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.List;
 
 @Slf4j
@@ -50,7 +51,10 @@ public final class Iptables {
 
     private static void enableIpForward() {
         File file = new File("/proc/sys/net/ipv4/ip_forward");
-        FileUtil.writeBytes("1".getBytes(), file);
+        String value = FileUtil.readString(file, Charset.forName("utf-8"));
+        if (!StringUtils.equals(value, "1") && file.canWrite()) {
+            FileUtil.writeBytes("1".getBytes(), file);
+        }
     }
 
     private static void addFilterRule(String tunName, String ethName) throws IOException, InterruptedException {
