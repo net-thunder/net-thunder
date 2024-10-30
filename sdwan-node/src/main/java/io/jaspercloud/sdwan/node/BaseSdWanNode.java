@@ -172,32 +172,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
                         if (evt instanceof UpdateNodeInfoEvent) {
                             UpdateNodeInfoEvent event = (UpdateNodeInfoEvent) evt;
-                            List<AddressUri> list = new ArrayList<>();
-                            if (config.isOnlyRelayTransport()) {
-                                list.addAll(event.getRelayAddressList());
-                            } else {
-                                List<NetworkInterfaceInfo> interfaceInfoList;
-                                if (null == config.getLocalAddress()) {
-                                    InetAddress[] inetAddresses = InetAddress.getAllByName(InetAddress.getLocalHost().getHostName());
-                                    interfaceInfoList = NetworkInterfaceUtil.parseInetAddress(inetAddresses);
-                                } else {
-                                    NetworkInterfaceInfo networkInterfaceInfo = NetworkInterfaceUtil.findIp(config.getLocalAddress());
-                                    interfaceInfoList = Arrays.asList(networkInterfaceInfo);
-                                }
-                                interfaceInfoList.forEach(e -> {
-                                    String address = e.getInterfaceAddress().getAddress().getHostAddress();
-                                    AddressUri addressUri = AddressUri.builder()
-                                            .scheme(AddressType.HOST)
-                                            .host(address)
-                                            .port(iceClient.getP2pClient().getLocalPort())
-                                            .build();
-                                    list.add(addressUri);
-                                });
-                                list.addAll(event.getP2pAddressList());
-                                list.addAll(event.getRelayAddressList());
-                            }
-                            localAddressUriList = list.stream().map(e -> e.toString()).collect(Collectors.toList());
-                            sdWanClient.updateNodeInfo(localAddressUriList);
+                            registNodeInfo(event);
                         } else {
                             super.userEventTriggered(ctx, evt);
                         }
@@ -225,6 +200,35 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         loopThread = new Thread(this, "loop");
         loopThread.start();
         status.set(true);
+    }
+
+    private void registNodeInfo(UpdateNodeInfoEvent event) throws Exception {
+        List<AddressUri> list = new ArrayList<>();
+        if (config.isOnlyRelayTransport()) {
+            list.addAll(event.getRelayAddressList());
+        } else {
+            List<NetworkInterfaceInfo> interfaceInfoList;
+            if (null == config.getLocalAddress()) {
+                InetAddress[] inetAddresses = InetAddress.getAllByName(InetAddress.getLocalHost().getHostName());
+                interfaceInfoList = NetworkInterfaceUtil.parseInetAddress(inetAddresses);
+            } else {
+                NetworkInterfaceInfo networkInterfaceInfo = NetworkInterfaceUtil.findIp(config.getLocalAddress());
+                interfaceInfoList = Arrays.asList(networkInterfaceInfo);
+            }
+            interfaceInfoList.forEach(e -> {
+                String address = e.getInterfaceAddress().getAddress().getHostAddress();
+                AddressUri addressUri = AddressUri.builder()
+                        .scheme(AddressType.HOST)
+                        .host(address)
+                        .port(iceClient.getP2pClient().getLocalPort())
+                        .build();
+                list.add(addressUri);
+            });
+            list.addAll(event.getP2pAddressList());
+            list.addAll(event.getRelayAddressList());
+        }
+        localAddressUriList = list.stream().map(e -> e.toString()).collect(Collectors.toList());
+        sdWanClient.updateNodeInfo(localAddressUriList);
     }
 
     @Override
