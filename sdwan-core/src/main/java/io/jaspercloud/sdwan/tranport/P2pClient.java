@@ -2,7 +2,10 @@ package io.jaspercloud.sdwan.tranport;
 
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.stun.*;
+import io.jaspercloud.sdwan.support.AddressUri;
 import io.jaspercloud.sdwan.support.AsyncTask;
+import io.jaspercloud.sdwan.tranport.event.UpdateAddressUriEvent;
+import io.jaspercloud.sdwan.util.AddressType;
 import io.jaspercloud.sdwan.util.IPUtil;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;
 import io.netty.bootstrap.Bootstrap;
@@ -13,20 +16,19 @@ import io.netty.channel.socket.nio.NioDatagramChannel;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Supplier;
 
 @Slf4j
 public class P2pClient implements TransportLifecycle, Runnable {
 
-    private InetSocketAddress stunAddress;
     private int localPort;
     private long heartTime;
     private long timeout;
     private Supplier<ChannelHandler> handler;
     private Channel localChannel;
+    private Map<String, AddressUri> natAddressMap = new ConcurrentHashMap<>();
     private Map<String, String> heartMap = new ConcurrentHashMap<>();
 
     public int getLocalPort() {
@@ -34,16 +36,43 @@ public class P2pClient implements TransportLifecycle, Runnable {
         return address.getPort();
     }
 
-    public P2pClient(String stunServer, long heartTime, Supplier<ChannelHandler> handler) {
-        this(stunServer, 0, heartTime, 3000, handler);
+    public P2pClient(long heartTime, Supplier<ChannelHandler> handler) {
+        this(0, heartTime, 3000, handler);
     }
 
-    public P2pClient(String stunServer, int localPort, long heartTime, long timeout, Supplier<ChannelHandler> handler) {
-        this.stunAddress = SocketAddressUtil.parse(stunServer);
+    public P2pClient(int localPort, long heartTime, long timeout, Supplier<ChannelHandler> handler) {
         this.localPort = localPort;
         this.heartTime = heartTime;
         this.timeout = timeout;
         this.handler = handler;
+    }
+
+    public List<AddressUri> getNatAddressUriList() {
+        return Collections.unmodifiableList(new ArrayList<>(natAddressMap.values()));
+    }
+
+    public void addAddressList(List<String> addressList) {
+        for (String address : addressList) {
+            InetSocketAddress socketAddress = SocketAddressUtil.parse(address);
+            sendBind(socketAddress, timeout)
+                    .whenComplete((response, ex) -> {
+                        if (null != ex) {
+                            log.error("connect stunServer timeout: address={}", address);
+                            return;
+                        }
+                        Map<AttrType, Attr> attrs = response.content().getAttrs();
+                        AddressAttr mappedAddressAttr = (AddressAttr) attrs.get(AttrType.MappedAddress);
+                        InetSocketAddress natAddress = mappedAddressAttr.getAddress();
+                        log.info("connect stunServer success: address={}, publicAddress={}", address, natAddress);
+                        AddressUri addressUri = AddressUri.builder()
+                                .scheme(AddressType.SRFLX)
+                                .host(natAddress.getHostString())
+                                .port(natAddress.getPort())
+                                .build();
+                        natAddressMap.put(address, addressUri);
+                        localChannel.pipeline().fireUserEventTriggered(new UpdateAddressUriEvent());
+                    });
+        }
     }
 
     private void processBindRequest(ChannelHandlerContext ctx, StunPacket request) {
@@ -105,7 +134,7 @@ public class P2pClient implements TransportLifecycle, Runnable {
         localChannel.writeAndFlush(request);
     }
 
-    public NatAddress parseNatAddress(long timeout) throws Exception {
+    public NatAddress parseNatAddress(InetSocketAddress stunAddress, long timeout) throws Exception {
         StunPacket response = sendBind(stunAddress, timeout).get();
         Map<AttrType, Attr> attrs = response.content().getAttrs();
         AddressAttr changedAddressAttr = (AddressAttr) attrs.get(AttrType.ChangedAddress);
@@ -231,27 +260,30 @@ public class P2pClient implements TransportLifecycle, Runnable {
 
     @Override
     public void run() {
-        try {
-            String address = stunAddress.toString();
-            String id = heartMap.computeIfAbsent(address, key -> {
-                String tranId = StunMessage.genTranId();
-                AsyncTask.waitTask(tranId, timeout)
-                        .whenComplete((msg, ex) -> {
-                            try {
-                                if (null == ex) {
-                                    return;
+        for (Map.Entry<String, AddressUri> entry : natAddressMap.entrySet()) {
+            try {
+                String address = entry.getKey();
+                InetSocketAddress socketAddress = SocketAddressUtil.parse(address);
+                String id = heartMap.computeIfAbsent(address, key -> {
+                    String tranId = StunMessage.genTranId();
+                    AsyncTask.waitTask(tranId, timeout)
+                            .whenComplete((msg, ex) -> {
+                                try {
+                                    if (null == ex) {
+                                        return;
+                                    }
+                                    log.error("ping stunServer timeout: {}", address);
+                                    localChannel.close();
+                                } finally {
+                                    heartMap.remove(key);
                                 }
-                                log.error("ping stunServer timeout: {}", address);
-                                localChannel.close();
-                            } finally {
-                                heartMap.remove(key);
-                            }
-                        });
-                return tranId;
-            });
-            sendBindOneWay(stunAddress, id);
-        } catch (Throwable e) {
-            log.error(e.getMessage(), e);
+                            });
+                    return tranId;
+                });
+                sendBindOneWay(socketAddress, id);
+            } catch (Throwable e) {
+                log.error(e.getMessage(), e);
+            }
         }
     }
 }

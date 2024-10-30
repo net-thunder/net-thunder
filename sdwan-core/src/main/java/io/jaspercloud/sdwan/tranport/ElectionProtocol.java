@@ -190,9 +190,10 @@ public abstract class ElectionProtocol {
 
     private PingRequest parseRelayPing(AddressUri uri, long timeout) {
         log.info("ping uri: {}", uri.toString());
+        InetSocketAddress socketAddress = new InetSocketAddress(uri.getHost(), uri.getPort());
         String token = uri.getParams().get("token");
         PingRequest pingRequest = new PingRequest();
-        pingRequest.setSupplier(() -> relayClient.ping(token, timeout));
+        pingRequest.setSupplier(() -> relayClient.ping(socketAddress, token, timeout));
         pingRequest.setAddressUri(uri);
         return pingRequest;
     }
@@ -307,7 +308,7 @@ public abstract class ElectionProtocol {
 
         @Override
         public void sendPingOneWay(String tranId) {
-            relayClient.sendPingOneWay(token, tranId);
+            relayClient.sendPingOneWay(address, token, tranId);
         }
 
         @Override

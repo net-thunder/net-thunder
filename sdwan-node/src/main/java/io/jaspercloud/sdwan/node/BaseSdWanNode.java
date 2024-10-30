@@ -3,6 +3,7 @@ package io.jaspercloud.sdwan.node;
 import com.google.protobuf.ByteString;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.exception.ProcessException;
+import io.jaspercloud.sdwan.node.event.UpdateNodeInfoEvent;
 import io.jaspercloud.sdwan.route.VirtualRouter;
 import io.jaspercloud.sdwan.stun.NatAddress;
 import io.jaspercloud.sdwan.support.AddressUri;
@@ -22,8 +23,10 @@ import io.netty.util.internal.PlatformDependent;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
@@ -42,7 +45,6 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
 
     private SdWanClient sdWanClient;
     private IceClient iceClient;
-    private NatAddress natAddress;
     private List<String> localAddressUriList;
     private String localVip;
     private int maskBits;
@@ -62,10 +64,6 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
 
     public List<String> getLocalAddressUriList() {
         return localAddressUriList;
-    }
-
-    public NatAddress getNatAddress() {
-        return natAddress;
     }
 
     public String getLocalVip() {
@@ -171,6 +169,42 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                 pipeline.addLast(getProcessHandler());
                 pipeline.addLast(new ChannelInboundHandlerAdapter() {
                     @Override
+                    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+                        if (evt instanceof UpdateNodeInfoEvent) {
+                            UpdateNodeInfoEvent event = (UpdateNodeInfoEvent) evt;
+                            List<AddressUri> list = new ArrayList<>();
+                            if (config.isOnlyRelayTransport()) {
+                                list.addAll(event.getRelayAddressList());
+                            } else {
+                                List<NetworkInterfaceInfo> interfaceInfoList;
+                                if (null == config.getLocalAddress()) {
+                                    InetAddress[] inetAddresses = InetAddress.getAllByName(InetAddress.getLocalHost().getHostName());
+                                    interfaceInfoList = NetworkInterfaceUtil.parseInetAddress(inetAddresses);
+                                } else {
+                                    NetworkInterfaceInfo networkInterfaceInfo = NetworkInterfaceUtil.findIp(config.getLocalAddress());
+                                    interfaceInfoList = Arrays.asList(networkInterfaceInfo);
+                                }
+                                interfaceInfoList.forEach(e -> {
+                                    String address = e.getInterfaceAddress().getAddress().getHostAddress();
+                                    AddressUri addressUri = AddressUri.builder()
+                                            .scheme(AddressType.HOST)
+                                            .host(address)
+                                            .port(iceClient.getP2pClient().getLocalPort())
+                                            .build();
+                                    list.add(addressUri);
+                                });
+                                list.addAll(event.getP2pAddressList());
+                                list.addAll(event.getRelayAddressList());
+                            }
+                            localAddressUriList = list.stream().map(e -> e.toString()).collect(Collectors.toList());
+                            sdWanClient.updateNodeInfo(localAddressUriList);
+                        } else {
+                            super.userEventTriggered(ctx, evt);
+                        }
+                    }
+                });
+                pipeline.addLast(new ChannelInboundHandlerAdapter() {
+                    @Override
                     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
                         log.info("iceClient channelInactive");
                         if (getStatus() && !config.getAutoReconnect()) {
@@ -260,8 +294,8 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         nodeInfoMap.clear();
         sdWanClient.start();
         SDWanProtos.ServerConfigResp configResp = sdWanClient.getConfig(config.getConnectTimeout()).get();
-        config.setStunServer(configResp.getStunServer());
-        config.setRelayServer(configResp.getRelayServer());
+        config.setStunServerList(configResp.getStunServersList().stream().toList());
+        config.setRelayServerList(configResp.getRelayServersList().stream().toList());
         iceClient.start();
         log.info("SdWanNode install");
         String localAddress = config.getLocalAddress();
@@ -274,52 +308,13 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                 .setTenantId(config.getTenantId())
                 .setNodeType(SDWanProtos.NodeTypeCode.SimpleType)
                 .setMacAddress(macAddress);
-        if (!config.isOnlyRelayTransport()) {
-            List<NetworkInterfaceInfo> interfaceInfoList;
-            if (null == config.getLocalAddress()) {
-                InetAddress[] inetAddresses = InetAddress.getAllByName(InetAddress.getLocalHost().getHostName());
-                interfaceInfoList = NetworkInterfaceUtil.parseInetAddress(inetAddresses);
-            } else {
-                NetworkInterfaceInfo networkInterfaceInfo = NetworkInterfaceUtil.findIp(config.getLocalAddress());
-                interfaceInfoList = Arrays.asList(networkInterfaceInfo);
-            }
-            interfaceInfoList.forEach(e -> {
-                String address = e.getInterfaceAddress().getAddress().getHostAddress();
-                String host = AddressUri.builder()
-                        .scheme(AddressType.HOST)
-                        .host(address)
-                        .port(iceClient.getP2pClient().getLocalPort())
-                        .build().toString();
-                builder.addAddressUri(host);
-            });
-            natAddress = processNatAddress(iceClient.parseNatAddress(3000));
-            log.info("parseNatAddress: type={}, address={}",
-                    natAddress.getMappingType().name(), SocketAddressUtil.toAddress(natAddress.getMappingAddress()));
-            String srflx = AddressUri.builder()
-                    .scheme(AddressType.SRFLX)
-                    .host(natAddress.getMappingAddress().getHostString())
-                    .port(natAddress.getMappingAddress().getPort())
-                    .params(Collections.singletonMap("mappingType", natAddress.getMappingType().name()))
-                    .build().toString();
-            builder.addAddressUri(srflx);
-        }
-        String token = iceClient.registRelay(3000);
-        log.info("registRelay: token={}", token);
-        InetSocketAddress relayAddress = SocketAddressUtil.parse(config.getRelayServer());
-        String relay = AddressUri.builder()
-                .scheme(AddressType.RELAY)
-                .host(relayAddress.getHostString())
-                .port(relayAddress.getPort())
-                .params(Collections.singletonMap("token", token))
-                .build().toString();
-        builder.addAddressUri(relay);
         SDWanProtos.RegistReq registReq = builder.build();
         SDWanProtos.RegistResp regResp = sdWanClient.regist(registReq, 3000).get();
         if (!SDWanProtos.MessageCode.Success.equals(regResp.getCode())) {
             throw new ProcessException("registSdwan failed=" + regResp.getCode().name());
         }
         log.info("registSdwan: vip={}", regResp.getVip());
-        localAddressUriList = registReq.getAddressUriList().stream().collect(Collectors.toList());
+        iceClient.registIceInfo();
         localVip = regResp.getVip();
         maskBits = regResp.getMaskBits();
         vipCidr = Cidr.parseCidr(regResp.getVip(), maskBits);
