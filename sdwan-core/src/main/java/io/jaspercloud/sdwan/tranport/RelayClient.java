@@ -1,7 +1,10 @@
 package io.jaspercloud.sdwan.tranport;
 
 import io.jaspercloud.sdwan.stun.*;
+import io.jaspercloud.sdwan.support.AddressUri;
 import io.jaspercloud.sdwan.support.AsyncTask;
+import io.jaspercloud.sdwan.tranport.event.UpdateAddressUriEvent;
+import io.jaspercloud.sdwan.util.AddressType;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.UnpooledByteBufAllocator;
@@ -12,6 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,34 +31,54 @@ import java.util.function.Supplier;
 @Slf4j
 public class RelayClient implements TransportLifecycle, Runnable {
 
-    private InetSocketAddress relayAddress;
     private int localPort;
     private long heartTime;
     private long timeout;
     private Supplier<ChannelHandler> handler;
     private Channel localChannel;
-    private String curToken;
+    private Map<String, AddressUri> natAddressMap = new ConcurrentHashMap<>();
     private Map<String, String> heartMap = new ConcurrentHashMap<>();
-
-    public String getCurToken() {
-        return curToken;
-    }
 
     public int getLocalPort() {
         InetSocketAddress address = (InetSocketAddress) localChannel.localAddress();
         return address.getPort();
     }
 
-    public RelayClient(String relayServer, long heartTime, long timeout, Supplier<ChannelHandler> handler) {
-        this(relayServer, 0, heartTime, timeout, handler);
+    public RelayClient(long heartTime, long timeout, Supplier<ChannelHandler> handler) {
+        this(0, heartTime, timeout, handler);
     }
 
-    public RelayClient(String relayServer, int localPort, long heartTime, long timeout, Supplier<ChannelHandler> handler) {
-        this.relayAddress = SocketAddressUtil.parse(relayServer);
+    public RelayClient(int localPort, long heartTime, long timeout, Supplier<ChannelHandler> handler) {
         this.localPort = localPort;
         this.heartTime = heartTime;
         this.timeout = timeout;
         this.handler = handler;
+    }
+
+    public List<AddressUri> getNatAddressUriList() {
+        return Collections.unmodifiableList(new ArrayList<>(natAddressMap.values()));
+    }
+
+    public void addAddressList(List<String> addressList) {
+        for (String address : addressList) {
+            InetSocketAddress socketAddress = SocketAddressUtil.parse(address);
+            regist(socketAddress, timeout)
+                    .whenComplete((token, ex) -> {
+                        if (null != ex) {
+                            log.error("connect relayServer timeout: address={}", address);
+                            return;
+                        }
+                        log.info("connect relayServer success: address={}, token={}", address, token);
+                        AddressUri addressUri = AddressUri.builder()
+                                .scheme(AddressType.RELAY)
+                                .host(socketAddress.getHostString())
+                                .port(socketAddress.getPort())
+                                .params(Collections.singletonMap("token", token))
+                                .build();
+                        natAddressMap.put(address, addressUri);
+                        localChannel.pipeline().fireUserEventTriggered(new UpdateAddressUriEvent());
+                    });
+        }
     }
 
     private CompletableFuture<StunPacket> invokeAsync(StunPacket request, long timeout) {
@@ -61,18 +87,18 @@ public class RelayClient implements TransportLifecycle, Runnable {
         return future;
     }
 
-    public CompletableFuture<StunPacket> ping(String token, long timeout) {
+    public CompletableFuture<StunPacket> ping(InetSocketAddress socketAddress, String token, long timeout) {
         StunMessage message = new StunMessage(MessageType.PingRequest);
         message.setAttr(AttrType.RelayToken, new StringAttr(token));
         message.setAttr(AttrType.Time, new LongAttr(System.currentTimeMillis()));
-        StunPacket request = new StunPacket(message, relayAddress);
+        StunPacket request = new StunPacket(message, socketAddress);
         CompletableFuture<StunPacket> future = invokeAsync(request, timeout);
         return future;
     }
 
-    public CompletableFuture<String> regist(long timeout) {
+    public CompletableFuture<String> regist(InetSocketAddress socketAddress, long timeout) {
         StunMessage message = new StunMessage(MessageType.BindRelayRequest);
-        StunPacket request = new StunPacket(message, relayAddress);
+        StunPacket request = new StunPacket(message, socketAddress);
         CompletableFuture<StunPacket> future = invokeAsync(request, timeout);
         return future.thenApply(result -> {
             StunMessage stunMessage = result.content();
@@ -82,17 +108,17 @@ public class RelayClient implements TransportLifecycle, Runnable {
         });
     }
 
-    public void sendBindOneWay(String tranId) {
+    public void sendBindOneWay(InetSocketAddress socketAddress, String tranId) {
         StunMessage message = new StunMessage(MessageType.BindRelayRequest, tranId);
-        StunPacket request = new StunPacket(message, relayAddress);
+        StunPacket request = new StunPacket(message, socketAddress);
         localChannel.writeAndFlush(request);
     }
 
-    public void sendPingOneWay(String token, String tranId) {
+    public void sendPingOneWay(InetSocketAddress socketAddress, String token, String tranId) {
         StunMessage message = new StunMessage(MessageType.PingRequest, tranId);
         message.setAttr(AttrType.RelayToken, new StringAttr(token));
         message.setAttr(AttrType.Time, new LongAttr(System.currentTimeMillis()));
-        StunPacket request = new StunPacket(message, relayAddress);
+        StunPacket request = new StunPacket(message, socketAddress);
         localChannel.writeAndFlush(request);
     }
 
@@ -152,8 +178,7 @@ public class RelayClient implements TransportLifecycle, Runnable {
         try {
             localChannel = bootstrap.bind(new InetSocketAddress("0.0.0.0", localPort)).syncUninterruptibly().channel();
             InetSocketAddress localAddress = (InetSocketAddress) localChannel.localAddress();
-            curToken = regist(3000).get();
-            log.info("RelayClient started: port={}, token={}", localAddress.getPort(), curToken);
+            log.info("RelayClient started: port={}", localAddress.getPort());
             bossGroup.scheduleAtFixedRate(this, 0, heartTime, TimeUnit.MILLISECONDS);
             localChannel.closeFuture().addListener(new ChannelFutureListener() {
                 @Override
@@ -179,33 +204,38 @@ public class RelayClient implements TransportLifecycle, Runnable {
 
     @Override
     public void run() {
-        try {
-            String address = relayAddress.toString();
-            String id = heartMap.computeIfAbsent(address, key -> {
-                String tranId = StunMessage.genTranId();
-                AsyncTask.<StunPacket>waitTask(tranId, timeout)
-                        .whenComplete((msg, ex) -> {
-                            try {
-                                if (null == ex) {
-                                    StunMessage stunMessage = msg.content();
-                                    StringAttr attr = stunMessage.getAttr(AttrType.RelayToken);
-                                    String token = attr.getData();
-                                    if (!StringUtils.equals(token, curToken)) {
+        for (Map.Entry<String, AddressUri> entry : natAddressMap.entrySet()) {
+            try {
+                String address = entry.getKey();
+                AddressUri addressUri = entry.getValue();
+                String id = heartMap.computeIfAbsent(address, key -> {
+                    String tranId = StunMessage.genTranId();
+                    AsyncTask.waitTask(tranId, timeout)
+                            .whenComplete((msg, ex) -> {
+                                try {
+                                    if (null == ex) {
+                                        StunPacket packet = (StunPacket) msg;
+                                        StunMessage stunMessage = packet.content();
+                                        StringAttr attr = stunMessage.getAttr(AttrType.RelayToken);
+                                        String token = attr.getData();
+                                        if (!StringUtils.equals(token, addressUri.getParams().get("token"))) {
+                                            localChannel.close();
+                                        }
+                                    } else {
+                                        log.error("ping relayServer timeout: {}", address);
                                         localChannel.close();
                                     }
-                                } else {
-                                    log.error("ping relayServer timeout: {}", address);
-                                    localChannel.close();
+                                } finally {
+                                    heartMap.remove(key);
                                 }
-                            } finally {
-                                heartMap.remove(key);
-                            }
-                        });
-                return tranId;
-            });
-            sendBindOneWay(id);
-        } catch (Throwable e) {
-            log.error(e.getMessage(), e);
+                            });
+                    return tranId;
+                });
+                InetSocketAddress socketAddress = SocketAddressUtil.parse(address);
+                sendBindOneWay(socketAddress, id);
+            } catch (Throwable e) {
+                log.error(e.getMessage(), e);
+            }
         }
     }
 }

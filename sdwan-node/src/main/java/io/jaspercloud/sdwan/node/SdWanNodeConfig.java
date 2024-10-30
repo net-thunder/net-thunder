@@ -23,8 +23,8 @@ public class SdWanNodeConfig {
     private int connectTimeout = 3 * 1000;
     private long heartTime = 15 * 1000;
 
-    private String stunServer = "127.0.0.1:2478";
-    private String relayServer = "127.0.0.1:3478";
+    private List<String> stunServerList = Arrays.asList("127.0.0.1:2478");
+    private List<String> relayServerList = Arrays.asList("127.0.0.1:3478");
 
     private String localAddress;
     private int p2pPort = 0;

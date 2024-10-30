@@ -32,6 +32,8 @@ enum MessageTypeCode {
   NodeOfflineType = 206;
   //
   HeartType = 301;
+  //oneWay
+  UpdateNodeInfoType = 401;
 }
 
 enum MappingTypeCode {
@@ -72,6 +74,10 @@ message RegistResp {
   optional NodeInfoList nodeList = 4;
   optional RouteList routeList = 5;
   optional VNATList vnatList = 6;
+}
+
+message NodeInfoReq {
+  repeated string addressUri = 1;
 }
 
 message NodeInfo {
@@ -132,6 +138,8 @@ message ServerConfigResp {
   required MessageCode code = 1;
   required string stunServer = 2;
   required string relayServer = 3;
+  repeated string stunServers = 4;
+  repeated string relayServers = 5;
 }
 
 message RpcMessage {

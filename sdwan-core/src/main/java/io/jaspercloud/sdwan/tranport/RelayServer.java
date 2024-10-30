@@ -1,6 +1,7 @@
 package io.jaspercloud.sdwan.tranport;
 
 import io.jaspercloud.sdwan.stun.*;
+import io.jaspercloud.sdwan.util.ShortUUID;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.UnpooledByteBufAllocator;
@@ -15,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.net.InetSocketAddress;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -44,7 +44,7 @@ public class RelayServer implements Lifecycle, Runnable {
         InetSocketAddress sender = request.sender();
         String addr = SocketAddressUtil.toAddress(sender);
         Heart heart = clientTokenMap.computeIfAbsent(addr, key -> {
-            String token = UUID.randomUUID().toString();
+            String token = ShortUUID.gen();
             transferMap.put(token, sender);
             return Heart.builder()
                     .lastHeartTime(System.currentTimeMillis())

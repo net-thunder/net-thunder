@@ -3,6 +3,7 @@ package io.jaspercloud.sdwan.tranport;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.support.AsyncTask;
+import io.jaspercloud.sdwan.util.ShortUUID;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -14,10 +15,11 @@ import io.netty.handler.codec.protobuf.ProtobufEncoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
-import java.util.UUID;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -50,7 +52,7 @@ public class SdWanClient implements TransportLifecycle, Runnable {
     }
 
     private CompletableFuture<SDWanProtos.Message> heart(long timeout) {
-        String id = UUID.randomUUID().toString();
+        String id = ShortUUID.gen();
         SDWanProtos.Message message = SDWanProtos.Message.newBuilder()
                 .setReqId(id)
                 .setMode(SDWanProtos.MessageMode.ReqResp)
@@ -62,7 +64,7 @@ public class SdWanClient implements TransportLifecycle, Runnable {
     }
 
     public CompletableFuture<SDWanProtos.RegistResp> regist(SDWanProtos.RegistReq req, long timeout) {
-        String id = UUID.randomUUID().toString();
+        String id = ShortUUID.gen();
         SDWanProtos.Message message = SDWanProtos.Message.newBuilder()
                 .setReqId(id)
                 .setMode(SDWanProtos.MessageMode.ReqResp)
@@ -81,8 +83,23 @@ public class SdWanClient implements TransportLifecycle, Runnable {
         });
     }
 
+    public void updateNodeInfo(List<String> list) {
+        log.info("updateNodeInfo: {}", StringUtils.join(list));
+        SDWanProtos.NodeInfoReq nodeInfoReq = SDWanProtos.NodeInfoReq.newBuilder()
+                .addAllAddressUri(list)
+                .build();
+        String id = ShortUUID.gen();
+        SDWanProtos.Message message = SDWanProtos.Message.newBuilder()
+                .setReqId(id)
+                .setMode(SDWanProtos.MessageMode.ReqResp)
+                .setType(SDWanProtos.MessageTypeCode.UpdateNodeInfoType)
+                .setData(nodeInfoReq.toByteString())
+                .build();
+        localChannel.writeAndFlush(message);
+    }
+
     public CompletableFuture<SDWanProtos.P2pAnswer> offer(SDWanProtos.P2pOffer req, long timeout) {
-        String id = UUID.randomUUID().toString();
+        String id = ShortUUID.gen();
         log.info("offer: srcVIP={}, dstVIP={}, id={}", req.getSrcVIP(), req.getDstVIP(), id);
         SDWanProtos.Message message = SDWanProtos.Message.newBuilder()
                 .setReqId(id)
@@ -114,7 +131,7 @@ public class SdWanClient implements TransportLifecycle, Runnable {
     }
 
     public CompletableFuture<SDWanProtos.ServerConfigResp> getConfig(long timeout) {
-        String id = UUID.randomUUID().toString();
+        String id = ShortUUID.gen();
         SDWanProtos.ServerConfigReq configReq = SDWanProtos.ServerConfigReq.newBuilder()
                 .setTenantId(config.getTenantId())
                 .build();

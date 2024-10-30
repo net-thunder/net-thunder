@@ -2,9 +2,12 @@ package io.jaspercloud.sdwan.node;
 
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.exception.ProcessException;
+import io.jaspercloud.sdwan.node.event.UpdateNodeInfoEvent;
 import io.jaspercloud.sdwan.stun.*;
+import io.jaspercloud.sdwan.support.AddressUri;
 import io.jaspercloud.sdwan.support.Ecdh;
 import io.jaspercloud.sdwan.tranport.*;
+import io.jaspercloud.sdwan.tranport.event.UpdateAddressUriEvent;
 import io.netty.channel.*;
 import lombok.extern.slf4j.Slf4j;
 
@@ -50,15 +53,6 @@ public class IceClient implements TransportLifecycle {
         this.config = config;
         this.sdWanNode = sdWanNode;
         this.handler = handler;
-    }
-
-    public String registRelay(int timeout) throws Exception {
-        return relayClient.regist(timeout).get();
-    }
-
-    public NatAddress parseNatAddress(int timeout) throws Exception {
-        NatAddress natAddress = p2pClient.parseNatAddress(timeout);
-        return natAddress;
     }
 
     public void sendNode(String srcVip, SDWanProtos.NodeInfo nodeInfo, byte[] bytes) {
@@ -139,6 +133,21 @@ public class IceClient implements TransportLifecycle {
                         super.channelInactive(ctx);
                     }
                 });
+                pipeline.addLast(new ChannelInboundHandlerAdapter() {
+                    @Override
+                    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+                        if (evt instanceof UpdateAddressUriEvent) {
+                            List<AddressUri> p2pAddressList = p2pClient.getNatAddressUriList();
+                            List<AddressUri> relayAddressList = relayClient.getNatAddressUriList();
+                            UpdateNodeInfoEvent event = new UpdateNodeInfoEvent();
+                            event.setP2pAddressList(p2pAddressList);
+                            event.setRelayAddressList(relayAddressList);
+                            ctx.fireUserEventTriggered(event);
+                        } else {
+                            super.userEventTriggered(ctx, evt);
+                        }
+                    }
+                });
                 pipeline.addLast(handler.get());
             }
         };
@@ -152,9 +161,9 @@ public class IceClient implements TransportLifecycle {
     @Override
     public void start() throws Exception {
         encryptionKeyPair = Ecdh.generateKeyPair();
-        p2pClient = new P2pClient(config.getStunServer(), config.getP2pPort(), config.getIceHeartTime(), config.getIceTimeout(),
+        p2pClient = new P2pClient(config.getP2pPort(), config.getIceHeartTime(), config.getIceTimeout(),
                 () -> createStunPacketHandler("p2pClient"));
-        relayClient = new RelayClient(config.getRelayServer(), config.getRelayPort(), config.getIceHeartTime(), config.getIceTimeout(),
+        relayClient = new RelayClient(config.getRelayPort(), config.getIceHeartTime(), config.getIceTimeout(),
                 () -> createStunPacketHandler("relayClient"));
         electionProtocol = new ElectionProtocol(config.getTenantId(), p2pClient, relayClient, encryptionKeyPair,
                 config.getElectionTimeout(), config.getP2pTimeout()) {
@@ -184,6 +193,11 @@ public class IceClient implements TransportLifecycle {
         relayClient.start();
         log.info("IceClient started");
         status.set(true);
+    }
+
+    public void registIceInfo() {
+        p2pClient.addAddressList(config.getStunServerList());
+        relayClient.addAddressList(config.getRelayServerList());
     }
 
     @Override

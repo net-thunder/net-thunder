@@ -3,6 +3,7 @@ package io.jaspercloud.sdwan.platform.rpc;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.support.AsyncTask;
+import io.jaspercloud.sdwan.util.ShortUUID;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -11,7 +12,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
@@ -63,7 +63,7 @@ public final class RpcInvoker {
                 } else if (parameterTypes.length == 1 && "equals".equals(methodName)) {
                     return clazz.equals(args[0]);
                 }
-                String id = UUID.randomUUID().toString();
+                String id = ShortUUID.gen();
                 CompletableFuture<SDWanProtos.RpcMessage> task = AsyncTask.waitTask(id, 5000);
                 supplier.get().writeAndFlush(RpcMessageBuilder.encodeRequest(id, method, args));
                 RpcResponse rpcResp = RpcMessageBuilder.decodeRpcResponse(task.get());

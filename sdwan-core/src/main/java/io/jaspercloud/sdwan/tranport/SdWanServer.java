@@ -7,6 +7,7 @@ import io.jaspercloud.sdwan.exception.ProcessCodeException;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.support.ChannelAttributes;
 import io.jaspercloud.sdwan.support.Cidr;
+import io.jaspercloud.sdwan.util.ShortUUID;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -19,7 +20,10 @@ import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -57,6 +61,10 @@ public class SdWanServer implements Lifecycle, Runnable {
                 SdWanServer.reply(channel, msg, SDWanProtos.MessageTypeCode.HeartType, null);
                 break;
             }
+            case SDWanProtos.MessageTypeCode.UpdateNodeInfoType_VALUE: {
+                processUpdateNodeInfo(ctx, msg);
+                break;
+            }
             case SDWanProtos.MessageTypeCode.ConfigReqType_VALUE: {
                 processConfig(ctx, msg);
                 break;
@@ -76,6 +84,21 @@ public class SdWanServer implements Lifecycle, Runnable {
         }
     }
 
+    private void processUpdateNodeInfo(ChannelHandlerContext ctx, SDWanProtos.Message msg) {
+        try {
+            Channel channel = ctx.channel();
+            ChannelAttributes attr = ChannelAttributes.attr(channel);
+            SDWanProtos.NodeInfoReq req = SDWanProtos.NodeInfoReq.parseFrom(msg.getData());
+            attr.setAddressUriList(req.getAddressUriList().stream().toList());
+            sendAllChannelNodeOnline(channel);
+        } catch (Exception e) {
+            SDWanProtos.ServerConfigResp resp = SDWanProtos.ServerConfigResp.newBuilder()
+                    .setCode(SDWanProtos.MessageCode.SysError)
+                    .build();
+            SdWanServer.reply(ctx.channel(), msg, SDWanProtos.MessageTypeCode.ConfigRespTpe, resp);
+        }
+    }
+
     private void processConfig(ChannelHandlerContext ctx, SDWanProtos.Message msg) {
         try {
             SDWanProtos.ServerConfigReq req = SDWanProtos.ServerConfigReq.parseFrom(msg.getData());
@@ -83,10 +106,14 @@ public class SdWanServer implements Lifecycle, Runnable {
             if (null == tenantSpace) {
                 throw new ProcessException("not found tenant");
             }
+            List<String> stunServerList = tenantSpace.getStunServerList();
+            List<String> relayServerList = tenantSpace.getRelayServerList();
             SDWanProtos.ServerConfigResp resp = SDWanProtos.ServerConfigResp.newBuilder()
                     .setCode(SDWanProtos.MessageCode.Success)
-                    .setStunServer(tenantSpace.getStunServer())
-                    .setRelayServer(tenantSpace.getRelayServer())
+                    .setStunServer(stunServerList.get(0))
+                    .setRelayServer(relayServerList.get(0))
+                    .addAllStunServers(stunServerList)
+                    .addAllRelayServers(relayServerList)
                     .build();
             SdWanServer.reply(ctx.channel(), msg, SDWanProtos.MessageTypeCode.ConfigRespTpe, resp);
         } catch (Exception e) {
@@ -285,7 +312,7 @@ public class SdWanServer implements Lifecycle, Runnable {
     }
 
     public static void push(Channel channel, SDWanProtos.MessageTypeCode msgCode, AbstractMessageLite data) {
-        push(channel, UUID.randomUUID().toString(), msgCode, data);
+        push(channel, ShortUUID.gen(), msgCode, data);
     }
 
     public static void push(Channel channel, String id, SDWanProtos.MessageTypeCode msgCode, AbstractMessageLite data) {
@@ -310,8 +337,8 @@ public class SdWanServer implements Lifecycle, Runnable {
     public void start() throws Exception {
         config.getTenantConfig().forEach((k, config) -> {
             TenantSpace tenantSpace = new TenantSpace();
-            tenantSpace.setStunServer(config.getStunServer());
-            tenantSpace.setRelayServer(config.getRelayServer());
+            tenantSpace.setStunServerList(config.getStunServerList());
+            tenantSpace.setRelayServerList(config.getRelayServerList());
             Cidr ipPool = Cidr.parseCidr(config.getVipCidr());
             tenantSpace.setIpPool(ipPool);
             Map<String, AtomicReference<Channel>> bindIPMap = tenantSpace.getBindIPMap();
