@@ -20,6 +20,22 @@ public class TransferTest {
     @Test
     public void test() throws Exception {
         String address = InetAddress.getLocalHost().getHostAddress();
+        List<String> stunList = new ArrayList<>();
+        List<String> relayList = new ArrayList<>();
+        for (int i = 1; i <= 5; i++) {
+            StunServer stunServer = new StunServer(StunServerConfig.builder()
+                    .bindHost(address)
+                    .bindPort(3000 + i)
+                    .build(), () -> new ChannelInboundHandlerAdapter());
+            stunServer.start();
+            stunList.add(String.format("localhost:%s", 3000 + i));
+            RelayServer relayServer = new RelayServer(RelayServerConfig.builder()
+                    .bindPort(4000 + i)
+                    .heartTimeout(15 * 1000)
+                    .build(), () -> new ChannelInboundHandlerAdapter());
+            relayServer.start();
+            relayList.add(String.format("localhost:%s", 4000 + i));
+        }
         Map<String, String> fixedVipMap = new HashMap<String, String>() {
             {
                 put("x1:x:x:x:x:x", "10.5.0.11");
@@ -34,24 +50,14 @@ public class TransferTest {
                 .port(1800)
                 .heartTimeout(30 * 1000)
                 .tenantConfig(Collections.singletonMap("default", SdWanServerConfig.TenantConfig.builder()
-                        .stunServer("127.0.0.1:3478")
-                        .relayServer("127.0.0.1:2478")
+                        .stunServerList(stunList)
+                        .relayServerList(relayList)
                         .vipCidr("10.5.0.0/24")
                         .fixedVipList(fixVipList)
                         .routeList(routeList)
                         .build()))
                 .build(), () -> new ChannelInboundHandlerAdapter());
         sdWanServer.start();
-        RelayServer relayServer = new RelayServer(RelayServerConfig.builder()
-                .bindPort(2478)
-                .heartTimeout(15 * 1000)
-                .build(), () -> new ChannelInboundHandlerAdapter());
-        relayServer.start();
-        StunServer stunServer = new StunServer(StunServerConfig.builder()
-                .bindHost(address)
-                .bindPort(3478)
-                .build(), () -> new ChannelInboundHandlerAdapter());
-        stunServer.start();
         TestSdWanNode sdWanNode1 = new TestSdWanNode(SdWanNodeConfig.builder()
                 .onlyRelayTransport(false)
                 .controllerServer(address + ":1800")
@@ -102,7 +108,7 @@ public class TransferTest {
                     .setDstIP("10.5.0.12")
                     .setPayload(ByteString.copyFrom("hello".getBytes()))
                     .build());
-            Thread.sleep(30 * 1000);
+            Thread.sleep(3 * 1000);
         }
     }
 }
