@@ -9,52 +9,39 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.apache.commons.lang3.RandomUtils;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.InetAddress;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
+import java.util.stream.Collectors;
 
 public class ChaosTest {
 
     public static void main(String[] args) throws Exception {
         applyLog();
-        applySdWanServer(60 * 1000, 120 * 1000, 5 * 1000);
-        applyRelayServer(60 * 1000, 120 * 1000, 5 * 1000);
-        applyStunServer(60 * 1000, 120 * 1000, 5 * 1000);
-        applyNode("tun1", "x1:x:x:x:x:x", 60 * 1000, 120 * 1000, 5 * 1000);
-        applyNode("tun2", "x2:x:x:x:x:x", 15 * 1000, 30 * 1000, 5 * 1000);
-        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-        List<Logger> loggerList = loggerContext.getLoggerList();
-        loggerList.forEach(log -> {
-            if (log.getName().startsWith("io.jaspercloud.sdwan")) {
-                log.setLevel(Level.DEBUG);
-            }
-        });
-        Process process = Runtime.getRuntime().exec("ping -S 10.5.0.11 10.5.0.12 -n 1000");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), "GBK"));
-        String line;
-        while (null != (line = reader.readLine())) {
-            System.out.println("process: " + line);
-        }
-        System.out.println();
+        List<String> stunServerList = applyStunServer(5, 15 * 1000, 30 * 1000, 5 * 1000);
+        List<String> relayServerList = applyRelayServer(5, 15 * 1000, 30 * 1000, 8 * 1000);
+        applySdWanServer(stunServerList, relayServerList, 30 * 1000, 60 * 1000, 3 * 1000);
+        applyNode("tun1", "x1:x:x:x:x:x", 60 * 1000, 120 * 1000, 15 * 1000);
+        applyNode("tun2", "x2:x:x:x:x:x", 15 * 1000, 30 * 1000, 15 * 1000);
+//        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+//        List<Logger> loggerList = loggerContext.getLoggerList();
+//        loggerList.forEach(log -> {
+//            if (log.getName().startsWith("io.jaspercloud.sdwan")) {
+//                log.setLevel(Level.DEBUG);
+//            }
+//        });
+        // ping -S 10.5.0.11 10.5.0.12 -n 1000
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        countDownLatch.await();
     }
 
     private static void applyNode(String tun, String mac, long min, long max, long interval) {
         new Thread(() -> {
             while (true) {
                 try {
-                    String address = InetAddress.getLocalHost().getHostAddress();
-                    TunSdWanNode sdWanNode = new TunSdWanNode(SdWanNodeConfig.builder()
-                            .controllerServer(address + ":1800")
-                            .relayServer(address + ":2478")
-                            .stunServer(address + ":3478")
-                            .connectTimeout(3 * 1000)
-                            .heartTime(15 * 1000)
-                            .p2pHeartTime(10 * 1000)
-                            .tunName(tun)
-                            .mtu(1440)
-                            .build()) {
+                    SdWanNodeConfig config = new SdWanNodeConfig();
+                    config.setControllerServer("127.0.0.1:1800");
+                    config.setTunName(tun);
+                    TunSdWanNode sdWanNode = new TunSdWanNode(config) {
                         @Override
                         protected String processMacAddress(String hardwareAddress) {
                             return mac;
@@ -65,56 +52,68 @@ public class ChaosTest {
                     sdWanNode.stop();
                     Thread.sleep(interval);
                 } catch (Exception e) {
-                }
-            }
-        }).start();
-    }
-
-    private static void applyStunServer(long min, long max, long interval) throws Exception {
-        CountDownLatch countDownLatch = new CountDownLatch(1);
-        new Thread(() -> {
-            while (true) {
-                try {
-                    String address = InetAddress.getLocalHost().getHostAddress();
-                    StunServer stunServer = new StunServer(StunServerConfig.builder()
-                            .bindHost(address)
-                            .bindPort(3478)
-                            .build(), () -> new ChannelInboundHandlerAdapter());
-                    stunServer.start();
-                    countDownLatch.countDown();
-                    Thread.sleep(RandomUtils.nextLong(min, max));
-                    stunServer.stop();
-                    Thread.sleep(interval);
-                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }).start();
     }
 
-    private static void applyRelayServer(long min, long max, long interval) throws Exception {
-        CountDownLatch countDownLatch = new CountDownLatch(1);
-        new Thread(() -> {
-            while (true) {
-                try {
-                    RelayServer relayServer = new RelayServer(RelayServerConfig.builder()
-                            .bindPort(2478)
-                            .heartTimeout(15000)
-                            .build(), () -> new ChannelInboundHandlerAdapter());
-                    relayServer.start();
-                    countDownLatch.countDown();
-                    Thread.sleep(RandomUtils.nextLong(min, max));
-                    relayServer.stop();
-                    Thread.sleep(interval);
-                } catch (Exception e) {
-                    e.printStackTrace();
+    private static List<String> applyStunServer(int count, long min, long max, long interval) throws Exception {
+        List<String> list = new ArrayList<>();
+        for (int i = 1; i <= count; i++) {
+            int port = 2000 + i;
+            list.add(String.format("127.0.0.1:%s", port));
+            CountDownLatch countDownLatch = new CountDownLatch(1);
+            new Thread(() -> {
+                while (true) {
+                    try {
+                        StunServerConfig config = new StunServerConfig();
+                        config.setBindPort(port);
+                        StunServer stunServer = new StunServer(config, () -> new ChannelInboundHandlerAdapter());
+                        stunServer.start();
+                        countDownLatch.countDown();
+                        Thread.sleep(RandomUtils.nextLong(min, max));
+                        stunServer.stop();
+                        Thread.sleep(interval);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
-        }).start();
-        countDownLatch.await();
+            }).start();
+        }
+        return list;
     }
 
-    private static void applySdWanServer(long min, long max, long interval) throws Exception {
+    private static List<String> applyRelayServer(int count, long min, long max, long interval) throws Exception {
+        List<String> list = new ArrayList<>();
+        for (int i = 1; i <= count; i++) {
+            int port = 3000 + i;
+            list.add(String.format("127.0.0.1:%s", port));
+            CountDownLatch countDownLatch = new CountDownLatch(1);
+            new Thread(() -> {
+                while (true) {
+                    try {
+                        RelayServerConfig config = new RelayServerConfig();
+                        config.setBindPort(port);
+                        RelayServer relayServer = new RelayServer(config, () -> new ChannelInboundHandlerAdapter());
+                        relayServer.start();
+                        countDownLatch.countDown();
+                        Thread.sleep(RandomUtils.nextLong(min, max));
+                        relayServer.stop();
+                        Thread.sleep(interval);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+            countDownLatch.await();
+        }
+        return list;
+    }
+
+    private static void applySdWanServer(List<String> stunServerList,
+                                         List<String> relayServerList,
+                                         long min, long max, long interval) throws Exception {
         CountDownLatch countDownLatch = new CountDownLatch(1);
         new Thread(() -> {
             while (true) {
@@ -125,16 +124,23 @@ public class ChaosTest {
                             put("x2:x:x:x:x:x", "10.5.0.12");
                         }
                     };
-                    List<SdWanServerConfig.Route> routeList = new ArrayList<>();
-                    SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
-                            .port(1800)
-                            .heartTimeout(30 * 1000)
-                            .tenantConfig(Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
-                                    .vipCidr("10.5.0.0/24")
-                                    .fixedVipList(Collections.emptyList())
-                                    .routeList(routeList)
-                                    .build()))
-                            .build(), () -> new ChannelInboundHandlerAdapter());
+                    List<SdWanServerConfig.FixVip> fixVipList = fixedVipMap.entrySet().stream().map(e -> {
+                        SdWanServerConfig.FixVip fixVip = new SdWanServerConfig.FixVip();
+                        fixVip.setMac(e.getKey());
+                        fixVip.setVip(e.getValue());
+                        return fixVip;
+                    }).collect(Collectors.toList());
+                    SdWanServerConfig.TenantConfig tenantConfig = SdWanServerConfig.TenantConfig.builder()
+                            .vipCidr("10.5.0.0/24")
+                            .stunServerList(stunServerList)
+                            .relayServerList(relayServerList)
+                            .fixedVipList(fixVipList)
+                            .routeList(Collections.emptyList())
+                            .vnatList(Collections.emptyList())
+                            .build();
+                    SdWanServerConfig config = new SdWanServerConfig();
+                    config.setTenantConfig(Collections.singletonMap("default", tenantConfig));
+                    SdWanServer sdWanServer = new SdWanServer(config, () -> new ChannelInboundHandlerAdapter());
                     sdWanServer.start();
                     countDownLatch.countDown();
                     Thread.sleep(RandomUtils.nextLong(min, max));

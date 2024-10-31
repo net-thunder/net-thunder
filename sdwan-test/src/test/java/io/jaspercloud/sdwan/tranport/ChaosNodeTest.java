@@ -44,8 +44,8 @@ public class ChaosNodeTest {
                     String address = InetAddress.getLocalHost().getHostAddress();
                     TunSdWanNode sdWanNode = new TunSdWanNode(SdWanNodeConfig.builder()
                             .controllerServer(address + ":1800")
-                            .relayServer(address + ":2478")
-                            .stunServer(address + ":3478")
+                            .relayServerList(Arrays.asList(address + ":2478"))
+                            .stunServerList(Arrays.asList(address + ":3478"))
                             .connectTimeout(3 * 1000)
                             .heartTime(15 * 1000)
                             .p2pHeartTime(10 * 1000)

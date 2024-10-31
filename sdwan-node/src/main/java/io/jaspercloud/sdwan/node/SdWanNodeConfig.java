@@ -18,7 +18,7 @@ import java.util.List;
 @Setter
 public class SdWanNodeConfig {
 
-    private String tenantId = "tenant1";
+    private String tenantId = "default";
     private String controllerServer = "127.0.0.1:1800";
     private int connectTimeout = 3 * 1000;
     private long heartTime = 15 * 1000;

@@ -21,6 +21,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.util.internal.PlatformDependent;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -259,6 +260,9 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                     .setPayload(ByteString.copyFrom(ByteBufUtil.toBytes(packet.rebuild())))
                     .build().toByteArray();
             nodeInfoMap.values().forEach(nodeInfo -> {
+                if (StringUtils.equals(nodeInfo.getVip(), localVip)) {
+                    return;
+                }
                 iceClient.sendNode(localVip, nodeInfo, bytes);
             });
             return;
