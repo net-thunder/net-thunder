@@ -1,9 +1,9 @@
-package io.jaspercloud.sdwan.adapter;
+package io.jaspercloud.sdwan.server;
 
-import io.jaspercloud.sdwan.adapter.server.RelayServerBean;
-import io.jaspercloud.sdwan.adapter.server.SdWanControllerProperties;
-import io.jaspercloud.sdwan.adapter.server.SdWanServerBean;
-import io.jaspercloud.sdwan.adapter.server.StunServerBean;
+import io.jaspercloud.sdwan.server.component.RelayServerBean;
+import io.jaspercloud.sdwan.server.component.SdWanControllerProperties;
+import io.jaspercloud.sdwan.server.component.SdWanServerBean;
+import io.jaspercloud.sdwan.server.component.StunServerBean;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

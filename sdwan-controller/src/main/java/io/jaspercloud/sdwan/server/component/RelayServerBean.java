@@ -1,4 +1,4 @@
-package io.jaspercloud.sdwan.adapter.server;
+package io.jaspercloud.sdwan.server.component;
 
 import io.jaspercloud.sdwan.tranport.RelayServer;
 import io.jaspercloud.sdwan.tranport.RelayServerConfig;
