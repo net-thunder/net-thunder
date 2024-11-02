@@ -89,7 +89,7 @@ public class SdWanServer implements Lifecycle, Runnable {
             Channel channel = ctx.channel();
             ChannelAttributes attr = ChannelAttributes.attr(channel);
             SDWanProtos.NodeInfoReq req = SDWanProtos.NodeInfoReq.parseFrom(msg.getData());
-            attr.setAddressUriList(req.getAddressUriList().stream().toList());
+            attr.setAddressUriList(req.getAddressUriList().stream().collect(Collectors.toList()));
             sendAllChannelNodeOnline(channel);
         } catch (Exception e) {
             SDWanProtos.ServerConfigResp resp = SDWanProtos.ServerConfigResp.newBuilder()
