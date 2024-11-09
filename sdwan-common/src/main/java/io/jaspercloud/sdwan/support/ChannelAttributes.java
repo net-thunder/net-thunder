@@ -15,6 +15,7 @@ import java.util.List;
 @Setter
 public class ChannelAttributes {
 
+    private String tenantId;
     private String vip;
     private Long lastHeartTime;
 

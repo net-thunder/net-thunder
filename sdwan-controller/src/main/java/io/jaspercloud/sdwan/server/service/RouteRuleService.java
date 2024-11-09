@@ -1,0 +1,21 @@
+package io.jaspercloud.sdwan.server.service;
+
+import io.jaspercloud.sdwan.server.controller.request.EditRouteRuleRequest;
+import io.jaspercloud.sdwan.server.controller.response.PageResponse;
+import io.jaspercloud.sdwan.server.controller.response.RouteRuleResponse;
+import io.jaspercloud.sdwan.server.entity.RouteRule;
+
+import java.util.List;
+
+public interface RouteRuleService {
+
+    void add(EditRouteRuleRequest request);
+
+    void edit(EditRouteRuleRequest request);
+
+    void del(EditRouteRuleRequest request);
+
+    PageResponse<RouteRuleResponse> page();
+
+    List<RouteRule> queryByIdList(List<Long> idList);
+}

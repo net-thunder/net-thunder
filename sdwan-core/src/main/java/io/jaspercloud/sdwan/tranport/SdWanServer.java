@@ -1,12 +1,12 @@
 package io.jaspercloud.sdwan.tranport;
 
-import cn.hutool.core.collection.CollectionUtil;
 import com.google.protobuf.AbstractMessageLite;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.exception.ProcessCodeException;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.support.ChannelAttributes;
 import io.jaspercloud.sdwan.support.Cidr;
+import io.jaspercloud.sdwan.tranport.service.SdWanDataService;
 import io.jaspercloud.sdwan.util.ShortUUID;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;
 import io.netty.bootstrap.ServerBootstrap;
@@ -20,13 +20,9 @@ import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -38,6 +34,7 @@ import java.util.stream.Collectors;
 public class SdWanServer implements Lifecycle, Runnable {
 
     private SdWanServerConfig config;
+    private SdWanDataService sdWanDataService;
     private Supplier<ChannelHandler> handler;
 
     private Channel localChannel;
@@ -45,8 +42,13 @@ public class SdWanServer implements Lifecycle, Runnable {
     private Map<String, Channel> channelMap = new ConcurrentHashMap<>();
     private Map<Channel, String> registChannelMap = new ConcurrentHashMap<>();
 
-    public SdWanServer(SdWanServerConfig config, Supplier<ChannelHandler> handler) {
+    public Set<Channel> getOnlineChannel() {
+        return Collections.unmodifiableSet(registChannelMap.keySet());
+    }
+
+    public SdWanServer(SdWanServerConfig config, SdWanDataService sdWanDataService, Supplier<ChannelHandler> handler) {
         this.config = config;
+        this.sdWanDataService = sdWanDataService;
         this.handler = handler;
     }
 
@@ -102,10 +104,7 @@ public class SdWanServer implements Lifecycle, Runnable {
     private void processConfig(ChannelHandlerContext ctx, SDWanProtos.Message msg) {
         try {
             SDWanProtos.ServerConfigReq req = SDWanProtos.ServerConfigReq.parseFrom(msg.getData());
-            TenantSpace tenantSpace = tenantSpaceMap.get(req.getTenantId());
-            if (null == tenantSpace) {
-                throw new ProcessException("not found tenant");
-            }
+            TenantSpace tenantSpace = getTenantSpace(req.getTenantId());
             List<String> stunServerList = tenantSpace.getStunServerList();
             List<String> relayServerList = tenantSpace.getRelayServerList();
             SDWanProtos.ServerConfigResp resp = SDWanProtos.ServerConfigResp.newBuilder()
@@ -131,7 +130,7 @@ public class SdWanServer implements Lifecycle, Runnable {
             if (null == tenantSpace) {
                 throw new ProcessException("not found tenant");
             }
-            Channel channel = tenantSpace.getBindIPMap().get(p2pOffer.getDstVIP()).get();
+            Channel channel = tenantSpace.getChannel(p2pOffer.getDstVIP());
             if (null != channel) {
                 log.info("push processP2pOffer: srcVIP={}, dstVIP={}, id={}", p2pOffer.getSrcVIP(), p2pOffer.getDstVIP(), msg.getReqId());
                 SdWanServer.push(channel, msg.getReqId(), SDWanProtos.MessageTypeCode.P2pOfferType, p2pOffer);
@@ -151,7 +150,7 @@ public class SdWanServer implements Lifecycle, Runnable {
             if (null == tenantSpace) {
                 throw new ProcessException("not found tenant");
             }
-            Channel channel = tenantSpace.getBindIPMap().get(p2pAnswer.getDstVIP()).get();
+            Channel channel = tenantSpace.getChannel(p2pAnswer.getDstVIP());
             if (null != channel) {
                 log.info("push processP2pAnswer: srcVIP={}, dstVIP={}, id={}", p2pAnswer.getSrcVIP(), p2pAnswer.getDstVIP(), msg.getReqId());
                 SdWanServer.push(channel, msg.getReqId(), SDWanProtos.MessageTypeCode.P2pAnswerType, p2pAnswer);
@@ -180,6 +179,7 @@ public class SdWanServer implements Lifecycle, Runnable {
                 });
                 return retVip;
             });
+            attr.setTenantId(registReq.getTenantId());
             attr.setMacAddress(registReq.getMacAddress());
             attr.setAddressUriList(registReq.getAddressUriList());
             SDWanProtos.NodeInfoList nodeInfoList = SDWanProtos.NodeInfoList.newBuilder()
@@ -192,29 +192,20 @@ public class SdWanServer implements Lifecycle, Runnable {
                                         .build();
                             }).collect(Collectors.toList()))
                     .build();
-            TenantSpace tenantSpace = tenantSpaceMap.get(registReq.getTenantId());
-            if (null == tenantSpace) {
-                throw new ProcessException("not found tenant");
-            }
-            SDWanProtos.RouteList.Builder routeListBuilder = SDWanProtos.RouteList.newBuilder();
-            List<SdWanServerConfig.Route> routeList = tenantSpace.getRouteList();
-            if (!CollectionUtil.isEmpty(routeList)) {
-                routeList.forEach(e -> {
-                    SDWanProtos.Route.Builder builder = SDWanProtos.Route.newBuilder()
-                            .setDestination(e.getDestination())
-                            .addAllNexthop(e.getNexthop());
-                    routeListBuilder.addRoute(builder.build());
-                });
-            }
-            Cidr ipPool = tenantSpace.getIpPool();
-            SDWanProtos.VNATList vnatList = tenantSpace.getVnatMap().getOrDefault(vip, SDWanProtos.VNATList.newBuilder().build());
+            Cidr ipPool = sdWanDataService.getIpPool(registReq.getTenantId());
+            List<SdWanServerConfig.Route> routeList = sdWanDataService.getRouteList(registReq.getTenantId(), vip);
+            List<SdWanServerConfig.VNAT> vnatList = sdWanDataService.getVNATList(registReq.getTenantId(), vip);
             SDWanProtos.RegistResp regResp = SDWanProtos.RegistResp.newBuilder()
                     .setCode(SDWanProtos.MessageCode.Success)
                     .setVip(vip)
                     .setMaskBits(ipPool.getMaskBits())
                     .setNodeList(nodeInfoList)
-                    .setRouteList(routeListBuilder.build())
-                    .setVnatList(vnatList)
+                    .setRouteList(SDWanProtos.RouteList.newBuilder()
+                            .addAllRoute(buildRouteList(routeList))
+                            .build())
+                    .setVnatList(SDWanProtos.VNATList.newBuilder()
+                            .addAllVnat(buildVNATList(vnatList))
+                            .build())
                     .build();
             SdWanServer.reply(channel, msg, SDWanProtos.MessageTypeCode.RegistRespType, regResp);
             sendAllChannelNodeOnline(channel);
@@ -235,6 +226,27 @@ public class SdWanServer implements Lifecycle, Runnable {
                     .build();
             SdWanServer.reply(channel, msg, SDWanProtos.MessageTypeCode.RegistRespType, regResp);
         }
+    }
+
+    private List<SDWanProtos.Route> buildRouteList(List<SdWanServerConfig.Route> routeList) {
+        List<SDWanProtos.Route> collect = routeList.stream().map(e -> {
+            return SDWanProtos.Route.newBuilder()
+                    .setDestination(e.getDestination())
+                    .addAllNexthop(e.getNexthop())
+                    .build();
+        }).collect(Collectors.toList());
+        return collect;
+    }
+
+    private List<SDWanProtos.VNAT> buildVNATList(List<SdWanServerConfig.VNAT> vnatList) {
+        List<SDWanProtos.VNAT> collect = vnatList.stream().map(e -> {
+            return SDWanProtos.VNAT.newBuilder()
+                    .setVip(e.getVip())
+                    .setSrc(e.getSrc())
+                    .setDst(e.getDst())
+                    .build();
+        }).collect(Collectors.toList());
+        return collect;
     }
 
     private void sendAllChannelNodeOnline(Channel channel) {
@@ -271,38 +283,23 @@ public class SdWanServer implements Lifecycle, Runnable {
     }
 
     private String applyVip(Channel channel, SDWanProtos.RegistReq registReq, ChannelAttributes attr) {
-        TenantSpace tenantSpace = tenantSpaceMap.get(registReq.getTenantId());
-        if (null == tenantSpace) {
-            throw new ProcessException("not found tenant");
-        }
-        Map<String, String> fixedVipMap = tenantSpace.getFixedVipMap();
-        Map<String, AtomicReference<Channel>> bindIPMap = tenantSpace.getBindIPMap();
-        String fixedIp = fixedVipMap.get(registReq.getMacAddress());
-        if (null != fixedIp) {
-            if (!bindIPMap.get(fixedIp).compareAndSet(null, channel)) {
-                throw new ProcessCodeException(SDWanProtos.MessageCode.VipBound_VALUE);
-            }
-            bindVip(channel, attr, bindIPMap, fixedIp);
-            return fixedIp;
-        }
-        for (Map.Entry<String, AtomicReference<Channel>> entry : bindIPMap.entrySet()) {
-            if (entry.getValue().compareAndSet(null, channel)) {
-                String vip = entry.getKey();
-                bindVip(channel, attr, bindIPMap, vip);
-                return vip;
-            }
-        }
-        throw new ProcessCodeException(SDWanProtos.MessageCode.NotEnough_VALUE);
+        String vip = sdWanDataService.applyVip(registReq.getTenantId());
+        attr.setVip(vip);
+        TenantSpace tenantSpace = getTenantSpace(registReq.getTenantId());
+        tenantSpace.addChannel(vip, channel);
+        return vip;
     }
 
-    private void bindVip(Channel channel, ChannelAttributes attr, Map<String, AtomicReference<Channel>> bindIPMap, String vip) {
-        attr.setVip(vip);
-        channel.closeFuture().addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture future) throws Exception {
-                bindIPMap.get(vip).set(null);
-            }
+    public TenantSpace getTenantSpace(String tenantId) {
+        TenantSpace space = tenantSpaceMap.computeIfAbsent(tenantId, key -> {
+            TenantSpace tenantSpace = new TenantSpace();
+            List<String> stunServerList = sdWanDataService.getStunServerList(tenantId);
+            tenantSpace.setStunServerList(stunServerList);
+            List<String> relayServerList = sdWanDataService.getRelayServerList(tenantId);
+            tenantSpace.setRelayServerList(relayServerList);
+            return tenantSpace;
         });
+        return space;
     }
 
     public void push(SDWanProtos.MessageTypeCode msgCode, AbstractMessageLite data) {
@@ -335,45 +332,6 @@ public class SdWanServer implements Lifecycle, Runnable {
 
     @Override
     public void start() throws Exception {
-        config.getTenantConfig().forEach((k, config) -> {
-            TenantSpace tenantSpace = new TenantSpace();
-            tenantSpace.setStunServerList(config.getStunServerList());
-            tenantSpace.setRelayServerList(config.getRelayServerList());
-            Cidr ipPool = Cidr.parseCidr(config.getVipCidr());
-            tenantSpace.setIpPool(ipPool);
-            Map<String, AtomicReference<Channel>> bindIPMap = tenantSpace.getBindIPMap();
-            ipPool.availableIpList().forEach(vip -> {
-                bindIPMap.put(vip, new AtomicReference<>());
-            });
-            //fixedVipMap
-            if (!CollectionUtil.isEmpty(config.getFixedVipList())) {
-                Map<String, String> fixedVipMap = tenantSpace.getFixedVipMap();
-                config.getFixedVipList().forEach(e -> {
-                    fixedVipMap.put(e.getMac(), e.getVip());
-                });
-            }
-            //route
-            tenantSpace.setRouteList(config.getRouteList());
-            //vnat
-            Map<String, SDWanProtos.VNATList.Builder> vnatBuilderMap = new HashMap<>();
-            List<SdWanServerConfig.VNAT> vnatList = config.getVnatList();
-            if (!CollectionUtil.isEmpty(vnatList)) {
-                vnatList.forEach(e -> {
-                    SDWanProtos.VNATList.Builder vnatListBuilder = vnatBuilderMap.computeIfAbsent(e.getVip(), key -> SDWanProtos.VNATList.newBuilder());
-                    SDWanProtos.VNAT.Builder builder = SDWanProtos.VNAT.newBuilder()
-                            .setVip(e.getVip())
-                            .setSrc(e.getSrc())
-                            .setDst(e.getDst());
-                    vnatListBuilder.addVnat(builder.build());
-                });
-            }
-            Map<String, SDWanProtos.VNATList> vnatMap = new HashMap<>();
-            vnatBuilderMap.forEach((key, value) -> {
-                vnatMap.put(key, value.build());
-            });
-            tenantSpace.setVnatMap(vnatMap);
-            tenantSpaceMap.put(k, tenantSpace);
-        });
         NioEventLoopGroup bossGroup = NioEventLoopFactory.createBossGroup();
         NioEventLoopGroup workerGroup = NioEventLoopFactory.createWorkerGroup();
         ServerBootstrap serverBootstrap = new ServerBootstrap();
