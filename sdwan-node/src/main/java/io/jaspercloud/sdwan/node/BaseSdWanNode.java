@@ -302,8 +302,8 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         nodeInfoMap.clear();
         sdWanClient.start();
         SDWanProtos.ServerConfigResp configResp = sdWanClient.getConfig(config.getConnectTimeout()).get();
-        config.setStunServerList(configResp.getStunServersList().stream().toList());
-        config.setRelayServerList(configResp.getRelayServersList().stream().toList());
+        config.setStunServerList(configResp.getStunServersList());
+        config.setRelayServerList(configResp.getRelayServersList());
         iceClient.start();
         log.info("SdWanNode install");
         String localAddress = config.getLocalAddress();
