@@ -1,4 +1,4 @@
-package io.jaspercloud.sdwan.server.entity;
+package io.jaspercloud.sdwan.server.enums;
 
 public enum DirectionEnum {
 

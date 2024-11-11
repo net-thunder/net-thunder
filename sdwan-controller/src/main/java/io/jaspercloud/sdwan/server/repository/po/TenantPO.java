@@ -15,10 +15,8 @@ public class TenantPO extends BasePO<TenantPO> {
     private String description;
     private String code;
     private String cidr;
-    @TableField("uname")
-    private String username;
-    @TableField("pwd")
-    private String password;
     private String config;
     private Boolean enable;
+    @TableField("account_id")
+    private Long accountId;
 }

@@ -7,8 +7,12 @@ import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.server.controller.request.EditTenantRequest;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.controller.response.TenantResponse;
+import io.jaspercloud.sdwan.server.entity.Account;
 import io.jaspercloud.sdwan.server.entity.Tenant;
+import io.jaspercloud.sdwan.server.enums.UserRole;
+import io.jaspercloud.sdwan.server.repository.AccountRepository;
 import io.jaspercloud.sdwan.server.repository.TenantRepository;
+import io.jaspercloud.sdwan.server.repository.po.AccountPO;
 import io.jaspercloud.sdwan.server.repository.po.TenantPO;
 import io.jaspercloud.sdwan.server.service.TenantService;
 import jakarta.annotation.Resource;
@@ -24,17 +28,25 @@ public class TenantServiceImpl implements TenantService {
     @Resource
     private TenantRepository tenantRepository;
 
+    @Resource
+    private AccountRepository accountRepository;
+
     @Override
     public void add(EditTenantRequest request) {
+        Long usernameCount = accountRepository.count(accountRepository.lambdaQuery()
+                .eq(AccountPO::getUsername, request.getUsername()));
+        if (usernameCount > 0) {
+            throw new ProcessException("username exists");
+        }
+        AccountPO accountPO = new AccountPO();
+        accountPO.setUsername(request.getUsername());
+        accountPO.setPassword(request.getPassword());
+        accountPO.setRole(UserRole.TenantAdmin.name());
+        accountPO.insert();
         Long codeCount = tenantRepository.count(tenantRepository.lambdaQuery()
                 .eq(TenantPO::getCode, request.getCode()));
         if (codeCount > 0) {
             throw new ProcessException("code exists");
-        }
-        Long usernameCount = tenantRepository.count(tenantRepository.lambdaQuery()
-                .eq(TenantPO::getUsername, request.getUsername()));
-        if (usernameCount > 0) {
-            throw new ProcessException("username exists");
         }
         TenantPO tenant = BeanUtil.toBean(request, TenantPO.class);
         JSONObject jsonObject = new JSONObject();
@@ -42,6 +54,7 @@ public class TenantServiceImpl implements TenantService {
         jsonObject.set("relayServerList", request.getRelayServerList());
         tenant.setConfig(jsonObject.toString());
         tenant.setId(null);
+        tenant.setAccountId(accountPO.getId());
         tenant.insert();
     }
 
@@ -51,6 +64,12 @@ public class TenantServiceImpl implements TenantService {
         if (null == tenant) {
             return;
         }
+        Account account = accountRepository.one(accountRepository.lambdaQuery()
+                .eq(AccountPO::getId, tenant.getAccountId()));
+        if (null != request.getPassword()) {
+            account.setPassword(request.getPassword());
+        }
+        accountRepository.updateById(account);
         JSONObject config = JSONUtil.parseObj(tenant.getConfig());
         JSONObject jsonObject = new JSONObject();
         if (null != request.getName()) {
@@ -58,9 +77,6 @@ public class TenantServiceImpl implements TenantService {
         }
         if (null != request.getDescription()) {
             tenant.setDescription(request.getDescription());
-        }
-        if (null != request.getPassword()) {
-            tenant.setPassword(request.getPassword());
         }
         if (null != request.getStunServerList()) {
             jsonObject.set("stunServerList", request.getStunServerList());
@@ -79,6 +95,12 @@ public class TenantServiceImpl implements TenantService {
     @Override
     public void del(EditTenantRequest request) {
         tenantRepository.deleteById(request.getId());
+    }
+
+    @Override
+    public Tenant queryById(Long id) {
+        Tenant tenant = tenantRepository.selectById(id);
+        return tenant;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package io.jaspercloud.sdwan.server.entity;
 
 import cn.hutool.json.JSONUtil;
+import io.jaspercloud.sdwan.server.enums.DirectionEnum;
 import io.jaspercloud.sdwan.server.repository.po.RouteRulePO;
 import io.jaspercloud.sdwan.server.support.BeanTransformer;
 import lombok.Getter;

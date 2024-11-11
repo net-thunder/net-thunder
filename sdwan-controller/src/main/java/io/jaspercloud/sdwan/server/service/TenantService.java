@@ -13,6 +13,8 @@ public interface TenantService {
 
     void del(EditTenantRequest request);
 
+    Tenant queryById(Long id);
+
     PageResponse<Tenant> page();
 
     TenantResponse queryByTenantCode(String tenantCode);
