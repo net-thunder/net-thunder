@@ -5,8 +5,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class Group extends TenantEntity<VNAT> {
+public class Group extends BaseEntity {
 
-    private Long id;
     private String name;
+    private String description;
 }

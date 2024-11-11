@@ -6,6 +6,7 @@ import io.jaspercloud.sdwan.server.controller.response.GroupResponse;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.entity.Node;
 import io.jaspercloud.sdwan.server.service.GroupService;
+import io.jaspercloud.sdwan.server.service.NodeService;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +18,9 @@ public class GroupController {
 
     @Resource
     private GroupService groupService;
+
+    @Resource
+    private NodeService nodeService;
 
     @PostMapping("/add")
     public void add(@RequestBody EditGroupRequest request) {
@@ -51,7 +55,8 @@ public class GroupController {
 
     @GetMapping("/memberList")
     public List<Node> memberList(@RequestParam("groupId") Long groupId) {
-        List<Node> nodeList = groupService.memberList(groupId);
+        List<Long> memberList = groupService.memberList(groupId);
+        List<Node> nodeList = nodeService.queryByIdList(memberList);
         return nodeList;
     }
 }

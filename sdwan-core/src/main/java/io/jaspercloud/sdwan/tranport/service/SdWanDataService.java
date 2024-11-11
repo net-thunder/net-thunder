@@ -1,21 +1,20 @@
 package io.jaspercloud.sdwan.tranport.service;
 
-import io.jaspercloud.sdwan.support.Cidr;
-import io.jaspercloud.sdwan.tranport.SdWanServerConfig;
+import io.jaspercloud.sdwan.tranport.config.NodeConfig;
+import io.jaspercloud.sdwan.tranport.config.TenantConfig;
+import io.netty.channel.Channel;
 
 import java.util.List;
 
 public interface SdWanDataService {
 
-    Cidr getIpPool(String tenantId);
+    boolean hasTenant(String tenantCode);
 
-    String applyVip(String tenantId);
+    TenantConfig getTenantConfig(String tenantCode);
 
-    List<SdWanServerConfig.Route> getRouteList(String tenantId, String vip);
+    NodeConfig applyNodeInfo(Channel channel, String tenantCode, String macAddress);
 
-    List<SdWanServerConfig.VNAT> getVNATList(String tenantId, String vip);
+    List<String> getStunServerList(String tenantCode);
 
-    List<String> getStunServerList(String tenantId);
-
-    List<String> getRelayServerList(String tenantId);
+    List<String> getRelayServerList(String tenantCode);
 }

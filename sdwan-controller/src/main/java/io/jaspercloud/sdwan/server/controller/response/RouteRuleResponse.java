@@ -11,6 +11,7 @@ public class RouteRuleResponse {
 
     private Long id;
     private String name;
+    private String description;
     private String direction;
     private List<String> ruleList;
     private Boolean enable;

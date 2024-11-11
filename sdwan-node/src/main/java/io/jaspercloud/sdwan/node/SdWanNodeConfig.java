@@ -65,8 +65,7 @@ public class SdWanNodeConfig {
         try {
             String hostAddress = Arrays.asList(InetAddress.getAllByName(InetAddress.getLocalHost().getHostName()))
                     .stream().filter(e -> !"127.0.0.1".equals(e.getHostAddress()))
-                    .findAny().stream().findFirst()
-                    .get().getHostAddress();
+                    .findAny().get().getHostAddress();
             return hostAddress;
         } catch (Exception e) {
             throw new ProcessException(e.getMessage(), e);

@@ -14,12 +14,14 @@ import java.util.List;
 public class NodeDetailResponse {
 
     private Long id;
+    private String name;
+    private String description;
     private String mac;
     private String ip;
     private String vip;
     private List<Route> routeList;
     private List<RouteRule> routeRuleList;
-    private List<VNAT> VNATList;
+    private List<VNAT> vnatList;
     private List<Group> groupList;
     private Boolean enable;
 }

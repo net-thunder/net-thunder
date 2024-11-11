@@ -2,14 +2,14 @@ package io.jaspercloud.sdwan.server.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
-import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.server.controller.request.EditRouteRuleRequest;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.controller.response.RouteRuleResponse;
 import io.jaspercloud.sdwan.server.entity.RouteRule;
-import io.jaspercloud.sdwan.server.repsitory.RouteRuleMapper;
-import io.jaspercloud.sdwan.server.service.NodeService;
+import io.jaspercloud.sdwan.server.repository.RouteRuleRepository;
+import io.jaspercloud.sdwan.server.repository.po.RouteRulePO;
+import io.jaspercloud.sdwan.server.service.NodeConfigService;
 import io.jaspercloud.sdwan.server.service.RouteRuleService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -24,37 +24,38 @@ import java.util.stream.Collectors;
 public class RouteRuleServiceImpl implements RouteRuleService {
 
     @Resource
-    private RouteRuleMapper routeRuleMapper;
+    private RouteRuleRepository routeRuleRepository;
 
     @Resource
-    private NodeService nodeService;
+    private NodeConfigService nodeConfigService;
 
     @Override
     public void add(EditRouteRuleRequest request) {
         RouteRule routeRule = BeanUtil.toBean(request, RouteRule.class);
-        routeRule.setId(null);
-        routeRule.insert();
+        RouteRulePO rulePO = RouteRule.Transformer.build(routeRule);
+        rulePO.setId(null);
+        rulePO.insert();
     }
 
     @Override
     public void edit(EditRouteRuleRequest request) {
         RouteRule routeRule = BeanUtil.toBean(request, RouteRule.class);
-        routeRule.updateById();
+        RouteRulePO rulePO = RouteRule.Transformer.build(routeRule);
+        rulePO.updateById();
     }
 
     @Override
     public void del(EditRouteRuleRequest request) {
-        if (nodeService.usedRouteRule(request.getId())) {
+        if (nodeConfigService.usedRouteRule(request.getId())) {
             throw new ProcessException("routeRule used");
         }
-        routeRuleMapper.deleteById(request.getId());
+        routeRuleRepository.deleteById(request.getId());
     }
 
     @Override
     public PageResponse<RouteRuleResponse> page() {
-        Long total = new LambdaQueryChainWrapper<>(routeRuleMapper).count();
-        List<RouteRule> list = new LambdaQueryChainWrapper<>(routeRuleMapper)
-                .list();
+        Long total = routeRuleRepository.count();
+        List<RouteRule> list = routeRuleRepository.list();
         List<RouteRuleResponse> collect = list.stream().map(e -> {
             RouteRuleResponse routeRuleResponse = BeanUtil.toBean(e, RouteRuleResponse.class);
             return routeRuleResponse;
@@ -68,9 +69,8 @@ public class RouteRuleServiceImpl implements RouteRuleService {
         if (CollectionUtil.isEmpty(idList)) {
             return Collections.emptyList();
         }
-        List<RouteRule> list = new LambdaQueryChainWrapper<>(routeRuleMapper)
-                .in(RouteRule::getId, idList)
-                .list();
+        List<RouteRule> list = routeRuleRepository.list(routeRuleRepository.lambdaQuery()
+                .in(RouteRulePO::getId, idList));
         return list;
     }
 }

@@ -5,9 +5,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class NodeVNAT extends TenantEntity<NodeVNAT> {
+public class NodeVNAT extends BaseEntity {
 
-    private Long id;
     private Long nodeId;
     private Long vnatId;
 }

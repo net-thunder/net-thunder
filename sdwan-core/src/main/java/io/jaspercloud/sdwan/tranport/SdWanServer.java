@@ -6,6 +6,10 @@ import io.jaspercloud.sdwan.exception.ProcessCodeException;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.support.ChannelAttributes;
 import io.jaspercloud.sdwan.support.Cidr;
+import io.jaspercloud.sdwan.tranport.config.NodeConfig;
+import io.jaspercloud.sdwan.tranport.config.RouteConfig;
+import io.jaspercloud.sdwan.tranport.config.TenantConfig;
+import io.jaspercloud.sdwan.tranport.config.VNATConfig;
 import io.jaspercloud.sdwan.tranport.service.SdWanDataService;
 import io.jaspercloud.sdwan.util.ShortUUID;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;
@@ -38,9 +42,9 @@ public class SdWanServer implements Lifecycle, Runnable {
     private Supplier<ChannelHandler> handler;
 
     private Channel localChannel;
-    private Map<String, TenantSpace> tenantSpaceMap = new ConcurrentHashMap<>();
     private Map<String, Channel> channelMap = new ConcurrentHashMap<>();
-    private Map<Channel, String> registChannelMap = new ConcurrentHashMap<>();
+    private Map<Channel, NodeConfig> registChannelMap = new ConcurrentHashMap<>();
+    private Map<String, ChannelSpace> channelSpaceMap = new ConcurrentHashMap<>();
 
     public Set<Channel> getOnlineChannel() {
         return Collections.unmodifiableSet(registChannelMap.keySet());
@@ -104,9 +108,9 @@ public class SdWanServer implements Lifecycle, Runnable {
     private void processConfig(ChannelHandlerContext ctx, SDWanProtos.Message msg) {
         try {
             SDWanProtos.ServerConfigReq req = SDWanProtos.ServerConfigReq.parseFrom(msg.getData());
-            TenantSpace tenantSpace = getTenantSpace(req.getTenantId());
-            List<String> stunServerList = tenantSpace.getStunServerList();
-            List<String> relayServerList = tenantSpace.getRelayServerList();
+            TenantConfig tenantConfig = sdWanDataService.getTenantConfig(req.getTenantId());
+            List<String> stunServerList = tenantConfig.getStunServerList();
+            List<String> relayServerList = tenantConfig.getRelayServerList();
             SDWanProtos.ServerConfigResp resp = SDWanProtos.ServerConfigResp.newBuilder()
                     .setCode(SDWanProtos.MessageCode.Success)
                     .setStunServer(stunServerList.get(0))
@@ -126,11 +130,8 @@ public class SdWanServer implements Lifecycle, Runnable {
     private void processP2pOffer(ChannelHandlerContext ctx, SDWanProtos.Message msg) {
         try {
             SDWanProtos.P2pOffer p2pOffer = SDWanProtos.P2pOffer.parseFrom(msg.getData());
-            TenantSpace tenantSpace = tenantSpaceMap.get(p2pOffer.getTenantId());
-            if (null == tenantSpace) {
-                throw new ProcessException("not found tenant");
-            }
-            Channel channel = tenantSpace.getChannel(p2pOffer.getDstVIP());
+            ChannelSpace channelSpace = getChannelSpace(p2pOffer.getTenantId());
+            Channel channel = channelSpace.getChannel(p2pOffer.getDstVIP());
             if (null != channel) {
                 log.info("push processP2pOffer: srcVIP={}, dstVIP={}, id={}", p2pOffer.getSrcVIP(), p2pOffer.getDstVIP(), msg.getReqId());
                 SdWanServer.push(channel, msg.getReqId(), SDWanProtos.MessageTypeCode.P2pOfferType, p2pOffer);
@@ -146,11 +147,8 @@ public class SdWanServer implements Lifecycle, Runnable {
     private void processP2pAnswer(ChannelHandlerContext ctx, SDWanProtos.Message msg) {
         try {
             SDWanProtos.P2pAnswer p2pAnswer = SDWanProtos.P2pAnswer.parseFrom(msg.getData());
-            TenantSpace tenantSpace = tenantSpaceMap.get(p2pAnswer.getTenantId());
-            if (null == tenantSpace) {
-                throw new ProcessException("not found tenant");
-            }
-            Channel channel = tenantSpace.getChannel(p2pAnswer.getDstVIP());
+            ChannelSpace channelSpace = getChannelSpace(p2pAnswer.getTenantId());
+            Channel channel = channelSpace.getChannel(p2pAnswer.getDstVIP());
             if (null != channel) {
                 log.info("push processP2pAnswer: srcVIP={}, dstVIP={}, id={}", p2pAnswer.getSrcVIP(), p2pAnswer.getDstVIP(), msg.getReqId());
                 SdWanServer.push(channel, msg.getReqId(), SDWanProtos.MessageTypeCode.P2pAnswerType, p2pAnswer);
@@ -168,16 +166,20 @@ public class SdWanServer implements Lifecycle, Runnable {
         //regist
         try {
             SDWanProtos.RegistReq registReq = SDWanProtos.RegistReq.parseFrom(msg.getData());
+            ChannelSpace channelSpace = getChannelSpace(registReq.getTenantId());
+            TenantConfig tenantConfig = sdWanDataService.getTenantConfig(registReq.getTenantId());
             ChannelAttributes attr = ChannelAttributes.attr(channel);
-            String vip = registChannelMap.computeIfAbsent(channel, key -> {
-                String retVip = applyVip(channel, registReq, attr);
+            NodeConfig nodeInfo = registChannelMap.computeIfAbsent(channel, key -> {
                 channel.closeFuture().addListener(new ChannelFutureListener() {
                     @Override
                     public void operationComplete(ChannelFuture future) throws Exception {
                         registChannelMap.remove(channel);
                     }
                 });
-                return retVip;
+                NodeConfig nodeConfig = sdWanDataService.applyNodeInfo(channel, registReq.getTenantId(), registReq.getMacAddress());
+                attr.setVip(nodeConfig.getVip());
+                channelSpace.addChannel(nodeConfig.getVip(), channel);
+                return nodeConfig;
             });
             attr.setTenantId(registReq.getTenantId());
             attr.setMacAddress(registReq.getMacAddress());
@@ -192,19 +194,18 @@ public class SdWanServer implements Lifecycle, Runnable {
                                         .build();
                             }).collect(Collectors.toList()))
                     .build();
-            Cidr ipPool = sdWanDataService.getIpPool(registReq.getTenantId());
-            List<SdWanServerConfig.Route> routeList = sdWanDataService.getRouteList(registReq.getTenantId(), vip);
-            List<SdWanServerConfig.VNAT> vnatList = sdWanDataService.getVNATList(registReq.getTenantId(), vip);
+            Cidr ipPool = tenantConfig.getIpPool();
+            String vip = nodeInfo.getVip();
             SDWanProtos.RegistResp regResp = SDWanProtos.RegistResp.newBuilder()
                     .setCode(SDWanProtos.MessageCode.Success)
                     .setVip(vip)
                     .setMaskBits(ipPool.getMaskBits())
                     .setNodeList(nodeInfoList)
                     .setRouteList(SDWanProtos.RouteList.newBuilder()
-                            .addAllRoute(buildRouteList(routeList))
+                            .addAllRoute(buildRouteList(nodeInfo.getRouteConfigList()))
                             .build())
                     .setVnatList(SDWanProtos.VNATList.newBuilder()
-                            .addAllVnat(buildVNATList(vnatList))
+                            .addAllVnat(buildVNATList(vip, nodeInfo.getVnatConfigList()))
                             .build())
                     .build();
             SdWanServer.reply(channel, msg, SDWanProtos.MessageTypeCode.RegistRespType, regResp);
@@ -228,7 +229,7 @@ public class SdWanServer implements Lifecycle, Runnable {
         }
     }
 
-    private List<SDWanProtos.Route> buildRouteList(List<SdWanServerConfig.Route> routeList) {
+    private List<SDWanProtos.Route> buildRouteList(List<RouteConfig> routeList) {
         List<SDWanProtos.Route> collect = routeList.stream().map(e -> {
             return SDWanProtos.Route.newBuilder()
                     .setDestination(e.getDestination())
@@ -238,12 +239,12 @@ public class SdWanServer implements Lifecycle, Runnable {
         return collect;
     }
 
-    private List<SDWanProtos.VNAT> buildVNATList(List<SdWanServerConfig.VNAT> vnatList) {
+    private List<SDWanProtos.VNAT> buildVNATList(String vip, List<VNATConfig> vnatList) {
         List<SDWanProtos.VNAT> collect = vnatList.stream().map(e -> {
             return SDWanProtos.VNAT.newBuilder()
-                    .setVip(e.getVip())
-                    .setSrc(e.getSrc())
-                    .setDst(e.getDst())
+                    .setVip(vip)
+                    .setSrc(e.getSrcCidr())
+                    .setDst(e.getDstCidr())
                     .build();
         }).collect(Collectors.toList());
         return collect;
@@ -282,26 +283,6 @@ public class SdWanServer implements Lifecycle, Runnable {
         }
     }
 
-    private String applyVip(Channel channel, SDWanProtos.RegistReq registReq, ChannelAttributes attr) {
-        String vip = sdWanDataService.applyVip(registReq.getTenantId());
-        attr.setVip(vip);
-        TenantSpace tenantSpace = getTenantSpace(registReq.getTenantId());
-        tenantSpace.addChannel(vip, channel);
-        return vip;
-    }
-
-    public TenantSpace getTenantSpace(String tenantId) {
-        TenantSpace space = tenantSpaceMap.computeIfAbsent(tenantId, key -> {
-            TenantSpace tenantSpace = new TenantSpace();
-            List<String> stunServerList = sdWanDataService.getStunServerList(tenantId);
-            tenantSpace.setStunServerList(stunServerList);
-            List<String> relayServerList = sdWanDataService.getRelayServerList(tenantId);
-            tenantSpace.setRelayServerList(relayServerList);
-            return tenantSpace;
-        });
-        return space;
-    }
-
     public void push(SDWanProtos.MessageTypeCode msgCode, AbstractMessageLite data) {
         for (Channel channel : registChannelMap.keySet()) {
             push(channel, msgCode, data);
@@ -328,6 +309,18 @@ public class SdWanServer implements Lifecycle, Runnable {
             builder.setData(data.toByteString());
         }
         channel.writeAndFlush(builder.build());
+    }
+
+    private ChannelSpace getChannelSpace(String tenantId) {
+        ChannelSpace channelSpace = channelSpaceMap.computeIfAbsent(tenantId, k -> {
+            boolean hasTenant = sdWanDataService.hasTenant(tenantId);
+            if (!hasTenant) {
+                throw new ProcessException("not found tenant");
+            }
+            ChannelSpace space = new ChannelSpace();
+            return space;
+        });
+        return channelSpace;
     }
 
     @Override

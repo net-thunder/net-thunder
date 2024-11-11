@@ -3,9 +3,12 @@ package io.jaspercloud.sdwan.server.controller;
 import io.jaspercloud.sdwan.server.controller.request.EditRouteRequest;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.controller.response.RouteResponse;
+import io.jaspercloud.sdwan.server.service.NodeService;
 import io.jaspercloud.sdwan.server.service.RouteService;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/route")
@@ -13,6 +16,9 @@ public class RouteController {
 
     @Resource
     private RouteService routeService;
+
+    @Resource
+    private NodeService nodeService;
 
     @PostMapping("/add")
     public void add(@RequestBody EditRouteRequest request) {
@@ -32,6 +38,7 @@ public class RouteController {
     @GetMapping("/page")
     public PageResponse<RouteResponse> page() {
         PageResponse<RouteResponse> response = routeService.page();
+        List<RouteResponse> list = response.getData();
         return response;
     }
 }

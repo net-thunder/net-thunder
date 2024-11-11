@@ -1,82 +1,105 @@
 package io.jaspercloud.sdwan.server.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
+import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.server.controller.request.EditTenantRequest;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.controller.response.TenantResponse;
-import io.jaspercloud.sdwan.server.entity.Node;
 import io.jaspercloud.sdwan.server.entity.Tenant;
-import io.jaspercloud.sdwan.server.repsitory.TenantMapper;
-import io.jaspercloud.sdwan.server.service.NodeService;
+import io.jaspercloud.sdwan.server.repository.TenantRepository;
+import io.jaspercloud.sdwan.server.repository.po.TenantPO;
 import io.jaspercloud.sdwan.server.service.TenantService;
-import io.jaspercloud.sdwan.support.ChannelAttributes;
-import io.jaspercloud.sdwan.tranport.SdWanServer;
-import io.netty.channel.Channel;
 import jakarta.annotation.Resource;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class TenantServiceImpl implements TenantService {
 
     @Resource
-    private TenantMapper tenantMapper;
-
-    @Resource
-    private NodeService nodeService;
-
-    @Resource
-    private SdWanServer sdWanServer;
+    private TenantRepository tenantRepository;
 
     @Override
     public void add(EditTenantRequest request) {
-        Tenant tenant = BeanUtil.toBean(request, Tenant.class);
+        Long codeCount = tenantRepository.count(tenantRepository.lambdaQuery()
+                .eq(TenantPO::getCode, request.getCode()));
+        if (codeCount > 0) {
+            throw new ProcessException("code exists");
+        }
+        Long usernameCount = tenantRepository.count(tenantRepository.lambdaQuery()
+                .eq(TenantPO::getUsername, request.getUsername()));
+        if (usernameCount > 0) {
+            throw new ProcessException("username exists");
+        }
+        TenantPO tenant = BeanUtil.toBean(request, TenantPO.class);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.set("stunServerList", request.getStunServerList());
+        jsonObject.set("relayServerList", request.getRelayServerList());
+        tenant.setConfig(jsonObject.toString());
         tenant.setId(null);
         tenant.insert();
     }
 
     @Override
     public void edit(EditTenantRequest request) {
-        Tenant tenant = BeanUtil.toBean(request, Tenant.class);
-        tenant.updateById();
+        Tenant tenant = tenantRepository.selectById(request.getId());
+        if (null == tenant) {
+            return;
+        }
+        JSONObject config = JSONUtil.parseObj(tenant.getConfig());
+        JSONObject jsonObject = new JSONObject();
+        if (null != request.getName()) {
+            tenant.setName(request.getName());
+        }
+        if (null != request.getDescription()) {
+            tenant.setDescription(request.getDescription());
+        }
+        if (null != request.getPassword()) {
+            tenant.setPassword(request.getPassword());
+        }
+        if (null != request.getStunServerList()) {
+            jsonObject.set("stunServerList", request.getStunServerList());
+        } else {
+            jsonObject.set("stunServerList", config.getJSONArray("stunServerList"));
+        }
+        if (null != request.getRelayServerList()) {
+            jsonObject.set("relayServerList", request.getRelayServerList());
+        } else {
+            jsonObject.set("relayServerList", config.getJSONArray("relayServerList"));
+        }
+        tenant.setConfig(jsonObject.toString());
+        tenantRepository.updateById(tenant);
     }
 
     @Override
     public void del(EditTenantRequest request) {
-        tenantMapper.deleteById(request.getId());
+        tenantRepository.deleteById(request.getId());
     }
 
     @Override
-    public PageResponse<TenantResponse> page() {
-        Long total = new LambdaQueryChainWrapper<>(tenantMapper).count();
-        List<Tenant> list = new LambdaQueryChainWrapper<>(tenantMapper)
-                .list();
-        List<TenantResponse> collect = list.stream().map(e -> {
-            TenantResponse tenantResponse = BeanUtil.toBean(e, TenantResponse.class);
-            List<Node> nodeList = nodeService.queryByTenantId(e.getId());
-            tenantResponse.setTotalNode(nodeList.size());
-            tenantResponse.setOnlineNode(calcOnlineCount(e, sdWanServer.getOnlineChannel()));
-            return tenantResponse;
-        }).collect(Collectors.toList());
-        PageResponse<TenantResponse> response = PageResponse.build(collect, total, 0L, 0L);
+    public PageResponse<Tenant> page() {
+        Long total = tenantRepository.count();
+        List<Tenant> list = tenantRepository.list();
+        PageResponse<Tenant> response = PageResponse.build(list, total, 0L, 0L);
         return response;
     }
 
-    private int calcOnlineCount(Tenant tenant, Set<Channel> channelSet) {
-        int count = 0;
-        for (Channel channel : channelSet) {
-            ChannelAttributes attr = ChannelAttributes.attr(channel);
-            if (StringUtils.equals(attr.getTenantId(), tenant.getCode())) {
-                count++;
-            }
+    @Override
+    public TenantResponse queryByTenantCode(String tenantCode) {
+        Tenant tenant = tenantRepository.one(tenantRepository.lambdaQuery()
+                .eq(TenantPO::getCode, tenantCode));
+        if (null == tenant) {
+            return null;
         }
-        return count;
+        JSONObject jsonObject = JSONUtil.parseObj(tenant.getConfig());
+        TenantResponse tenantResponse = BeanUtil.toBean(tenant, TenantResponse.class);
+        tenantResponse.setStunServerList(jsonObject.getBeanList("stunServerList", String.class));
+        tenantResponse.setRelayServerList(jsonObject.getBeanList("relayServerList", String.class));
+        return tenantResponse;
     }
 }

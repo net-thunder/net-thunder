@@ -18,15 +18,11 @@ public interface NodeService {
 
     PageResponse<NodeResponse> page();
 
-    NodeDetailResponse detail(Long id);
+    Node queryById(Long id);
 
     List<Node> queryByIdList(List<Long> idList);
 
     List<Node> queryByTenantId(Long tenantId);
 
-    boolean usedRoute(Long routeId);
-
-    boolean usedRouteRule(Long routeRuleId);
-
-    boolean usedVNAT(Long vnatId);
+    NodeDetailResponse applyNodeInfo(Long tenantId, String macAddress);
 }

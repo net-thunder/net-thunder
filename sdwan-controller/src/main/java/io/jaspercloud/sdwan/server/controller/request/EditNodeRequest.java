@@ -10,12 +10,13 @@ import java.util.List;
 public class EditNodeRequest {
 
     private Long id;
+    private String name;
+    private String description;
     private String mac;
     private String ip;
     private String vip;
     private List<Long> routeIdList;
     private List<Long> routeRuleIdList;
-    private List<Long> addressTranslationIdList;
-    private List<Long> groupIdList;
+    private List<Long> vnatIdList;
     private Boolean enable;
 }
