@@ -9,11 +9,13 @@ import io.jaspercloud.sdwan.server.controller.response.GroupResponse;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.entity.Group;
 import io.jaspercloud.sdwan.server.entity.GroupMember;
+import io.jaspercloud.sdwan.server.entity.Node;
 import io.jaspercloud.sdwan.server.repository.GroupMemberRepository;
 import io.jaspercloud.sdwan.server.repository.GroupRepository;
 import io.jaspercloud.sdwan.server.repository.po.GroupMemberPO;
 import io.jaspercloud.sdwan.server.repository.po.GroupPO;
 import io.jaspercloud.sdwan.server.service.GroupService;
+import io.jaspercloud.sdwan.server.service.NodeService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +30,9 @@ public class GroupServiceImpl implements GroupService {
 
     @Resource
     private GroupRepository groupRepository;
+
+    @Resource
+    private NodeService nodeService;
 
     @Resource
     private GroupMemberRepository groupMemberRepository;
@@ -70,6 +75,10 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public void addMember(EditGroupMemberRequest request) {
         for (Long id : request.getMemberIdList()) {
+            Node node = nodeService.queryById(id);
+            if (null == node) {
+                throw new ProcessException("not found node");
+            }
             GroupMemberPO member = new GroupMemberPO();
             member.setGroupId(request.getGroupId());
             member.setMemberId(id);

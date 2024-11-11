@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 @Transactional
 public class RouteServiceImpl implements RouteService {
 
+
     @Resource
     private RouteRepository routeRepository;
 
@@ -40,6 +41,10 @@ public class RouteServiceImpl implements RouteService {
         route.setId(null);
         route.insert();
         for (Long nodeId : request.getNodeIdList()) {
+            boolean exists = nodeConfigService.existsNode(nodeId);
+            if (!exists) {
+                throw new ProcessException("not found node");
+            }
             RouteNodeItemPO routeNodeItem = new RouteNodeItemPO();
             routeNodeItem.setRouteId(route.getId());
             routeNodeItem.setNodeId(nodeId);
@@ -53,6 +58,10 @@ public class RouteServiceImpl implements RouteService {
         routeNodeItemRepository.delete(routeNodeItemRepository.lambdaQuery()
                 .eq(RouteNodeItemPO::getRouteId, request.getId()));
         for (Long nodeId : request.getNodeIdList()) {
+            boolean exists = nodeConfigService.existsNode(nodeId);
+            if (!exists) {
+                throw new ProcessException("not found node");
+            }
             RouteNodeItemPO routeNodeItem = new RouteNodeItemPO();
             routeNodeItem.setRouteId(route.getId());
             routeNodeItem.setNodeId(nodeId);
@@ -79,6 +88,26 @@ public class RouteServiceImpl implements RouteService {
         }).collect(Collectors.toList());
         PageResponse<RouteResponse> response = PageResponse.build(collect, total, 0L, 0L);
         return response;
+    }
+
+    @Override
+    public Route queryById(Long id) {
+        Route route = routeRepository.selectById(id);
+        return route;
+    }
+
+    @Override
+    public Route queryDetailById(Long id) {
+        Route route = queryById(id);
+        if (null == route) {
+            return null;
+        }
+        List<Long> collect = routeNodeItemRepository.list(routeNodeItemRepository.lambdaQuery()
+                        .select(RouteNodeItemPO::getNodeId)
+                        .eq(RouteNodeItemPO::getRouteId, id))
+                .stream().map(e -> e.getNodeId()).collect(Collectors.toList());
+        route.setNodeIdList(collect);
+        return route;
     }
 
     @Override

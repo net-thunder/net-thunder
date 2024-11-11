@@ -17,6 +17,10 @@ public interface RouteService {
 
     PageResponse<RouteResponse> page();
 
+    Route queryById(Long id);
+
+    Route queryDetailById(Long id);
+
     List<Route> queryByIdList(List<Long> idList);
 
     boolean usedNode(Long nodeId);

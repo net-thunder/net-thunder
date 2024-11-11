@@ -63,6 +63,12 @@ public class VNATServiceImpl implements VNATService {
     }
 
     @Override
+    public VNAT queryId(Long id) {
+        VNAT vnat = vnatRepository.selectById(id);
+        return vnat;
+    }
+
+    @Override
     public List<VNAT> queryIdList(List<Long> idList) {
         if (CollectionUtil.isEmpty(idList)) {
             return Collections.emptyList();

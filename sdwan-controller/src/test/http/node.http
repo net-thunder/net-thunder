@@ -11,16 +11,13 @@ X-Tenant-Id: 1
   "vip": "10.5.0.1",
   "enable": true,
   "routeIdList": [
-    1,
-    2
+    1
   ],
   "routeRuleIdList": [
-    1,
-    2
+    1
   ],
   "vnatIdList": [
-    1,
-    2
+    1
   ]
 }
 
@@ -30,24 +27,21 @@ Content-Type: application/json
 X-Tenant-Id: 1
 
 {
-  "id": 1,
-  "name": "test1",
-  "description": "test1",
-  "mac": "test1",
-  "ip": "192.168.1.2",
-  "vip": "10.5.0.2",
-  "enable": false,
+  "id": 2,
+  "name": "test",
+  "description": "test",
+  "mac": "test",
+  "ip": "192.168.1.1",
+  "vip": "10.5.0.1",
+  "enable": true,
   "routeIdList": [
-    1,
-    2
+    1
   ],
   "routeRuleIdList": [
-    1,
-    2
+    1
   ],
   "vnatIdList": [
-    1,
-    2
+    1
   ]
 }
 

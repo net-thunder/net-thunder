@@ -5,7 +5,8 @@ X-Tenant-Id: 1
 
 {
   "name": "test",
-  "direction": 1,
+  "description": "test",
+  "direction": "Input",
   "ruleList": [
     "10.5.1.0/24",
     "10.5.2.0/24",
