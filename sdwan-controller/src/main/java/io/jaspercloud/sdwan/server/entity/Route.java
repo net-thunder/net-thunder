@@ -7,10 +7,10 @@ import java.util.List;
 
 @Getter
 @Setter
-public class Route extends TenantEntity<Route> {
+public class Route extends BaseEntity {
 
-    private Long id;
     private String name;
+    private String description;
     private String destination;
     private List<Long> nodeIdList;
     private Boolean enable;

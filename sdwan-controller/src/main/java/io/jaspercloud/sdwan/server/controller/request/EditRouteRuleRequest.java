@@ -1,5 +1,6 @@
 package io.jaspercloud.sdwan.server.controller.request;
 
+import io.jaspercloud.sdwan.server.entity.DirectionEnum;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,7 +12,8 @@ public class EditRouteRuleRequest {
 
     private Long id;
     private String name;
-    private String direction;
+    private String description;
+    private DirectionEnum direction;
     private List<String> ruleList;
     private Boolean enable;
 }

@@ -2,7 +2,6 @@ package io.jaspercloud.sdwan.server.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
-import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.server.controller.request.EditGroupMemberRequest;
 import io.jaspercloud.sdwan.server.controller.request.EditGroupRequest;
@@ -10,11 +9,11 @@ import io.jaspercloud.sdwan.server.controller.response.GroupResponse;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.entity.Group;
 import io.jaspercloud.sdwan.server.entity.GroupMember;
-import io.jaspercloud.sdwan.server.entity.Node;
-import io.jaspercloud.sdwan.server.repsitory.GroupMapper;
-import io.jaspercloud.sdwan.server.repsitory.GroupMemberMapper;
+import io.jaspercloud.sdwan.server.repository.GroupMemberRepository;
+import io.jaspercloud.sdwan.server.repository.GroupRepository;
+import io.jaspercloud.sdwan.server.repository.po.GroupMemberPO;
+import io.jaspercloud.sdwan.server.repository.po.GroupPO;
 import io.jaspercloud.sdwan.server.service.GroupService;
-import io.jaspercloud.sdwan.server.service.NodeService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,43 +27,38 @@ import java.util.stream.Collectors;
 public class GroupServiceImpl implements GroupService {
 
     @Resource
-    private GroupMapper groupMapper;
+    private GroupRepository groupRepository;
 
     @Resource
-    private GroupMemberMapper groupMemberMapper;
-
-    @Resource
-    private NodeService nodeService;
+    private GroupMemberRepository groupMemberRepository;
 
     @Override
     public void add(EditGroupRequest request) {
-        Group group = BeanUtil.toBean(request, Group.class);
+        GroupPO group = BeanUtil.toBean(request, GroupPO.class);
         group.setId(null);
         group.insert();
     }
 
     @Override
     public void edit(EditGroupRequest request) {
-        Group group = BeanUtil.toBean(request, Group.class);
+        GroupPO group = BeanUtil.toBean(request, GroupPO.class);
         group.updateById();
     }
 
     @Override
     public void del(EditGroupRequest request) {
-        Long count = new LambdaQueryChainWrapper<>(groupMemberMapper)
-                .eq(GroupMember::getMemberId, request.getId())
-                .count();
+        Long count = groupMemberRepository.count(groupMemberRepository.lambdaQuery()
+                .eq(GroupMemberPO::getMemberId, request.getId()));
         if (count > 0) {
             throw new ProcessException("group used");
         }
-        groupMapper.deleteById(request.getId());
+        groupRepository.deleteById(request.getId());
     }
 
     @Override
     public PageResponse<GroupResponse> page() {
-        Long total = new LambdaQueryChainWrapper<>(groupMapper).count();
-        List<Group> list = new LambdaQueryChainWrapper<>(groupMapper)
-                .list();
+        Long total = groupRepository.count();
+        List<Group> list = groupRepository.list();
         List<GroupResponse> collect = list.stream().map(e -> {
             GroupResponse groupResponse = BeanUtil.toBean(e, GroupResponse.class);
             return groupResponse;
@@ -76,7 +70,7 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public void addMember(EditGroupMemberRequest request) {
         for (Long id : request.getMemberIdList()) {
-            GroupMember member = new GroupMember();
+            GroupMemberPO member = new GroupMemberPO();
             member.setGroupId(request.getGroupId());
             member.setMemberId(id);
             member.insert();
@@ -85,36 +79,32 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public void delMember(EditGroupMemberRequest request) {
-        List<GroupMember> memberList = new LambdaQueryChainWrapper<>(groupMemberMapper)
-                .eq(GroupMember::getGroupId, request.getGroupId())
-                .in(GroupMember::getMemberId, request.getMemberIdList())
-                .list();
+        List<GroupMember> memberList = groupMemberRepository.list(groupMemberRepository.lambdaQuery()
+                .eq(GroupMemberPO::getGroupId, request.getGroupId())
+                .in(GroupMemberPO::getMemberId, request.getMemberIdList()));
         for (GroupMember member : memberList) {
-            member.deleteById();
+            groupMemberRepository.deleteById(member);
         }
     }
 
     @Override
-    public List<Node> memberList(Long groupId) {
-        List<Long> idList = new LambdaQueryChainWrapper<>(groupMemberMapper)
-                .eq(GroupMember::getGroupId, groupId)
-                .list().stream().map(e -> e.getMemberId()).collect(Collectors.toList());
-        List<Node> nodeList = nodeService.queryByIdList(idList);
-        return nodeList;
+    public List<Long> memberList(Long groupId) {
+        List<Long> idList = groupMemberRepository.list(groupMemberRepository.lambdaQuery()
+                        .eq(GroupMemberPO::getGroupId, groupId))
+                .stream().map(e -> e.getMemberId()).collect(Collectors.toList());
+        return idList;
     }
 
     @Override
     public List<Group> queryByMemberId(Long memberId) {
-        List<Long> idList = new LambdaQueryChainWrapper<>(groupMemberMapper)
-                .select(GroupMember::getGroupId)
-                .eq(GroupMember::getMemberId, memberId)
-                .list()
+        List<Long> idList = groupMemberRepository.list(groupMemberRepository.lambdaQuery()
+                        .select(GroupMemberPO::getGroupId)
+                        .eq(GroupMemberPO::getMemberId, memberId))
                 .stream().map(e -> e.getGroupId()).collect(Collectors.toList());
         if (CollectionUtil.isEmpty(idList)) {
             return Collections.emptyList();
         }
-        List<Group> groupList = groupMapper.selectByIds(idList);
+        List<Group> groupList = groupRepository.selectBatchIds(idList);
         return groupList;
     }
-
 }

@@ -1,0 +1,45 @@
+### add
+POST http://localhost:11805/route-rule/add
+Content-Type: application/json
+X-Tenant-Id: 1
+
+{
+  "name": "test",
+  "direction": 1,
+  "ruleList": [
+    "10.5.1.0/24",
+    "10.5.2.0/24",
+    "10.5.3.0/24"
+  ],
+  "enable": true
+}
+
+### edit
+POST http://localhost:11805/route/edit
+Content-Type: application/json
+X-Tenant-Id: 1
+
+{
+  "id": 4,
+  "name": "test5",
+  "destination": "test5",
+  "nodeIdList": [
+    2,
+    4
+  ],
+  "enable": false
+}
+
+### page
+GET http://127.0.0.1:11805/route/page
+Content-Type: application/json
+X-Tenant-Id: 1
+
+### del
+POST http://127.0.0.1:11805/route/del
+Content-Type: application/json
+X-Tenant-Id: 1
+
+{
+  "id": 4
+}

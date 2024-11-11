@@ -12,6 +12,7 @@ public class RouteResponse {
 
     private Long id;
     private String name;
+    private String description;
     private String destination;
     private List<Node> nodeList;
     private Boolean enable;

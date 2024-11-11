@@ -5,10 +5,10 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class VNAT extends TenantEntity<VNAT> {
+public class VNAT extends BaseEntity {
 
-    private Long id;
     private String name;
+    private String description;
     private String srcCidr;
     private String dstCidr;
     private Boolean enable;

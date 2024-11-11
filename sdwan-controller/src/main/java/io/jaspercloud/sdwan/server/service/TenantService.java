@@ -3,6 +3,7 @@ package io.jaspercloud.sdwan.server.service;
 import io.jaspercloud.sdwan.server.controller.request.EditTenantRequest;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.controller.response.TenantResponse;
+import io.jaspercloud.sdwan.server.entity.Tenant;
 
 public interface TenantService {
 
@@ -12,5 +13,7 @@ public interface TenantService {
 
     void del(EditTenantRequest request);
 
-    PageResponse<TenantResponse> page();
+    PageResponse<Tenant> page();
+
+    TenantResponse queryByTenantCode(String tenantCode);
 }

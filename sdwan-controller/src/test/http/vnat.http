@@ -1,0 +1,40 @@
+### add
+POST http://localhost:11805/vnat/add
+Content-Type: application/json
+X-Tenant-Id: 1
+
+{
+  "name": "test",
+  "description": "test",
+  "srcCidr": "10.5.1.0/24",
+  "dstCidr": "10.5.2.0/24",
+  "enable": true
+}
+
+### edit
+POST http://localhost:11805/vnat/edit
+Content-Type: application/json
+X-Tenant-Id: 1
+
+{
+  "id": 1,
+  "name": "test2",
+  "description": "test2",
+  "srcCidr": "10.5.1.0/16",
+  "dstCidr": "10.5.2.0/16",
+  "enable": false
+}
+
+### page
+GET http://127.0.0.1:11805/vnat/page
+Content-Type: application/json
+X-Tenant-Id: 1
+
+### del
+POST http://127.0.0.1:11805/vnat/del
+Content-Type: application/json
+X-Tenant-Id: 1
+
+{
+  "id": 1
+}

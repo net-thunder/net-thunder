@@ -1,0 +1,34 @@
+### add
+POST http://localhost:11805/group/add
+Content-Type: application/json
+X-Tenant-Id: 1
+
+{
+  "name": "test2",
+  "description": "test"
+}
+
+### edit
+POST http://localhost:11805/group/edit
+Content-Type: application/json
+X-Tenant-Id: 1
+
+{
+  "id": 3,
+  "name": "test5",
+  "description": "test5"
+}
+
+### page
+GET http://127.0.0.1:11805/group/page
+Content-Type: application/json
+X-Tenant-Id: 1
+
+### del
+POST http://127.0.0.1:11805/group/del
+Content-Type: application/json
+X-Tenant-Id: 1
+
+{
+  "id": 1
+}

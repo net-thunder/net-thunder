@@ -5,7 +5,6 @@ import io.jaspercloud.sdwan.server.controller.request.EditGroupRequest;
 import io.jaspercloud.sdwan.server.controller.response.GroupResponse;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.entity.Group;
-import io.jaspercloud.sdwan.server.entity.Node;
 
 import java.util.List;
 
@@ -23,7 +22,7 @@ public interface GroupService {
 
     void delMember(EditGroupMemberRequest request);
 
-    List<Node> memberList(Long groupId);
+    List<Long> memberList(Long groupId);
 
     List<Group> queryByMemberId(Long memberId);
 }

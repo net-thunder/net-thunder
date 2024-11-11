@@ -5,9 +5,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class RouteNodeItem extends TenantEntity<RouteNodeItem> {
+public class RouteNodeItem extends BaseEntity {
 
-    private Long id;
     private Long routeId;
     private Long nodeId;
 }

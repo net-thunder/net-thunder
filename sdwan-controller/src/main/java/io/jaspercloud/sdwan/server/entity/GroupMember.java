@@ -5,9 +5,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class GroupMember extends TenantEntity<GroupMember> {
+public class GroupMember extends BaseEntity {
 
-    private Long id;
     private Long groupId;
     private Long memberId;
 }

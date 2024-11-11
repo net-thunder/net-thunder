@@ -60,6 +60,7 @@ public class P2pClient implements TransportLifecycle, Runnable {
                             log.error("connect stunServer timeout: address={}", address);
                             return;
                         }
+                        log.info("connect stunServer success: address={}", address);
                         Map<AttrType, Attr> attrs = response.content().getAttrs();
                         AddressAttr mappedAddressAttr = (AddressAttr) attrs.get(AttrType.MappedAddress);
                         InetSocketAddress natAddress = mappedAddressAttr.getAddress();

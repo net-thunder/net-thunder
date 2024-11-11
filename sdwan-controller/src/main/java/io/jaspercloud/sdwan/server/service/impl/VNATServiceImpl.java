@@ -2,14 +2,14 @@ package io.jaspercloud.sdwan.server.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
-import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.server.controller.request.EditVNATRequest;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.controller.response.VNATResponse;
 import io.jaspercloud.sdwan.server.entity.VNAT;
-import io.jaspercloud.sdwan.server.repsitory.VNATMapper;
-import io.jaspercloud.sdwan.server.service.NodeService;
+import io.jaspercloud.sdwan.server.repository.VNATRepository;
+import io.jaspercloud.sdwan.server.repository.po.VNATPO;
+import io.jaspercloud.sdwan.server.service.NodeConfigService;
 import io.jaspercloud.sdwan.server.service.VNATService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -24,37 +24,36 @@ import java.util.stream.Collectors;
 public class VNATServiceImpl implements VNATService {
 
     @Resource
-    private VNATMapper vnatMapper;
+    private VNATRepository vnatRepository;
 
     @Resource
-    private NodeService nodeService;
+    private NodeConfigService nodeConfigService;
 
     @Override
     public void add(EditVNATRequest request) {
-        VNAT vnat = BeanUtil.toBean(request, VNAT.class);
+        VNATPO vnat = BeanUtil.toBean(request, VNATPO.class);
         vnat.setId(null);
         vnat.insert();
     }
 
     @Override
     public void edit(EditVNATRequest request) {
-        VNAT vnat = BeanUtil.toBean(request, VNAT.class);
+        VNATPO vnat = BeanUtil.toBean(request, VNATPO.class);
         vnat.updateById();
     }
 
     @Override
     public void del(EditVNATRequest request) {
-        if (nodeService.usedVNAT(request.getId())) {
+        if (nodeConfigService.usedVNAT(request.getId())) {
             throw new ProcessException("vnat used");
         }
-        vnatMapper.deleteById(request.getId());
+        vnatRepository.deleteById(request.getId());
     }
 
     @Override
     public PageResponse<VNATResponse> page() {
-        Long total = new LambdaQueryChainWrapper<>(vnatMapper).count();
-        List<VNAT> list = new LambdaQueryChainWrapper<>(vnatMapper)
-                .list();
+        Long total = vnatRepository.count();
+        List<VNAT> list = vnatRepository.list();
         List<VNATResponse> collect = list.stream().map(e -> {
             VNATResponse vnatResponse = BeanUtil.toBean(e, VNATResponse.class);
             return vnatResponse;
@@ -68,9 +67,8 @@ public class VNATServiceImpl implements VNATService {
         if (CollectionUtil.isEmpty(idList)) {
             return Collections.emptyList();
         }
-        List<VNAT> list = new LambdaQueryChainWrapper<>(vnatMapper)
-                .in(VNAT::getId, idList)
-                .list();
+        List<VNAT> list = vnatRepository.list(vnatRepository.lambdaQuery()
+                .in(VNATPO::getId, idList));
         return list;
     }
 }

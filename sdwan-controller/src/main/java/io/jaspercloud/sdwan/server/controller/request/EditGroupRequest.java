@@ -9,4 +9,5 @@ public class EditGroupRequest {
 
     private Long id;
     private String name;
+    private String description;
 }

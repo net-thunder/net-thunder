@@ -9,6 +9,7 @@ public class EditVNATRequest {
 
     private Long id;
     private String name;
+    private String description;
     private String srcCidr;
     private String dstCidr;
     private Boolean enable;

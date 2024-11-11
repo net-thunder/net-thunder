@@ -2,18 +2,25 @@ package io.jaspercloud.sdwan.server.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
-import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.server.controller.request.EditNodeRequest;
 import io.jaspercloud.sdwan.server.controller.response.NodeDetailResponse;
 import io.jaspercloud.sdwan.server.controller.response.NodeResponse;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
-import io.jaspercloud.sdwan.server.entity.*;
-import io.jaspercloud.sdwan.server.repsitory.NodeMapper;
-import io.jaspercloud.sdwan.server.repsitory.NodeRouteMapper;
-import io.jaspercloud.sdwan.server.repsitory.NodeRouteRuleMapper;
-import io.jaspercloud.sdwan.server.repsitory.NodeVNATMapper;
-import io.jaspercloud.sdwan.server.service.*;
+import io.jaspercloud.sdwan.server.entity.Node;
+import io.jaspercloud.sdwan.server.entity.NodeRoute;
+import io.jaspercloud.sdwan.server.entity.NodeRouteRule;
+import io.jaspercloud.sdwan.server.entity.NodeVNAT;
+import io.jaspercloud.sdwan.server.repository.NodeRepository;
+import io.jaspercloud.sdwan.server.repository.NodeRouteRepository;
+import io.jaspercloud.sdwan.server.repository.NodeRouteRuleRepository;
+import io.jaspercloud.sdwan.server.repository.NodeVNATRepository;
+import io.jaspercloud.sdwan.server.repository.po.NodePO;
+import io.jaspercloud.sdwan.server.repository.po.NodeRoutePO;
+import io.jaspercloud.sdwan.server.repository.po.NodeRouteRulePO;
+import io.jaspercloud.sdwan.server.repository.po.NodeVNATPO;
+import io.jaspercloud.sdwan.server.service.NodeService;
+import io.jaspercloud.sdwan.server.service.RouteService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,40 +34,85 @@ import java.util.stream.Collectors;
 public class NodeServiceImpl implements NodeService {
 
     @Resource
-    private GroupService groupService;
-
-    @Resource
     private RouteService routeService;
 
     @Resource
-    private RouteRuleService routeRuleService;
+    private NodeRepository nodeRepository;
 
     @Resource
-    private VNATService vnatService;
+    private NodeRouteRepository nodeRouteRepository;
 
     @Resource
-    private NodeMapper nodeMapper;
+    private NodeRouteRuleRepository nodeRouteRuleRepository;
 
     @Resource
-    private NodeRouteMapper nodeRouteMapper;
-
-    @Resource
-    private NodeRouteRuleMapper nodeRouteRuleMapper;
-
-    @Resource
-    private NodeVNATMapper nodeVNATMapper;
+    private NodeVNATRepository nodeVNATRepository;
 
     @Override
     public void add(EditNodeRequest request) {
-        Node node = BeanUtil.toBean(request, Node.class);
+        NodePO node = BeanUtil.toBean(request, NodePO.class);
         node.setId(null);
         node.insert();
+        if (CollectionUtil.isNotEmpty(request.getRouteIdList())) {
+            request.getRouteIdList().forEach(e -> {
+                NodeRoutePO nodeRoutePO = new NodeRoutePO();
+                nodeRoutePO.setNodeId(node.getId());
+                nodeRoutePO.setRouteId(e);
+                nodeRoutePO.insert();
+            });
+        }
+        if (CollectionUtil.isNotEmpty(request.getRouteRuleIdList())) {
+            request.getRouteRuleIdList().forEach(e -> {
+                NodeRouteRulePO nodeRouteRulePO = new NodeRouteRulePO();
+                nodeRouteRulePO.setNodeId(node.getId());
+                nodeRouteRulePO.setRuleId(e);
+                nodeRouteRulePO.insert();
+            });
+        }
+        if (CollectionUtil.isNotEmpty(request.getVnatIdList())) {
+            request.getVnatIdList().forEach(e -> {
+                NodeVNATPO nodeVNATPO = new NodeVNATPO();
+                nodeVNATPO.setNodeId(node.getId());
+                nodeVNATPO.setVnatId(e);
+                nodeVNATPO.insert();
+            });
+        }
     }
 
     @Override
     public void edit(EditNodeRequest request) {
-        Node node = BeanUtil.toBean(request, Node.class);
+        NodePO node = BeanUtil.toBean(request, NodePO.class);
         node.updateById();
+        if (CollectionUtil.isNotEmpty(request.getRouteIdList())) {
+            nodeRouteRepository.delete(nodeRouteRepository.lambdaQuery()
+                    .eq(NodeRoutePO::getNodeId, node.getId()));
+            request.getRouteIdList().forEach(e -> {
+                NodeRoutePO nodeRoutePO = new NodeRoutePO();
+                nodeRoutePO.setNodeId(node.getId());
+                nodeRoutePO.setRouteId(e);
+                nodeRoutePO.insert();
+            });
+        }
+        if (CollectionUtil.isNotEmpty(request.getRouteRuleIdList())) {
+            nodeRouteRuleRepository.delete(nodeRouteRuleRepository.lambdaQuery()
+                    .eq(NodeRouteRulePO::getNodeId, node.getId()));
+            request.getRouteRuleIdList().forEach(e -> {
+                NodeRouteRulePO nodeRouteRulePO = new NodeRouteRulePO();
+                nodeRouteRulePO.setNodeId(node.getId());
+                nodeRouteRulePO.setRuleId(e);
+                nodeRouteRulePO.insert();
+            });
+        }
+        if (CollectionUtil.isNotEmpty(request.getVnatIdList())) {
+            nodeVNATRepository.delete(nodeVNATRepository.lambdaQuery()
+                    .eq(NodeVNATPO::getNodeId, node.getId()));
+            request.getVnatIdList().forEach(e -> {
+                NodeVNATPO nodeVNATPO = new NodeVNATPO();
+                nodeVNATPO.setNodeId(node.getId());
+                nodeVNATPO.setVnatId(e);
+                nodeVNATPO.insert();
+            });
+        }
     }
 
     @Override
@@ -68,15 +120,19 @@ public class NodeServiceImpl implements NodeService {
         if (routeService.usedNode(request.getId())) {
             throw new ProcessException("route used");
         }
-        nodeMapper.deleteById(request.getId());
+        nodeRouteRepository.delete(nodeRouteRepository.lambdaQuery()
+                .eq(NodeRoutePO::getNodeId, request.getId()));
+        nodeRouteRuleRepository.delete(nodeRouteRuleRepository.lambdaQuery()
+                .eq(NodeRouteRulePO::getNodeId, request.getId()));
+        nodeVNATRepository.delete(nodeVNATRepository.lambdaQuery()
+                .eq(NodeVNATPO::getNodeId, request.getId()));
+        nodeRepository.deleteById(request.getId());
     }
 
     @Override
     public PageResponse<NodeResponse> page() {
-        Long total = new LambdaQueryChainWrapper<>(nodeMapper)
-                .count();
-        List<Node> list = new LambdaQueryChainWrapper<>(nodeMapper)
-                .list();
+        Long total = nodeRepository.count();
+        List<Node> list = nodeRepository.list();
         List<NodeResponse> collect = list.stream().map(e -> {
             NodeResponse nodeResponse = BeanUtil.toBean(e, NodeResponse.class);
             return nodeResponse;
@@ -86,30 +142,21 @@ public class NodeServiceImpl implements NodeService {
     }
 
     @Override
-    public NodeDetailResponse detail(Long id) {
-        Node node = nodeMapper.selectById(id);
+    public Node queryById(Long id) {
+        Node node = nodeRepository.selectById(id);
         if (null == node) {
             return null;
         }
-        NodeDetailResponse nodeResponse = BeanUtil.toBean(node, NodeDetailResponse.class);
-        List<Route> routeList = routeService.queryByIdList(new LambdaQueryChainWrapper<>(nodeRouteMapper)
-                .eq(NodeRoute::getNodeId, node.getId())
-                .list()
-                .stream().map(e -> e.getRouteId()).collect(Collectors.toList()));
-        nodeResponse.setRouteList(routeList);
-        List<RouteRule> routeRuleList = routeRuleService.queryByIdList(new LambdaQueryChainWrapper<>(nodeRouteRuleMapper)
-                .eq(NodeRouteRule::getNodeId, node.getId())
-                .list()
-                .stream().map(e -> e.getRuleId()).collect(Collectors.toList()));
-        nodeResponse.setRouteRuleList(routeRuleList);
-        List<VNAT> vnatList = vnatService.queryIdList(new LambdaQueryChainWrapper<>(nodeVNATMapper)
-                .eq(NodeVNAT::getNodeId, node.getId())
-                .list()
-                .stream().map(e -> e.getVnatId()).collect(Collectors.toList()));
-        nodeResponse.setVNATList(vnatList);
-        List<Group> groupList = groupService.queryByMemberId(id);
-        nodeResponse.setGroupList(groupList);
-        return nodeResponse;
+        List<NodeRoute> nodeRouteList = nodeRouteRepository.list(nodeRouteRepository.lambdaQuery()
+                .eq(NodeRoutePO::getNodeId, node.getId()));
+        List<NodeRouteRule> nodeRouteRuleList = nodeRouteRuleRepository.list(nodeRouteRuleRepository.lambdaQuery()
+                .eq(NodeRouteRulePO::getNodeId, node.getId()));
+        List<NodeVNAT> nodeVNATList = nodeVNATRepository.list(nodeVNATRepository.lambdaQuery()
+                .eq(NodeVNATPO::getNodeId, node.getId()));
+        node.setNodeRouteList(nodeRouteList);
+        node.setNodeRouteRuleList(nodeRouteRuleList);
+        node.setNodeVNATList(nodeVNATList);
+        return node;
     }
 
     @Override
@@ -117,39 +164,20 @@ public class NodeServiceImpl implements NodeService {
         if (CollectionUtil.isEmpty(idList)) {
             return Collections.emptyList();
         }
-        List<Node> nodeList = nodeMapper.selectByIds(idList);
+        List<Node> nodeList = nodeRepository.selectBatchIds(idList);
         return nodeList;
     }
 
     @Override
     public List<Node> queryByTenantId(Long tenantId) {
-        List<Node> list = new LambdaQueryChainWrapper<>(nodeMapper)
-                .eq(Node::getTenantId, tenantId)
-                .list();
+        List<Node> list = nodeRepository.list(nodeRepository.lambdaQuery()
+                .eq(NodePO::getTenantId, tenantId));
         return list;
     }
 
     @Override
-    public boolean usedRoute(Long routeId) {
-        Long count = new LambdaQueryChainWrapper<>(nodeRouteMapper)
-                .eq(NodeRoute::getRouteId, routeId)
-                .count();
-        return count > 0;
-    }
-
-    @Override
-    public boolean usedRouteRule(Long routeRuleId) {
-        Long count = new LambdaQueryChainWrapper<>(nodeRouteRuleMapper)
-                .eq(NodeRouteRule::getRuleId, routeRuleId)
-                .count();
-        return count > 0;
-    }
-
-    @Override
-    public boolean usedVNAT(Long vnatId) {
-        Long count = new LambdaQueryChainWrapper<>(nodeVNATMapper)
-                .eq(NodeVNAT::getVnatId, vnatId)
-                .count();
-        return count > 0;
+    public NodeDetailResponse applyNodeInfo(Long tenantId, String macAddress) {
+        //todo
+        return null;
     }
 }
