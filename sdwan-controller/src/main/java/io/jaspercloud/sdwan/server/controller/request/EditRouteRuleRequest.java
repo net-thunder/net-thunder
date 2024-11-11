@@ -1,6 +1,6 @@
 package io.jaspercloud.sdwan.server.controller.request;
 
-import io.jaspercloud.sdwan.server.entity.DirectionEnum;
+import io.jaspercloud.sdwan.server.enums.DirectionEnum;
 import lombok.Getter;
 import lombok.Setter;
 

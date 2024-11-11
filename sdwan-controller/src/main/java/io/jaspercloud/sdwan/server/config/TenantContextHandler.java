@@ -7,9 +7,17 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class TenantContextHandler implements TenantLineHandler {
 
     private static ThreadLocal<Long> threadLocal = new TransmittableThreadLocal();
+
+    private static List<String> IgnoreTableList = Arrays.asList(
+            "biz_tenant",
+            "biz_account"
+    );
 
     public static void setTenantId(String tenantId) {
         if (StringUtils.isEmpty(tenantId)) {
@@ -29,7 +37,7 @@ public class TenantContextHandler implements TenantLineHandler {
 
     @Override
     public boolean ignoreTable(String tableName) {
-        return "biz_tenant".equals(tableName);
+        return IgnoreTableList.contains(tableName);
     }
 
     @Override

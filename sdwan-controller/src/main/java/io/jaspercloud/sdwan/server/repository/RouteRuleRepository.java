@@ -1,7 +1,7 @@
 package io.jaspercloud.sdwan.server.repository;
 
 import cn.hutool.json.JSONUtil;
-import io.jaspercloud.sdwan.server.entity.DirectionEnum;
+import io.jaspercloud.sdwan.server.enums.DirectionEnum;
 import io.jaspercloud.sdwan.server.entity.RouteRule;
 import io.jaspercloud.sdwan.server.repository.base.BaseRepository;
 import io.jaspercloud.sdwan.server.repository.mapper.RouteRuleMapper;

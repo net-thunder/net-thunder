@@ -5,7 +5,6 @@ import cn.hutool.core.collection.CollectionUtil;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.server.controller.request.EditRouteRequest;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
-import io.jaspercloud.sdwan.server.controller.response.RouteResponse;
 import io.jaspercloud.sdwan.server.entity.Route;
 import io.jaspercloud.sdwan.server.repository.RouteNodeItemRepository;
 import io.jaspercloud.sdwan.server.repository.RouteRepository;
@@ -79,14 +78,10 @@ public class RouteServiceImpl implements RouteService {
     }
 
     @Override
-    public PageResponse<RouteResponse> page() {
+    public PageResponse<Route> page() {
         Long total = routeRepository.count();
         List<Route> list = routeRepository.list();
-        List<RouteResponse> collect = list.stream().map(e -> {
-            RouteResponse routeResponse = BeanUtil.toBean(e, RouteResponse.class);
-            return routeResponse;
-        }).collect(Collectors.toList());
-        PageResponse<RouteResponse> response = PageResponse.build(collect, total, 0L, 0L);
+        PageResponse<Route> response = PageResponse.build(list, total, 0L, 0L);
         return response;
     }
 

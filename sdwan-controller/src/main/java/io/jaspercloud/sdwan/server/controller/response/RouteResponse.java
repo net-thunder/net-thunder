@@ -1,6 +1,5 @@
 package io.jaspercloud.sdwan.server.controller.response;
 
-import io.jaspercloud.sdwan.server.entity.Node;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,6 +13,6 @@ public class RouteResponse {
     private String name;
     private String description;
     private String destination;
-    private List<Node> nodeList;
+    private List<NodeResponse> nodeList;
     private Boolean enable;
 }
