@@ -4,7 +4,7 @@ Content-Type: application/json
 X-Tenant-Id: 1
 
 {
-  "name": "test2",
+  "name": "test",
   "description": "test"
 }
 
@@ -31,4 +31,18 @@ X-Tenant-Id: 1
 
 {
   "id": 1
+}
+
+### addMember
+POST http://localhost:11805/group/addMember
+Content-Type: application/json
+X-Tenant-Id: 1
+
+{
+  "groupId": 1,
+  "memberIdList": [
+    2,
+    5,
+    6
+  ]
 }

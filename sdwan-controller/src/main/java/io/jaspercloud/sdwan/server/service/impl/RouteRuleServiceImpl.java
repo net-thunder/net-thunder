@@ -65,6 +65,12 @@ public class RouteRuleServiceImpl implements RouteRuleService {
     }
 
     @Override
+    public RouteRule queryById(Long id) {
+        RouteRule routeRule = routeRuleRepository.selectById(id);
+        return routeRule;
+    }
+
+    @Override
     public List<RouteRule> queryByIdList(List<Long> idList) {
         if (CollectionUtil.isEmpty(idList)) {
             return Collections.emptyList();

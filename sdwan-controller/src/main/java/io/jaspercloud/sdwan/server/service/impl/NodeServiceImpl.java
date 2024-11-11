@@ -7,10 +7,7 @@ import io.jaspercloud.sdwan.server.controller.request.EditNodeRequest;
 import io.jaspercloud.sdwan.server.controller.response.NodeDetailResponse;
 import io.jaspercloud.sdwan.server.controller.response.NodeResponse;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
-import io.jaspercloud.sdwan.server.entity.Node;
-import io.jaspercloud.sdwan.server.entity.NodeRoute;
-import io.jaspercloud.sdwan.server.entity.NodeRouteRule;
-import io.jaspercloud.sdwan.server.entity.NodeVNAT;
+import io.jaspercloud.sdwan.server.entity.*;
 import io.jaspercloud.sdwan.server.repository.NodeRepository;
 import io.jaspercloud.sdwan.server.repository.NodeRouteRepository;
 import io.jaspercloud.sdwan.server.repository.NodeRouteRuleRepository;
@@ -20,7 +17,9 @@ import io.jaspercloud.sdwan.server.repository.po.NodeRoutePO;
 import io.jaspercloud.sdwan.server.repository.po.NodeRouteRulePO;
 import io.jaspercloud.sdwan.server.repository.po.NodeVNATPO;
 import io.jaspercloud.sdwan.server.service.NodeService;
+import io.jaspercloud.sdwan.server.service.RouteRuleService;
 import io.jaspercloud.sdwan.server.service.RouteService;
+import io.jaspercloud.sdwan.server.service.VNATService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +34,12 @@ public class NodeServiceImpl implements NodeService {
 
     @Resource
     private RouteService routeService;
+
+    @Resource
+    private RouteRuleService routeRuleService;
+
+    @Resource
+    private VNATService vnatService;
 
     @Resource
     private NodeRepository nodeRepository;
@@ -54,26 +59,38 @@ public class NodeServiceImpl implements NodeService {
         node.setId(null);
         node.insert();
         if (CollectionUtil.isNotEmpty(request.getRouteIdList())) {
-            request.getRouteIdList().forEach(e -> {
+            request.getRouteIdList().forEach(id -> {
+                Route route = routeService.queryDetailById(id);
+                if (null == route) {
+                    throw new ProcessException("not found route");
+                }
                 NodeRoutePO nodeRoutePO = new NodeRoutePO();
                 nodeRoutePO.setNodeId(node.getId());
-                nodeRoutePO.setRouteId(e);
+                nodeRoutePO.setRouteId(id);
                 nodeRoutePO.insert();
             });
         }
         if (CollectionUtil.isNotEmpty(request.getRouteRuleIdList())) {
-            request.getRouteRuleIdList().forEach(e -> {
+            request.getRouteRuleIdList().forEach(id -> {
+                RouteRule routeRule = routeRuleService.queryById(id);
+                if (null == routeRule) {
+                    throw new ProcessException("not found routeRule");
+                }
                 NodeRouteRulePO nodeRouteRulePO = new NodeRouteRulePO();
                 nodeRouteRulePO.setNodeId(node.getId());
-                nodeRouteRulePO.setRuleId(e);
+                nodeRouteRulePO.setRuleId(id);
                 nodeRouteRulePO.insert();
             });
         }
         if (CollectionUtil.isNotEmpty(request.getVnatIdList())) {
-            request.getVnatIdList().forEach(e -> {
+            request.getVnatIdList().forEach(id -> {
+                VNAT vnat = vnatService.queryId(id);
+                if (null == vnat) {
+                    throw new ProcessException("not found vnat");
+                }
                 NodeVNATPO nodeVNATPO = new NodeVNATPO();
                 nodeVNATPO.setNodeId(node.getId());
-                nodeVNATPO.setVnatId(e);
+                nodeVNATPO.setVnatId(id);
                 nodeVNATPO.insert();
             });
         }
@@ -86,30 +103,45 @@ public class NodeServiceImpl implements NodeService {
         if (CollectionUtil.isNotEmpty(request.getRouteIdList())) {
             nodeRouteRepository.delete(nodeRouteRepository.lambdaQuery()
                     .eq(NodeRoutePO::getNodeId, node.getId()));
-            request.getRouteIdList().forEach(e -> {
+            request.getRouteIdList().forEach(id -> {
+                Route route = routeService.queryDetailById(id);
+                if (null == route) {
+                    throw new ProcessException("not found route");
+                }
+                if (route.getNodeIdList().contains(node.getId())) {
+                    throw new ProcessException("route exists nodeId");
+                }
                 NodeRoutePO nodeRoutePO = new NodeRoutePO();
                 nodeRoutePO.setNodeId(node.getId());
-                nodeRoutePO.setRouteId(e);
+                nodeRoutePO.setRouteId(id);
                 nodeRoutePO.insert();
             });
         }
         if (CollectionUtil.isNotEmpty(request.getRouteRuleIdList())) {
             nodeRouteRuleRepository.delete(nodeRouteRuleRepository.lambdaQuery()
                     .eq(NodeRouteRulePO::getNodeId, node.getId()));
-            request.getRouteRuleIdList().forEach(e -> {
+            request.getRouteRuleIdList().forEach(id -> {
+                RouteRule routeRule = routeRuleService.queryById(id);
+                if (null == routeRule) {
+                    throw new ProcessException("not found routeRule");
+                }
                 NodeRouteRulePO nodeRouteRulePO = new NodeRouteRulePO();
                 nodeRouteRulePO.setNodeId(node.getId());
-                nodeRouteRulePO.setRuleId(e);
+                nodeRouteRulePO.setRuleId(id);
                 nodeRouteRulePO.insert();
             });
         }
         if (CollectionUtil.isNotEmpty(request.getVnatIdList())) {
             nodeVNATRepository.delete(nodeVNATRepository.lambdaQuery()
                     .eq(NodeVNATPO::getNodeId, node.getId()));
-            request.getVnatIdList().forEach(e -> {
+            request.getVnatIdList().forEach(id -> {
+                VNAT vnat = vnatService.queryId(id);
+                if (null == vnat) {
+                    throw new ProcessException("not found vnat");
+                }
                 NodeVNATPO nodeVNATPO = new NodeVNATPO();
                 nodeVNATPO.setNodeId(node.getId());
-                nodeVNATPO.setVnatId(e);
+                nodeVNATPO.setVnatId(id);
                 nodeVNATPO.insert();
             });
         }

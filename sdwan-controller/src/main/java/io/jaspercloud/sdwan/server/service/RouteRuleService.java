@@ -17,5 +17,7 @@ public interface RouteRuleService {
 
     PageResponse<RouteRuleResponse> page();
 
+    RouteRule queryById(Long id);
+
     List<RouteRule> queryByIdList(List<Long> idList);
 }

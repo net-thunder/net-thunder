@@ -1,5 +1,6 @@
 package io.jaspercloud.sdwan.server.entity;
 
+import cn.hutool.json.JSONUtil;
 import io.jaspercloud.sdwan.server.repository.po.RouteRulePO;
 import io.jaspercloud.sdwan.server.support.BeanTransformer;
 import lombok.Getter;
@@ -22,6 +23,11 @@ public class RouteRule extends BaseEntity {
                 return e.name();
             }, e -> {
                 return DirectionEnum.valueOf(e);
+            })
+            .addFieldMapping(RouteRule::getRuleList, RouteRulePO::getRuleList, e -> {
+                return JSONUtil.toJsonStr(e);
+            }, e -> {
+                return JSONUtil.parseArray(e).toList(String.class);
             })
             .build();
 }

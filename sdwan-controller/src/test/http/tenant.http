@@ -3,11 +3,11 @@ POST http://localhost:11805/tenant/add
 Content-Type: application/json
 
 {
-  "name": "test2",
+  "name": "test",
   "description": "test",
-  "code": "test5",
-  "cidr": "10.8.0.0/24",
-  "username": "test6",
+  "code": "test",
+  "cidr": "10.5.0.0/24",
+  "username": "test",
   "password": "test",
   "stunServerList": [
     "127.0.0.1"

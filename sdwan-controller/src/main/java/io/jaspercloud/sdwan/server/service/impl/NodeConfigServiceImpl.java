@@ -1,9 +1,10 @@
 package io.jaspercloud.sdwan.server.service.impl;
 
+import io.jaspercloud.sdwan.server.repository.NodeRepository;
 import io.jaspercloud.sdwan.server.repository.NodeRouteRepository;
 import io.jaspercloud.sdwan.server.repository.NodeRouteRuleRepository;
 import io.jaspercloud.sdwan.server.repository.NodeVNATRepository;
-import io.jaspercloud.sdwan.server.repository.mapper.NodeMapper;
+import io.jaspercloud.sdwan.server.repository.po.NodePO;
 import io.jaspercloud.sdwan.server.repository.po.NodeRoutePO;
 import io.jaspercloud.sdwan.server.repository.po.NodeRouteRulePO;
 import io.jaspercloud.sdwan.server.repository.po.NodeVNATPO;
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Service;
 public class NodeConfigServiceImpl implements NodeConfigService {
 
     @Resource
-    private NodeMapper nodeMapper;
+    private NodeRepository nodeRepository;
 
     @Resource
     private NodeRouteRepository nodeRouteRepository;
@@ -25,6 +26,13 @@ public class NodeConfigServiceImpl implements NodeConfigService {
 
     @Resource
     private NodeVNATRepository nodeVNATRepository;
+
+    @Override
+    public boolean existsNode(Long nodeId) {
+        Long count = nodeRepository.count(nodeRepository.lambdaQuery()
+                .eq(NodePO::getId, nodeId));
+        return count > 0;
+    }
 
     @Override
     public boolean usedRoute(Long routeId) {
