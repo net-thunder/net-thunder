@@ -5,8 +5,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class NodeVNAT extends BaseEntity {
+public class GroupVNAT extends BaseEntity {
 
-    private Long nodeId;
+    private Long groupId;
     private Long vnatId;
 }

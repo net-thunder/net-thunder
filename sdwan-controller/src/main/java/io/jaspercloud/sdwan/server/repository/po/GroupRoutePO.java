@@ -8,11 +8,11 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@TableName("biz_node_rule")
-public class NodeRouteRulePO extends BaseTenantPO<NodeRouteRulePO> {
+@TableName("biz_group_route")
+public class GroupRoutePO extends BaseTenantPO<GroupRoutePO> {
 
-    @TableField("node_id")
-    private Long nodeId;
-    @TableField("rule_id")
-    private Long ruleId;
+    @TableField("group_id")
+    private Long groupId;
+    @TableField("route_id")
+    private Long routeId;
 }

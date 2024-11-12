@@ -20,6 +20,8 @@ public interface NodeService {
 
     Node queryById(Long id);
 
+    NodeDetailResponse queryDetail(Long id);
+
     List<Node> queryByIdList(List<Long> idList);
 
     List<Node> queryByTenantId(Long tenantId);

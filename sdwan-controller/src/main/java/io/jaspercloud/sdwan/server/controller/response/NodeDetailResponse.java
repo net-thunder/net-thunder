@@ -1,6 +1,5 @@
 package io.jaspercloud.sdwan.server.controller.response;
 
-import io.jaspercloud.sdwan.server.entity.Group;
 import io.jaspercloud.sdwan.server.entity.Route;
 import io.jaspercloud.sdwan.server.entity.RouteRule;
 import io.jaspercloud.sdwan.server.entity.VNAT;
@@ -17,11 +16,9 @@ public class NodeDetailResponse {
     private String name;
     private String description;
     private String mac;
-    private String ip;
     private String vip;
     private List<Route> routeList;
     private List<RouteRule> routeRuleList;
     private List<VNAT> vnatList;
-    private List<Group> groupList;
     private Boolean enable;
 }

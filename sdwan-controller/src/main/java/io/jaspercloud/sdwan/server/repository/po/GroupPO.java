@@ -1,5 +1,6 @@
 package io.jaspercloud.sdwan.server.repository.po;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.jaspercloud.sdwan.server.repository.base.BaseTenantPO;
 import lombok.Getter;
@@ -12,4 +13,6 @@ public class GroupPO extends BaseTenantPO<GroupPO> {
 
     private String name;
     private String description;
+    @TableField("default_group")
+    private Boolean defaultGroup;
 }

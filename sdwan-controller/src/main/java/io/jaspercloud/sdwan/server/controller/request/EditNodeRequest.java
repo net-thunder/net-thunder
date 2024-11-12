@@ -13,10 +13,6 @@ public class EditNodeRequest {
     private String name;
     private String description;
     private String mac;
-    private String ip;
-    private String vip;
-    private List<Long> routeIdList;
-    private List<Long> routeRuleIdList;
-    private List<Long> vnatIdList;
+    private List<Long> groupIdList;
     private Boolean enable;
 }

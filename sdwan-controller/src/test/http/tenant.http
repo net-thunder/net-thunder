@@ -3,9 +3,9 @@ POST http://localhost:11805/tenant/add
 Content-Type: application/json
 
 {
-  "name": "test2",
-  "description": "test2",
-  "code": "test2",
+  "name": "test3",
+  "description": "test3",
+  "code": "test3",
   "cidr": "10.5.0.0/24",
   "username": "test2",
   "password": "test",
@@ -24,12 +24,10 @@ Content-Type: application/json
 
 {
   "id": 3,
-  "name": "test2",
-  "description": "test",
-  "code": "test2",
-  "cidr": "10.8.0.0/24",
-  "username": "test2",
-  "password": "test",
+  "name": "test22",
+  "description": "test22",
+  "cidr": "10.5.0.0/16",
+  "password": "test22",
   "stunServerList": [
     "127.0.0.1"
   ],
