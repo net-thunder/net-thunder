@@ -13,5 +13,6 @@ public class Tenant extends BaseEntity {
     private String cidr;
     private String config;
     private Boolean enable;
+    private Integer ipIndex;
     private Long accountId;
 }

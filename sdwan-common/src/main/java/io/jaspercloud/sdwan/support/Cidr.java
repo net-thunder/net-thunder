@@ -157,10 +157,26 @@ public class Cidr {
         return checkAddr - address;
     }
 
-    private String genIpByIdx(int idx) {
+    public String genIpByIdx(int idx) {
         int address = parseIdentifierAddress(IPUtil.ip2int(networkIdentifier), maskBits);
         String ip = IPUtil.int2ip(address + idx);
         return ip;
+    }
+
+    public boolean isAvailableIp(String ip) {
+        if (StringUtils.equals(networkIdentifier, ip)) {
+            return false;
+        }
+        if (StringUtils.equals(maskAddress, ip)) {
+            return false;
+        }
+        if (StringUtils.equals(broadcastAddress, ip)) {
+            return false;
+        }
+        if (StringUtils.equals(gatewayAddress, ip)) {
+            return false;
+        }
+        return true;
     }
 
     public static String transform(String ip, Cidr src, Cidr target) {

@@ -17,6 +17,8 @@ public class TenantPO extends BasePO<TenantPO> {
     private String cidr;
     private String config;
     private Boolean enable;
+    @TableField("ip_index")
+    private Integer ipIndex;
     @TableField("account_id")
     private Long accountId;
 }

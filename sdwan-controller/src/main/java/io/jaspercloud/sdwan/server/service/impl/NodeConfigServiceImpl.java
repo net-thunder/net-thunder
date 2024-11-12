@@ -1,13 +1,13 @@
 package io.jaspercloud.sdwan.server.service.impl;
 
 import io.jaspercloud.sdwan.server.repository.NodeRepository;
-import io.jaspercloud.sdwan.server.repository.NodeRouteRepository;
-import io.jaspercloud.sdwan.server.repository.NodeRouteRuleRepository;
-import io.jaspercloud.sdwan.server.repository.NodeVNATRepository;
+import io.jaspercloud.sdwan.server.repository.GroupRouteRepository;
+import io.jaspercloud.sdwan.server.repository.GroupRouteRuleRepository;
+import io.jaspercloud.sdwan.server.repository.GroupVNATRepository;
 import io.jaspercloud.sdwan.server.repository.po.NodePO;
-import io.jaspercloud.sdwan.server.repository.po.NodeRoutePO;
-import io.jaspercloud.sdwan.server.repository.po.NodeRouteRulePO;
-import io.jaspercloud.sdwan.server.repository.po.NodeVNATPO;
+import io.jaspercloud.sdwan.server.repository.po.GroupRoutePO;
+import io.jaspercloud.sdwan.server.repository.po.GroupRouteRulePO;
+import io.jaspercloud.sdwan.server.repository.po.GroupVNATPO;
 import io.jaspercloud.sdwan.server.service.NodeConfigService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -19,13 +19,13 @@ public class NodeConfigServiceImpl implements NodeConfigService {
     private NodeRepository nodeRepository;
 
     @Resource
-    private NodeRouteRepository nodeRouteRepository;
+    private GroupRouteRepository groupRouteRepository;
 
     @Resource
-    private NodeRouteRuleRepository nodeRouteRuleRepository;
+    private GroupRouteRuleRepository groupRouteRuleRepository;
 
     @Resource
-    private NodeVNATRepository nodeVNATRepository;
+    private GroupVNATRepository groupVNATRepository;
 
     @Override
     public boolean existsNode(Long nodeId) {
@@ -36,22 +36,22 @@ public class NodeConfigServiceImpl implements NodeConfigService {
 
     @Override
     public boolean usedRoute(Long routeId) {
-        Long count = nodeRouteRepository.count(nodeRouteRepository.lambdaQuery()
-                .eq(NodeRoutePO::getRouteId, routeId));
+        Long count = groupRouteRepository.count(groupRouteRepository.lambdaQuery()
+                .eq(GroupRoutePO::getRouteId, routeId));
         return count > 0;
     }
 
     @Override
     public boolean usedRouteRule(Long routeRuleId) {
-        Long count = nodeRouteRuleRepository.count(nodeRouteRuleRepository.lambdaQuery()
-                .eq(NodeRouteRulePO::getRuleId, routeRuleId));
+        Long count = groupRouteRuleRepository.count(groupRouteRuleRepository.lambdaQuery()
+                .eq(GroupRouteRulePO::getRuleId, routeRuleId));
         return count > 0;
     }
 
     @Override
     public boolean usedVNAT(Long vnatId) {
-        Long count = nodeVNATRepository.count(nodeVNATRepository.lambdaQuery()
-                .eq(NodeVNATPO::getVnatId, vnatId));
+        Long count = groupVNATRepository.count(groupVNATRepository.lambdaQuery()
+                .eq(GroupVNATPO::getVnatId, vnatId));
         return count > 0;
     }
 }

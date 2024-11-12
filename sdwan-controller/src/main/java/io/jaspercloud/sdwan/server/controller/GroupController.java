@@ -1,5 +1,6 @@
 package io.jaspercloud.sdwan.server.controller;
 
+import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.server.controller.request.EditGroupMemberRequest;
 import io.jaspercloud.sdwan.server.controller.request.EditGroupRequest;
 import io.jaspercloud.sdwan.server.controller.response.GroupResponse;
@@ -45,7 +46,13 @@ public class GroupController {
 
     @PostMapping("/addMember")
     public void addMember(@RequestBody EditGroupMemberRequest request) {
-        groupService.addMember(request);
+        for (Long id : request.getMemberIdList()) {
+            Node node = nodeService.queryById(id);
+            if (null == node) {
+                throw new ProcessException("not found node");
+            }
+            groupService.addMember(request.getGroupId(), id);
+        }
     }
 
     @PostMapping("/delMember")

@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import io.jaspercloud.sdwan.exception.ProcessException;
+import io.jaspercloud.sdwan.server.config.TenantContextHandler;
 import io.jaspercloud.sdwan.server.controller.request.EditTenantRequest;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.controller.response.TenantResponse;
@@ -14,6 +15,7 @@ import io.jaspercloud.sdwan.server.repository.AccountRepository;
 import io.jaspercloud.sdwan.server.repository.TenantRepository;
 import io.jaspercloud.sdwan.server.repository.po.AccountPO;
 import io.jaspercloud.sdwan.server.repository.po.TenantPO;
+import io.jaspercloud.sdwan.server.service.GroupService;
 import io.jaspercloud.sdwan.server.service.TenantService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,9 @@ public class TenantServiceImpl implements TenantService {
 
     @Resource
     private AccountRepository accountRepository;
+
+    @Resource
+    private GroupService groupService;
 
     @Override
     public void add(EditTenantRequest request) {
@@ -56,6 +61,8 @@ public class TenantServiceImpl implements TenantService {
         tenant.setId(null);
         tenant.setAccountId(accountPO.getId());
         tenant.insert();
+        TenantContextHandler.setTenantId(tenant.getId());
+        groupService.addDefaultGroup("default");
     }
 
     @Override
@@ -123,5 +130,21 @@ public class TenantServiceImpl implements TenantService {
         tenantResponse.setStunServerList(jsonObject.getBeanList("stunServerList", String.class));
         tenantResponse.setRelayServerList(jsonObject.getBeanList("relayServerList", String.class));
         return tenantResponse;
+    }
+
+    @Override
+    public Integer incIpIndex(Long tenantId) {
+        int update;
+        Integer index;
+        do {
+            Tenant tenant = tenantRepository.selectById(tenantId);
+            Integer ipIndex = tenant.getIpIndex();
+            index = ipIndex + 1;
+            update = tenantRepository.update(tenantRepository.lambdaUpdate()
+                    .eq(TenantPO::getId, tenantId)
+                    .eq(TenantPO::getIpIndex, ipIndex)
+                    .set(TenantPO::getIpIndex, index));
+        } while (update <= 0);
+        return index;
     }
 }

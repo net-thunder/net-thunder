@@ -9,13 +9,9 @@ import io.jaspercloud.sdwan.server.controller.response.GroupResponse;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.entity.Group;
 import io.jaspercloud.sdwan.server.entity.GroupMember;
-import io.jaspercloud.sdwan.server.entity.Node;
-import io.jaspercloud.sdwan.server.repository.GroupMemberRepository;
-import io.jaspercloud.sdwan.server.repository.GroupRepository;
-import io.jaspercloud.sdwan.server.repository.po.GroupMemberPO;
-import io.jaspercloud.sdwan.server.repository.po.GroupPO;
+import io.jaspercloud.sdwan.server.repository.*;
+import io.jaspercloud.sdwan.server.repository.po.*;
 import io.jaspercloud.sdwan.server.service.GroupService;
-import io.jaspercloud.sdwan.server.service.NodeService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,10 +28,24 @@ public class GroupServiceImpl implements GroupService {
     private GroupRepository groupRepository;
 
     @Resource
-    private NodeService nodeService;
+    private GroupMemberRepository groupMemberRepository;
 
     @Resource
-    private GroupMemberRepository groupMemberRepository;
+    private GroupRouteRepository groupRouteRepository;
+
+    @Resource
+    private GroupRouteRuleRepository groupRouteRuleRepository;
+
+    @Resource
+    private GroupVNATRepository groupVNATRepository;
+
+    @Override
+    public void addDefaultGroup(String name) {
+        GroupPO group = new GroupPO();
+        group.setName(name);
+        group.setDefaultGroup(true);
+        group.insert();
+    }
 
     @Override
     public void add(EditGroupRequest request) {
@@ -73,17 +83,17 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public void addMember(EditGroupMemberRequest request) {
-        for (Long id : request.getMemberIdList()) {
-            Node node = nodeService.queryById(id);
-            if (null == node) {
-                throw new ProcessException("not found node");
-            }
-            GroupMemberPO member = new GroupMemberPO();
-            member.setGroupId(request.getGroupId());
-            member.setMemberId(id);
-            member.insert();
+    public void addMember(Long groupId, Long memberId) {
+        Long count = groupMemberRepository.count(groupMemberRepository.lambdaQuery()
+                .eq(GroupMemberPO::getGroupId, groupId)
+                .in(GroupMemberPO::getMemberId, memberId));
+        if (count > 0) {
+            return;
         }
+        GroupMemberPO groupMemberPO = new GroupMemberPO();
+        groupMemberPO.setGroupId(groupId);
+        groupMemberPO.setMemberId(memberId);
+        groupMemberPO.insert();
     }
 
     @Override
@@ -94,6 +104,12 @@ public class GroupServiceImpl implements GroupService {
         for (GroupMember member : memberList) {
             groupMemberRepository.deleteById(member);
         }
+    }
+
+    @Override
+    public Group queryById(Long groupId) {
+        Group group = groupRepository.selectById(groupId);
+        return group;
     }
 
     @Override
@@ -115,5 +131,51 @@ public class GroupServiceImpl implements GroupService {
         }
         List<Group> groupList = groupRepository.selectBatchIds(idList);
         return groupList;
+    }
+
+    @Override
+    public List<Long> queryGroupIdListByMemberId(Long memberId) {
+        List<Long> collect = groupMemberRepository.list(groupMemberRepository.lambdaQuery()
+                        .select(GroupMemberPO::getGroupId)
+                        .eq(GroupMemberPO::getMemberId, memberId))
+                .stream().map(e -> e.getGroupId()).collect(Collectors.toList());
+        return collect;
+    }
+
+    @Override
+    public List<Group> queryDetailList(List<Long> groupIdList) {
+        if (CollectionUtil.isEmpty(groupIdList)) {
+            return Collections.emptyList();
+        }
+        List<Group> groupList = groupRepository.list(groupRepository.lambdaQuery()
+                .eq(GroupPO::getId, groupIdList));
+        groupList.forEach(group -> {
+            List<Long> routeIdList = groupRouteRepository.list(groupRouteRepository.lambdaQuery()
+                            .eq(GroupRoutePO::getGroupId, group.getId()))
+                    .stream().map(e -> e.getRouteId()).collect(Collectors.toList());
+            List<Long> ruleIdList = groupRouteRuleRepository.list(groupRouteRuleRepository.lambdaQuery()
+                            .eq(GroupRouteRulePO::getGroupId, group.getId()))
+                    .stream().map(e -> e.getRuleId()).collect(Collectors.toList());
+            List<Long> vnatIdList = groupVNATRepository.list(groupVNATRepository.lambdaQuery()
+                            .eq(GroupVNATPO::getGroupId, group.getId()))
+                    .stream().map(e -> e.getVnatId()).collect(Collectors.toList());
+            group.setRouteIdList(routeIdList);
+            group.setRouteRuleIdList(ruleIdList);
+            group.setVnatIdList(vnatIdList);
+        });
+        return groupList;
+    }
+
+    @Override
+    public Group queryDefaultGroup() {
+        Group group = groupRepository.one(groupRepository.lambdaQuery()
+                .eq(GroupPO::getDefaultGroup, true));
+        return group;
+    }
+
+    @Override
+    public void delAllGroupMember(Long memberId) {
+        groupMemberRepository.delete(groupMemberRepository.lambdaQuery()
+                .eq(GroupMemberPO::getMemberId, memberId));
     }
 }

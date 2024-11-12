@@ -18,4 +18,6 @@ public interface TenantService {
     PageResponse<Tenant> page();
 
     TenantResponse queryByTenantCode(String tenantCode);
+
+    Integer incIpIndex(Long tenantId);
 }

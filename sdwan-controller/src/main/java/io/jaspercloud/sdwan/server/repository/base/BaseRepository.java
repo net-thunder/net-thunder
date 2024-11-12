@@ -2,6 +2,7 @@ package io.jaspercloud.sdwan.server.repository.base;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.reflect.GenericTypeUtils;
@@ -72,6 +73,10 @@ public class BaseRepository<D extends BaseEntity, P extends BasePO, M extends Ba
         return getBaseMapper().updateById(p);
     }
 
+    public int update(LambdaUpdateWrapper<P> updateWrapper) {
+        return getBaseMapper().update(updateWrapper);
+    }
+
     public D selectById(Serializable id) {
         P p = getBaseMapper().selectById(id);
         D d = transformer.output(p);
@@ -86,6 +91,10 @@ public class BaseRepository<D extends BaseEntity, P extends BasePO, M extends Ba
 
     public LambdaQueryWrapper<P> lambdaQuery() {
         return new LambdaQueryWrapper<P>();
+    }
+
+    public LambdaUpdateWrapper<P> lambdaUpdate() {
+        return new LambdaUpdateWrapper<P>();
     }
 
     public Long count(Wrapper<P> queryWrapper) {

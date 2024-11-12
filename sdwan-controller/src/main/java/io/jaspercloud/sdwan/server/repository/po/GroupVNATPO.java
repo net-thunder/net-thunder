@@ -8,11 +8,11 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@TableName("biz_node_vnat")
-public class NodeVNATPO extends BaseTenantPO<NodeVNATPO> {
+@TableName("biz_group_vnat")
+public class GroupVNATPO extends BaseTenantPO<GroupVNATPO> {
 
-    @TableField("node_id")
-    private Long nodeId;
+    @TableField("group_id")
+    private Long groupId;
     @TableField("vnat_id")
     private Long vnatId;
 }

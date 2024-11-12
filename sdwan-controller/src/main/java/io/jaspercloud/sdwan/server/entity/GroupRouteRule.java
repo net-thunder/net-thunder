@@ -5,8 +5,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class NodeRouteRule extends BaseEntity {
+public class GroupRouteRule extends BaseEntity {
 
-    private Long nodeId;
+    private Long groupId;
     private Long ruleId;
 }

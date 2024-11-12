@@ -7,18 +7,7 @@ X-Tenant-Id: 1
   "name": "test",
   "description": "test",
   "mac": "test",
-  "ip": "192.168.1.1",
-  "vip": "10.5.0.1",
-  "enable": true,
-  "routeIdList": [
-    1
-  ],
-  "routeRuleIdList": [
-    1
-  ],
-  "vnatIdList": [
-    1
-  ]
+  "enable": true
 }
 
 ### edit

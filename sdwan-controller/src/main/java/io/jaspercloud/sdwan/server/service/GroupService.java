@@ -10,6 +10,8 @@ import java.util.List;
 
 public interface GroupService {
 
+    void addDefaultGroup(String name);
+
     void add(EditGroupRequest request);
 
     void edit(EditGroupRequest request);
@@ -18,11 +20,21 @@ public interface GroupService {
 
     PageResponse<GroupResponse> page();
 
-    void addMember(EditGroupMemberRequest request);
+    void addMember(Long groupId, Long memberId);
 
     void delMember(EditGroupMemberRequest request);
+
+    void delAllGroupMember(Long memberId);
+
+    Group queryById(Long groupId);
 
     List<Long> memberList(Long groupId);
 
     List<Group> queryByMemberId(Long memberId);
+
+    List<Long> queryGroupIdListByMemberId(Long memberId);
+
+    List<Group> queryDetailList(List<Long> groupIdList);
+
+    Group queryDefaultGroup();
 }

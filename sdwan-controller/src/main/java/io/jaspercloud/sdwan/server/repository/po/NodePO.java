@@ -10,10 +10,9 @@ import lombok.Setter;
 @TableName("biz_node")
 public class NodePO extends BaseTenantPO<NodePO> {
 
-    private String mac;
     private String name;
     private String description;
-    private String ip;
+    private String mac;
     private String vip;
     private Boolean enable;
 }
