@@ -8,10 +8,7 @@ import io.jaspercloud.sdwan.server.controller.response.TenantResponse;
 import io.jaspercloud.sdwan.server.service.NodeService;
 import io.jaspercloud.sdwan.server.service.TenantService;
 import io.jaspercloud.sdwan.support.Cidr;
-import io.jaspercloud.sdwan.tranport.config.NodeConfig;
-import io.jaspercloud.sdwan.tranport.config.RouteConfig;
-import io.jaspercloud.sdwan.tranport.config.TenantConfig;
-import io.jaspercloud.sdwan.tranport.config.VNATConfig;
+import io.jaspercloud.sdwan.tranport.config.*;
 import io.jaspercloud.sdwan.tranport.service.SdWanDataService;
 import io.netty.channel.Channel;
 import jakarta.annotation.Resource;
@@ -72,6 +69,18 @@ public class DatabaseSdWanDataService implements SdWanDataService {
                 nodeConfig.setRouteConfigList(collect);
             } else {
                 nodeConfig.setRouteConfigList(Collections.emptyList());
+            }
+            if (CollectionUtil.isNotEmpty(detailResponse.getRouteRuleList())) {
+                List<RouteRuleConfig> collect = detailResponse.getRouteRuleList().stream()
+                        .map(rule -> {
+                            RouteRuleConfig routeRuleConfig = new RouteRuleConfig();
+                            routeRuleConfig.setDirection(DirectionEnum.valueOf(rule.getDirection().name()));
+                            routeRuleConfig.setRuleList(rule.getRuleList());
+                            return routeRuleConfig;
+                        }).collect(Collectors.toList());
+                nodeConfig.setRouteRuleConfigList(collect);
+            } else {
+                nodeConfig.setRouteRuleConfigList(Collections.emptyList());
             }
             if (CollectionUtil.isNotEmpty(detailResponse.getVnatList())) {
                 List<VNATConfig> collect = detailResponse.getVnatList().stream()

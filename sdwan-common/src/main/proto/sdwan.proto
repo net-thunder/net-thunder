@@ -74,6 +74,7 @@ message RegistResp {
   optional NodeInfoList nodeList = 4;
   optional RouteList routeList = 5;
   optional VNATList vnatList = 6;
+  optional RouteRuleList routeRuleList = 7;
 }
 
 message NodeInfoReq {
@@ -96,6 +97,15 @@ message Route {
 
 message RouteList {
   repeated Route route = 1;
+}
+
+message RouteRule {
+  required string direction = 1;
+  repeated string ruleList = 2;
+}
+
+message RouteRuleList {
+  repeated RouteRule routeRule = 1;
 }
 
 message VNAT {

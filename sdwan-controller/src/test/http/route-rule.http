@@ -16,7 +16,7 @@ X-Tenant-Id: 1
 }
 
 ### edit
-POST http://localhost:11805/route/edit
+POST http://localhost:11805/route-rule/edit
 Content-Type: application/json
 X-Tenant-Id: 1
 
@@ -32,15 +32,32 @@ X-Tenant-Id: 1
 }
 
 ### page
-GET http://127.0.0.1:11805/route/page
+GET http://127.0.0.1:11805/route-rule/page
 Content-Type: application/json
 X-Tenant-Id: 1
 
 ### del
-POST http://127.0.0.1:11805/route/del
+POST http://127.0.0.1:11805/route-rule/del
 Content-Type: application/json
 X-Tenant-Id: 1
 
 {
   "id": 4
 }
+
+### updateConfigList
+POST http://127.0.0.1:11805/route-rule/updateConfigList
+Content-Type: application/json
+X-Tenant-Id: 1
+
+{
+  "id": 1,
+  "groupIdList": [
+    1
+  ]
+}
+
+### queryConfigList
+GET http://127.0.0.1:11805/route-rule/configList/1
+Content-Type: application/json
+X-Tenant-Id: 1
