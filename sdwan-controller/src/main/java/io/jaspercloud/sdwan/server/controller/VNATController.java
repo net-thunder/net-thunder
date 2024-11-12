@@ -1,8 +1,10 @@
 package io.jaspercloud.sdwan.server.controller;
 
+import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.server.controller.request.EditVNATRequest;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.controller.response.VNATResponse;
+import io.jaspercloud.sdwan.server.entity.VNAT;
 import io.jaspercloud.sdwan.server.service.GroupConfigService;
 import io.jaspercloud.sdwan.server.service.VNATService;
 import jakarta.annotation.Resource;
@@ -45,6 +47,10 @@ public class VNATController {
     public void updateConfigList(@RequestBody EditVNATRequest request) {
         Long id = request.getId();
         List<Long> groupIdList = request.getGroupIdList();
+        VNAT vnat = vnatService.queryId(id);
+        if (null == vnat) {
+            throw new ProcessException("not found vnat");
+        }
         groupConfigService.updateGroupVNAT(id, groupIdList);
     }
 

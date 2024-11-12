@@ -82,6 +82,10 @@ public class RouteController {
     public void updateConfigList(@RequestBody EditRouteRequest request) {
         Long id = request.getId();
         List<Long> groupIdList = request.getGroupIdList();
+        Route route = routeService.queryById(id);
+        if (null == route) {
+            throw new ProcessException("not found route");
+        }
         groupConfigService.updateGroupRoute(id, groupIdList);
     }
 
