@@ -4,6 +4,8 @@ import io.jaspercloud.sdwan.config.TestSdWanControllerProperties;
 import io.jaspercloud.sdwan.tranport.RelayServer;
 import io.jaspercloud.sdwan.tranport.SdWanServer;
 import io.jaspercloud.sdwan.tranport.StunServer;
+import io.jaspercloud.sdwan.tranport.service.LocalConfigSdWanDataService;
+import io.jaspercloud.sdwan.tranport.service.SdWanDataService;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -30,7 +32,8 @@ public class TestServerApplication {
 
     @Bean
     public SdWanServer sdWanServer(TestSdWanControllerProperties properties) {
-        SdWanServer sdWanServer = new SdWanServer(properties.getSdwan(), () -> new ChannelInboundHandlerAdapter());
+        SdWanDataService dataService = new LocalConfigSdWanDataService(properties.getSdwan());
+        SdWanServer sdWanServer = new SdWanServer(properties.getSdwan(), dataService, () -> new ChannelInboundHandlerAdapter());
         return sdWanServer;
     }
 
