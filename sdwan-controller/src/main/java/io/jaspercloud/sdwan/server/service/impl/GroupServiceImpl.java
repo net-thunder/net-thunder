@@ -3,12 +3,10 @@ package io.jaspercloud.sdwan.server.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import io.jaspercloud.sdwan.exception.ProcessException;
-import io.jaspercloud.sdwan.server.controller.request.EditGroupMemberRequest;
 import io.jaspercloud.sdwan.server.controller.request.EditGroupRequest;
 import io.jaspercloud.sdwan.server.controller.response.GroupResponse;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.entity.Group;
-import io.jaspercloud.sdwan.server.entity.GroupMember;
 import io.jaspercloud.sdwan.server.repository.*;
 import io.jaspercloud.sdwan.server.repository.po.*;
 import io.jaspercloud.sdwan.server.service.GroupService;
@@ -97,12 +95,14 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public void delMember(EditGroupMemberRequest request) {
-        List<GroupMember> memberList = groupMemberRepository.list(groupMemberRepository.lambdaQuery()
-                .eq(GroupMemberPO::getGroupId, request.getGroupId())
-                .in(GroupMemberPO::getMemberId, request.getMemberIdList()));
-        for (GroupMember member : memberList) {
-            groupMemberRepository.deleteById(member);
+    public void updateMemberList(Long groupId, List<Long> memberIdList) {
+        groupMemberRepository.delete(groupMemberRepository.lambdaQuery()
+                .eq(GroupMemberPO::getGroupId, groupId));
+        for (Long memberId : memberIdList) {
+            GroupMemberPO groupMemberPO = new GroupMemberPO();
+            groupMemberPO.setGroupId(groupId);
+            groupMemberPO.setMemberId(memberId);
+            groupMemberPO.insert();
         }
     }
 

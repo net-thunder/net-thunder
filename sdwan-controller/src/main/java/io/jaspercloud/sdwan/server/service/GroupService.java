@@ -1,6 +1,5 @@
 package io.jaspercloud.sdwan.server.service;
 
-import io.jaspercloud.sdwan.server.controller.request.EditGroupMemberRequest;
 import io.jaspercloud.sdwan.server.controller.request.EditGroupRequest;
 import io.jaspercloud.sdwan.server.controller.response.GroupResponse;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
@@ -22,7 +21,7 @@ public interface GroupService {
 
     void addMember(Long groupId, Long memberId);
 
-    void delMember(EditGroupMemberRequest request);
+    void updateMemberList(Long groupId, List<Long> memberIdList);
 
     void delAllGroupMember(Long memberId);
 
