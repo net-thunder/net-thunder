@@ -14,5 +14,6 @@ public class NodeConfig {
     private String mac;
     private String vip;
     private List<RouteConfig> routeConfigList;
+    private List<RouteRuleConfig> routeRuleConfigList;
     private List<VNATConfig> vnatConfigList;
 }

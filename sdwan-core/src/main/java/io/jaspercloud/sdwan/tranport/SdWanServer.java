@@ -6,10 +6,7 @@ import io.jaspercloud.sdwan.exception.ProcessCodeException;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.support.ChannelAttributes;
 import io.jaspercloud.sdwan.support.Cidr;
-import io.jaspercloud.sdwan.tranport.config.NodeConfig;
-import io.jaspercloud.sdwan.tranport.config.RouteConfig;
-import io.jaspercloud.sdwan.tranport.config.TenantConfig;
-import io.jaspercloud.sdwan.tranport.config.VNATConfig;
+import io.jaspercloud.sdwan.tranport.config.*;
 import io.jaspercloud.sdwan.tranport.service.SdWanDataService;
 import io.jaspercloud.sdwan.util.ShortUUID;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;
@@ -169,7 +166,7 @@ public class SdWanServer implements Lifecycle, Runnable {
             ChannelSpace channelSpace = getChannelSpace(registReq.getTenantId());
             TenantConfig tenantConfig = sdWanDataService.getTenantConfig(registReq.getTenantId());
             ChannelAttributes attr = ChannelAttributes.attr(channel);
-            NodeConfig nodeInfo = registChannelMap.computeIfAbsent(channel, key -> {
+            NodeConfig thisNodeConfig = registChannelMap.computeIfAbsent(channel, key -> {
                 channel.closeFuture().addListener(new ChannelFutureListener() {
                     @Override
                     public void operationComplete(ChannelFuture future) throws Exception {
@@ -195,17 +192,20 @@ public class SdWanServer implements Lifecycle, Runnable {
                             }).collect(Collectors.toList()))
                     .build();
             Cidr ipPool = tenantConfig.getIpPool();
-            String vip = nodeInfo.getVip();
+            String vip = thisNodeConfig.getVip();
             SDWanProtos.RegistResp regResp = SDWanProtos.RegistResp.newBuilder()
                     .setCode(SDWanProtos.MessageCode.Success)
                     .setVip(vip)
                     .setMaskBits(ipPool.getMaskBits())
                     .setNodeList(nodeInfoList)
                     .setRouteList(SDWanProtos.RouteList.newBuilder()
-                            .addAllRoute(buildRouteList(nodeInfo.getRouteConfigList()))
+                            .addAllRoute(buildRouteList(thisNodeConfig.getRouteConfigList()))
                             .build())
                     .setVnatList(SDWanProtos.VNATList.newBuilder()
-                            .addAllVnat(buildVNATList(vip, nodeInfo.getVnatConfigList()))
+                            .addAllVnat(buildVNATList(vip, thisNodeConfig.getVnatConfigList()))
+                            .build())
+                    .setRouteRuleList(SDWanProtos.RouteRuleList.newBuilder()
+                            .addAllRouteRule(buildRouteRuleList(thisNodeConfig.getRouteRuleConfigList()))
                             .build())
                     .build();
             SdWanServer.reply(channel, msg, SDWanProtos.MessageTypeCode.RegistRespType, regResp);
@@ -230,8 +230,8 @@ public class SdWanServer implements Lifecycle, Runnable {
         }
     }
 
-    private List<SDWanProtos.Route> buildRouteList(List<RouteConfig> routeList) {
-        List<SDWanProtos.Route> collect = routeList.stream().map(e -> {
+    private List<SDWanProtos.Route> buildRouteList(List<RouteConfig> list) {
+        List<SDWanProtos.Route> collect = list.stream().map(e -> {
             return SDWanProtos.Route.newBuilder()
                     .setDestination(e.getDestination())
                     .addAllNexthop(e.getNexthop())
@@ -240,12 +240,22 @@ public class SdWanServer implements Lifecycle, Runnable {
         return collect;
     }
 
-    private List<SDWanProtos.VNAT> buildVNATList(String vip, List<VNATConfig> vnatList) {
-        List<SDWanProtos.VNAT> collect = vnatList.stream().map(e -> {
+    private List<SDWanProtos.VNAT> buildVNATList(String vip, List<VNATConfig> list) {
+        List<SDWanProtos.VNAT> collect = list.stream().map(e -> {
             return SDWanProtos.VNAT.newBuilder()
                     .setVip(vip)
                     .setSrc(e.getSrcCidr())
                     .setDst(e.getDstCidr())
+                    .build();
+        }).collect(Collectors.toList());
+        return collect;
+    }
+
+    private List<SDWanProtos.RouteRule> buildRouteRuleList(List<RouteRuleConfig> list) {
+        List<SDWanProtos.RouteRule> collect = list.stream().map(e -> {
+            return SDWanProtos.RouteRule.newBuilder()
+                    .setDirection(e.getDirection().name())
+                    .addAllRuleList(e.getRuleList())
                     .build();
         }).collect(Collectors.toList());
         return collect;
