@@ -222,6 +222,7 @@ public class SdWanServer implements Lifecycle, Runnable {
                     .build();
             SdWanServer.reply(channel, msg, SDWanProtos.MessageTypeCode.RegistRespType, regResp);
         } catch (Exception e) {
+            log.error(e.getMessage(), e);
             SDWanProtos.RegistResp regResp = SDWanProtos.RegistResp.newBuilder()
                     .setCode(SDWanProtos.MessageCode.SysError)
                     .build();

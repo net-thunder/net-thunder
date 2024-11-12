@@ -9,7 +9,7 @@ import io.jaspercloud.sdwan.server.controller.response.RouteRuleResponse;
 import io.jaspercloud.sdwan.server.entity.RouteRule;
 import io.jaspercloud.sdwan.server.repository.RouteRuleRepository;
 import io.jaspercloud.sdwan.server.repository.po.RouteRulePO;
-import io.jaspercloud.sdwan.server.service.NodeConfigService;
+import io.jaspercloud.sdwan.server.service.GroupConfigService;
 import io.jaspercloud.sdwan.server.service.RouteRuleService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -27,7 +27,7 @@ public class RouteRuleServiceImpl implements RouteRuleService {
     private RouteRuleRepository routeRuleRepository;
 
     @Resource
-    private NodeConfigService nodeConfigService;
+    private GroupConfigService groupConfigService;
 
     @Override
     public void add(EditRouteRuleRequest request) {
@@ -46,7 +46,7 @@ public class RouteRuleServiceImpl implements RouteRuleService {
 
     @Override
     public void del(EditRouteRuleRequest request) {
-        if (nodeConfigService.usedRouteRule(request.getId())) {
+        if (groupConfigService.usedRouteRule(request.getId())) {
             throw new ProcessException("routeRule used");
         }
         routeRuleRepository.deleteById(request.getId());

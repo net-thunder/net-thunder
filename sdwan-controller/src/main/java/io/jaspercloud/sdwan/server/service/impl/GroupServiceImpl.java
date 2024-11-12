@@ -148,7 +148,7 @@ public class GroupServiceImpl implements GroupService {
             return Collections.emptyList();
         }
         List<Group> groupList = groupRepository.list(groupRepository.lambdaQuery()
-                .eq(GroupPO::getId, groupIdList));
+                .in(GroupPO::getId, groupIdList));
         groupList.forEach(group -> {
             List<Long> routeIdList = groupRouteRepository.list(groupRouteRepository.lambdaQuery()
                             .eq(GroupRoutePO::getGroupId, group.getId()))

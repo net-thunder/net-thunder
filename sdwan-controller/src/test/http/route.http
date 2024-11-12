@@ -6,9 +6,9 @@ X-Tenant-Id: 1
 {
   "name": "test",
   "description": "test",
-  "destination": "10.5.0.0/24",
+  "destination": "18.5.0.0/24",
   "nodeIdList": [
-    2
+    7
   ],
   "enable": true
 }
@@ -43,3 +43,20 @@ X-Tenant-Id: 1
 {
   "id": 4
 }
+
+### updateConfigList
+POST http://127.0.0.1:11805/route/updateConfigList
+Content-Type: application/json
+X-Tenant-Id: 1
+
+{
+  "id": 1,
+  "groupIdList": [
+    1
+  ]
+}
+
+### queryConfigList
+GET http://127.0.0.1:11805/route/configList/1
+Content-Type: application/json
+X-Tenant-Id: 1

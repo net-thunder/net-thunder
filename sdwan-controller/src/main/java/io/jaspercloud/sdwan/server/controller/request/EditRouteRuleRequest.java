@@ -16,4 +16,6 @@ public class EditRouteRuleRequest {
     private DirectionEnum direction;
     private List<String> ruleList;
     private Boolean enable;
+
+    private List<Long> groupIdList;
 }

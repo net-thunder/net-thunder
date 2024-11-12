@@ -4,6 +4,7 @@ import com.google.protobuf.ProtocolStringList;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.support.Cidr;
 import io.jaspercloud.sdwan.tun.IpLayerPacket;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collections;
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.function.Function;
  * @author jasper
  * @create 2024/7/15
  */
+@Slf4j
 public class VirtualRouter {
 
     private String cidr;
@@ -80,6 +82,7 @@ public class VirtualRouter {
         Map<String, SDWanProtos.VNAT> inMap = new ConcurrentHashMap();
         Map<String, SDWanProtos.VNAT> outMap = new ConcurrentHashMap();
         vnatList.forEach(e -> {
+            log.info("addVNAT: src={}, dst={}, vip={}", e.getSrc(), e.getDst(), e.getVip());
             inMap.put(e.getSrc(), e);
             outMap.put(e.getDst(), e);
         });

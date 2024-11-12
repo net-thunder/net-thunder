@@ -9,7 +9,7 @@ import io.jaspercloud.sdwan.server.controller.response.VNATResponse;
 import io.jaspercloud.sdwan.server.entity.VNAT;
 import io.jaspercloud.sdwan.server.repository.VNATRepository;
 import io.jaspercloud.sdwan.server.repository.po.VNATPO;
-import io.jaspercloud.sdwan.server.service.NodeConfigService;
+import io.jaspercloud.sdwan.server.service.GroupConfigService;
 import io.jaspercloud.sdwan.server.service.VNATService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -27,7 +27,7 @@ public class VNATServiceImpl implements VNATService {
     private VNATRepository vnatRepository;
 
     @Resource
-    private NodeConfigService nodeConfigService;
+    private GroupConfigService groupConfigService;
 
     @Override
     public void add(EditVNATRequest request) {
@@ -44,7 +44,7 @@ public class VNATServiceImpl implements VNATService {
 
     @Override
     public void del(EditVNATRequest request) {
-        if (nodeConfigService.usedVNAT(request.getId())) {
+        if (groupConfigService.usedVNAT(request.getId())) {
             throw new ProcessException("vnat used");
         }
         vnatRepository.deleteById(request.getId());

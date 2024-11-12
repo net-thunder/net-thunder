@@ -20,6 +20,8 @@ public interface RouteService {
 
     Route queryDetailById(Long id);
 
+    List<Route> queryDetailByIdList(List<Long> idList);
+
     List<Route> queryByIdList(List<Long> idList);
 
     boolean usedNode(Long nodeId);
