@@ -9,9 +9,9 @@ import java.util.List;
 @Setter
 public class Node extends BaseEntity {
 
-    private String mac;
     private String name;
     private String description;
+    private String mac;
     private String vip;
     private Boolean enable;
     private List<Long> groupIdList;

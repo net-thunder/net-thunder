@@ -41,8 +41,6 @@ X-Tenant-Id: 1
 {
   "groupId": 1,
   "memberIdList": [
-    2,
-    5,
     6
   ]
 }

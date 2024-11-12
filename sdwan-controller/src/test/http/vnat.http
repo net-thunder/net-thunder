@@ -6,8 +6,8 @@ X-Tenant-Id: 1
 {
   "name": "test",
   "description": "test",
-  "srcCidr": "10.5.1.0/24",
-  "dstCidr": "10.5.2.0/24",
+  "srcCidr": "18.5.1.0/24",
+  "dstCidr": "18.5.2.0/24",
   "enable": true
 }
 
@@ -38,3 +38,20 @@ X-Tenant-Id: 1
 {
   "id": 1
 }
+
+### updateConfigList
+POST http://127.0.0.1:11805/vnat/updateConfigList
+Content-Type: application/json
+X-Tenant-Id: 1
+
+{
+  "id": 1,
+  "groupIdList": [
+    1
+  ]
+}
+
+### queryConfigList
+GET http://127.0.0.1:11805/vnat/configList/1
+Content-Type: application/json
+X-Tenant-Id: 1

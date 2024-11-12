@@ -180,7 +180,7 @@ public class NodeServiceImpl implements NodeService {
                 node = BeanUtil.toBean(nodePO, Node.class);
                 List<Long> groupIdList = groupService.queryGroupIdListByMemberId(nodePO.getId());
                 node.setGroupIdList(groupIdList);
-            } else if (StringUtils.isNotEmpty(node.getVip())) {
+            } else if (StringUtils.isEmpty(node.getVip())) {
                 Tenant tenant = tenantService.queryById(tenantId);
                 Cidr cidr = Cidr.parseCidr(tenant.getCidr());
                 String vip;
@@ -194,7 +194,7 @@ public class NodeServiceImpl implements NodeService {
             NodeDetailResponse nodeDetail = BeanUtil.toBean(node, NodeDetailResponse.class);
             List<Long> groupIdList = groupService.queryGroupIdListByMemberId(node.getId());
             List<Group> groupList = groupService.queryDetailList(groupIdList);
-            List<Route> routeList = routeService.queryByIdList(groupList.stream()
+            List<Route> routeList = routeService.queryDetailByIdList(groupList.stream()
                     .flatMap(e -> e.getRouteIdList().stream()).distinct().collect(Collectors.toList()));
             List<RouteRule> routeRuleList = routeRuleService.queryByIdList(groupList.stream()
                     .flatMap(e -> e.getRouteRuleIdList().stream()).distinct().collect(Collectors.toList()));
@@ -207,4 +207,10 @@ public class NodeServiceImpl implements NodeService {
         }
     }
 
+    @Override
+    public boolean existsNode(Long nodeId) {
+        Long count = nodeRepository.count(nodeRepository.lambdaQuery()
+                .eq(NodePO::getId, nodeId));
+        return count > 0;
+    }
 }

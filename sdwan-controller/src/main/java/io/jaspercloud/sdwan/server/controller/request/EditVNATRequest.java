@@ -3,6 +3,8 @@ package io.jaspercloud.sdwan.server.controller.request;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class EditVNATRequest {
@@ -13,4 +15,6 @@ public class EditVNATRequest {
     private String srcCidr;
     private String dstCidr;
     private Boolean enable;
+
+    private List<Long> groupIdList;
 }

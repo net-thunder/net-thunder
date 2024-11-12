@@ -3,12 +3,12 @@ package io.jaspercloud.sdwan.server.controller;
 import io.jaspercloud.sdwan.server.controller.request.EditRouteRuleRequest;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.controller.response.RouteRuleResponse;
+import io.jaspercloud.sdwan.server.service.GroupConfigService;
 import io.jaspercloud.sdwan.server.service.RouteRuleService;
 import jakarta.annotation.Resource;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/route-rule")
@@ -16,6 +16,9 @@ public class RouteRuleController {
 
     @Resource
     private RouteRuleService routeRuleService;
+
+    @Resource
+    private GroupConfigService groupConfigService;
 
     @PostMapping("/add")
     public void add(@RequestBody EditRouteRuleRequest request) {
@@ -36,5 +39,18 @@ public class RouteRuleController {
     public PageResponse<RouteRuleResponse> page() {
         PageResponse<RouteRuleResponse> response = routeRuleService.page();
         return response;
+    }
+
+    @PostMapping("/updateConfigList")
+    public void updateConfigList(@RequestBody EditRouteRuleRequest request) {
+        Long id = request.getId();
+        List<Long> groupIdList = request.getGroupIdList();
+        groupConfigService.updateGroupRouteRule(id, groupIdList);
+    }
+
+    @GetMapping("/configList/{id}")
+    public List<Long> configList(@PathVariable("id") Long id) {
+        List<Long> list = groupConfigService.queryGroupRouteRuleList(id);
+        return list;
     }
 }
