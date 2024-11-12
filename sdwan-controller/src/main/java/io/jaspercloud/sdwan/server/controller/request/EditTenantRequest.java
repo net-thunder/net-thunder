@@ -19,4 +19,5 @@ public class EditTenantRequest {
     private List<String> stunServerList;
     private List<String> relayServerList;
     private Boolean enable;
+    private Boolean nodeGrant;
 }

@@ -15,4 +15,5 @@ public class Tenant extends BaseEntity {
     private Boolean enable;
     private Integer ipIndex;
     private Long accountId;
+    private Boolean nodeGrant;
 }
