@@ -1,8 +1,10 @@
 package io.jaspercloud.sdwan.server.controller;
 
+import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.server.controller.request.EditRouteRuleRequest;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.controller.response.RouteRuleResponse;
+import io.jaspercloud.sdwan.server.entity.RouteRule;
 import io.jaspercloud.sdwan.server.service.GroupConfigService;
 import io.jaspercloud.sdwan.server.service.RouteRuleService;
 import jakarta.annotation.Resource;
@@ -45,6 +47,10 @@ public class RouteRuleController {
     public void updateConfigList(@RequestBody EditRouteRuleRequest request) {
         Long id = request.getId();
         List<Long> groupIdList = request.getGroupIdList();
+        RouteRule routeRule = routeRuleService.queryById(id);
+        if (null == routeRule) {
+            throw new ProcessException("not found routeRule");
+        }
         groupConfigService.updateGroupRouteRule(id, groupIdList);
     }
 

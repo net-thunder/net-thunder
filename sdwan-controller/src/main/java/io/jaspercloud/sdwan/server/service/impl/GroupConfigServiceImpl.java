@@ -1,6 +1,8 @@
 package io.jaspercloud.sdwan.server.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import io.jaspercloud.sdwan.exception.ProcessException;
+import io.jaspercloud.sdwan.server.repository.GroupRepository;
 import io.jaspercloud.sdwan.server.repository.GroupRouteRepository;
 import io.jaspercloud.sdwan.server.repository.GroupRouteRuleRepository;
 import io.jaspercloud.sdwan.server.repository.GroupVNATRepository;
@@ -12,10 +14,14 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 public class GroupConfigServiceImpl implements GroupConfigService {
+
+    @Resource
+    private GroupRepository groupRepository;
 
     @Resource
     private GroupRouteRepository groupRouteRepository;
@@ -54,7 +60,12 @@ public class GroupConfigServiceImpl implements GroupConfigService {
         if (CollectionUtil.isEmpty(groupIdList)) {
             return;
         }
+        Set<Long> ids = groupRepository.selectBatchIds(groupIdList)
+                .stream().map(e -> e.getId()).collect(Collectors.toSet());
         for (Long groupId : groupIdList) {
+            if (!ids.contains(groupId)) {
+                throw new ProcessException("not found group");
+            }
             GroupRoutePO groupRoutePO = new GroupRoutePO();
             groupRoutePO.setRouteId(routeId);
             groupRoutePO.setGroupId(groupId);
@@ -69,7 +80,12 @@ public class GroupConfigServiceImpl implements GroupConfigService {
         if (CollectionUtil.isEmpty(groupIdList)) {
             return;
         }
+        Set<Long> ids = groupRepository.selectBatchIds(groupIdList)
+                .stream().map(e -> e.getId()).collect(Collectors.toSet());
         for (Long groupId : groupIdList) {
+            if (!ids.contains(groupId)) {
+                throw new ProcessException("not found group");
+            }
             GroupRouteRulePO groupRouteRulePO = new GroupRouteRulePO();
             groupRouteRulePO.setRuleId(routeRuleId);
             groupRouteRulePO.setGroupId(groupId);
@@ -84,7 +100,12 @@ public class GroupConfigServiceImpl implements GroupConfigService {
         if (CollectionUtil.isEmpty(groupIdList)) {
             return;
         }
+        Set<Long> ids = groupRepository.selectBatchIds(groupIdList)
+                .stream().map(e -> e.getId()).collect(Collectors.toSet());
         for (Long groupId : groupIdList) {
+            if (!ids.contains(groupId)) {
+                throw new ProcessException("not found group");
+            }
             GroupVNATPO groupVNATPO = new GroupVNATPO();
             groupVNATPO.setVnatId(vnatId);
             groupVNATPO.setGroupId(groupId);
