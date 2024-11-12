@@ -44,24 +44,19 @@ public class GroupController {
         return response;
     }
 
-    @PostMapping("/addMember")
-    public void addMember(@RequestBody EditGroupMemberRequest request) {
+    @PostMapping("/updateMemberList")
+    public void updateMemberList(@RequestBody EditGroupMemberRequest request) {
         for (Long id : request.getMemberIdList()) {
             Node node = nodeService.queryById(id);
             if (null == node) {
                 throw new ProcessException("not found node");
             }
-            groupService.addMember(request.getGroupId(), id);
         }
+        groupService.updateMemberList(request.getGroupId(), request.getMemberIdList());
     }
 
-    @PostMapping("/delMember")
-    public void delMember(@RequestBody EditGroupMemberRequest request) {
-        groupService.delMember(request);
-    }
-
-    @GetMapping("/memberList")
-    public List<Node> memberList(@RequestParam("groupId") Long groupId) {
+    @GetMapping("/memberList/{id}")
+    public List<Node> memberList(@PathVariable("id") Long groupId) {
         List<Long> memberList = groupService.memberList(groupId);
         List<Node> nodeList = nodeService.queryByIdList(memberList);
         return nodeList;

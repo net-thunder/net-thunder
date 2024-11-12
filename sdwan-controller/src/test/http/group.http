@@ -33,14 +33,20 @@ X-Tenant-Id: 1
   "id": 1
 }
 
-### addMember
-POST http://localhost:11805/group/addMember
+### updateMemberList
+POST http://localhost:11805/group/updateMemberList
 Content-Type: application/json
 X-Tenant-Id: 1
 
 {
   "groupId": 1,
   "memberIdList": [
-    6
+    6,
+    7
   ]
 }
+
+### queryMemberList
+GET http://localhost:11805/group/memberList/1
+Content-Type: application/json
+X-Tenant-Id: 1
