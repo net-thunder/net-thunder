@@ -2,6 +2,7 @@ package io.jaspercloud.sdwan.server.config;
 
 import io.jaspercloud.sdwan.server.component.*;
 import io.jaspercloud.sdwan.tranport.SdWanServerConfig;
+import io.jaspercloud.sdwan.tranport.service.SdWanDataService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -12,14 +13,14 @@ import org.springframework.context.annotation.Configuration;
 public class AppConfig {
 
     @Bean
-    public DatabaseSdWanDataService databaseSdWanDataService() {
+    public SdWanDataService dataService() {
         return new DatabaseSdWanDataService();
     }
 
     @ConditionalOnProperty(value = "sdwan.sdwanServer.enable", havingValue = "true")
     @Bean
     public SdWanServerBean sdwanServer(SdWanControllerProperties properties,
-                                       DatabaseSdWanDataService dataService) {
+                                       SdWanDataService dataService) {
         SdWanServerConfig sdwanServer = properties.getSdwanServer();
         return new SdWanServerBean(sdwanServer, dataService);
     }
