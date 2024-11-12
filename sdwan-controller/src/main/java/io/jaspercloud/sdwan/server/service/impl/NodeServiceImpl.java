@@ -2,6 +2,8 @@ package io.jaspercloud.sdwan.server.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import io.jaspercloud.sdwan.core.proto.SDWanProtos;
+import io.jaspercloud.sdwan.exception.ProcessCodeException;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.server.controller.request.EditNodeRequest;
 import io.jaspercloud.sdwan.server.controller.response.NodeDetailResponse;
@@ -15,8 +17,12 @@ import io.jaspercloud.sdwan.server.support.LockGroup;
 import io.jaspercloud.sdwan.support.Cidr;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Collections;
 import java.util.List;
@@ -24,7 +30,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
-public class NodeServiceImpl implements NodeService {
+public class NodeServiceImpl implements NodeService, InitializingBean {
 
     @Resource
     private GroupService groupService;
@@ -46,6 +52,17 @@ public class NodeServiceImpl implements NodeService {
 
     @Resource
     private LockGroup lockGroup;
+
+    @Resource
+    private DataSourceTransactionManager transactionManager;
+
+    private TransactionTemplate transactionTemplate;
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        transactionTemplate = new TransactionTemplate(transactionManager);
+        transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+    }
 
     @Override
     public void add(EditNodeRequest request) {
@@ -160,28 +177,29 @@ public class NodeServiceImpl implements NodeService {
     public NodeDetailResponse applyNodeInfo(Long tenantId, String macAddress) {
         try (LockGroup.Lock lock = lockGroup.getLock(tenantId)) {
             Node node = nodeRepository.one(nodeRepository.lambdaQuery()
-                    .eq(NodePO::getMac, macAddress)
-                    .eq(NodePO::getEnable, true));
+                    .eq(NodePO::getMac, macAddress));
             if (null == node) {
                 Tenant tenant = tenantService.queryById(tenantId);
-                Cidr cidr = Cidr.parseCidr(tenant.getCidr());
-                String vip;
-                do {
-                    Integer idx = tenantService.incIpIndex(tenantId);
-                    vip = cidr.genIpByIdx(idx);
-                } while (!cidr.isAvailableIp(vip));
                 NodePO nodePO = new NodePO();
-                nodePO.setMac(macAddress);
-                nodePO.setVip(vip);
-                nodePO.setEnable(true);
-                nodePO.insert();
-                Group group = groupService.queryDefaultGroup();
-                groupService.addMember(group.getId(), nodePO.getId());
+                transactionTemplate.executeWithoutResult(s -> {
+                    nodePO.setName(macAddress);
+                    nodePO.setMac(macAddress);
+                    if (tenant.getNodeGrant()) {
+                        nodePO.setEnable(false);
+                    } else {
+                        nodePO.setEnable(true);
+                    }
+                    nodePO.insert();
+                    Group group = groupService.queryDefaultGroup();
+                    groupService.addMember(group.getId(), nodePO.getId());
+                });
                 node = BeanUtil.toBean(nodePO, Node.class);
-                List<Long> groupIdList = groupService.queryGroupIdListByMemberId(nodePO.getId());
-                node.setGroupIdList(groupIdList);
-            } else if (StringUtils.isEmpty(node.getVip())) {
+            }
+            if (StringUtils.isEmpty(node.getVip())) {
                 Tenant tenant = tenantService.queryById(tenantId);
+                if (tenant.getNodeGrant() && false == node.getEnable()) {
+                    throw new ProcessCodeException(SDWanProtos.MessageCode.NotGrant_VALUE);
+                }
                 Cidr cidr = Cidr.parseCidr(tenant.getCidr());
                 String vip;
                 do {

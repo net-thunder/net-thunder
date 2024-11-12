@@ -9,6 +9,7 @@ enum MessageCode {
   NotEnough = 3;
   VipBound = 4;
   NotFound = 5;
+  NotGrant = 6;
 }
 
 enum MessageMode {

@@ -17,6 +17,7 @@ public class TenantResponse {
     private List<String> stunServerList;
     private List<String> relayServerList;
     private Boolean enable;
+    private Boolean nodeGrant;
     private Integer totalNode;
     private Integer onlineNode;
 }

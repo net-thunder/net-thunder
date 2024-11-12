@@ -85,6 +85,12 @@ public class TenantServiceImpl implements TenantService {
         if (null != request.getDescription()) {
             tenant.setDescription(request.getDescription());
         }
+        if (null != request.getEnable()) {
+            tenant.setEnable(request.getEnable());
+        }
+        if (null != request.getNodeGrant()) {
+            tenant.setNodeGrant(request.getNodeGrant());
+        }
         if (null != request.getStunServerList()) {
             jsonObject.set("stunServerList", request.getStunServerList());
         } else {

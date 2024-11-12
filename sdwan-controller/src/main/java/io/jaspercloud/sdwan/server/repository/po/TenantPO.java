@@ -21,4 +21,6 @@ public class TenantPO extends BasePO<TenantPO> {
     private Integer ipIndex;
     @TableField("account_id")
     private Long accountId;
+    @TableField("node_grant")
+    private Boolean nodeGrant;
 }
