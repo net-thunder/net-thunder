@@ -2,7 +2,6 @@ package io.jaspercloud.sdwan.server.service.impl;
 
 import io.jaspercloud.sdwan.server.entity.Account;
 import io.jaspercloud.sdwan.server.repository.AccountRepository;
-import io.jaspercloud.sdwan.server.repository.po.AccountPO;
 import io.jaspercloud.sdwan.server.service.AccountService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -16,8 +15,8 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Account queryAccount(String username, String password) {
         Account account = accountRepository.one(accountRepository.lambdaQuery()
-                .eq(AccountPO::getUsername, username)
-                .eq(AccountPO::getPassword, password));
+                .eq(Account::getUsername, username)
+                .eq(Account::getPassword, password));
         return account;
     }
 }

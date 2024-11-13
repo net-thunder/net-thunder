@@ -2,6 +2,9 @@ package io.jaspercloud.sdwan.server.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import io.jaspercloud.sdwan.exception.ProcessException;
+import io.jaspercloud.sdwan.server.entity.GroupRoute;
+import io.jaspercloud.sdwan.server.entity.GroupRouteRule;
+import io.jaspercloud.sdwan.server.entity.GroupVNAT;
 import io.jaspercloud.sdwan.server.repository.GroupRepository;
 import io.jaspercloud.sdwan.server.repository.GroupRouteRepository;
 import io.jaspercloud.sdwan.server.repository.GroupRouteRuleRepository;
@@ -35,28 +38,28 @@ public class GroupConfigServiceImpl implements GroupConfigService {
     @Override
     public boolean usedRoute(Long routeId) {
         Long count = groupRouteRepository.count(groupRouteRepository.lambdaQuery()
-                .eq(GroupRoutePO::getRouteId, routeId));
+                .eq(GroupRoute::getRouteId, routeId));
         return count > 0;
     }
 
     @Override
     public boolean usedRouteRule(Long routeRuleId) {
         Long count = groupRouteRuleRepository.count(groupRouteRuleRepository.lambdaQuery()
-                .eq(GroupRouteRulePO::getRuleId, routeRuleId));
+                .eq(GroupRouteRule::getRuleId, routeRuleId));
         return count > 0;
     }
 
     @Override
     public boolean usedVNAT(Long vnatId) {
         Long count = groupVNATRepository.count(groupVNATRepository.lambdaQuery()
-                .eq(GroupVNATPO::getVnatId, vnatId));
+                .eq(GroupVNAT::getVnatId, vnatId));
         return count > 0;
     }
 
     @Override
     public void updateGroupRoute(Long routeId, List<Long> groupIdList) {
         groupRouteRepository.delete(groupRouteRepository.lambdaQuery()
-                .eq(GroupRoutePO::getRouteId, routeId));
+                .eq(GroupRoute::getRouteId, routeId));
         if (CollectionUtil.isEmpty(groupIdList)) {
             return;
         }
@@ -76,7 +79,7 @@ public class GroupConfigServiceImpl implements GroupConfigService {
     @Override
     public void updateGroupRouteRule(Long routeRuleId, List<Long> groupIdList) {
         groupRouteRuleRepository.delete(groupRouteRuleRepository.lambdaQuery()
-                .eq(GroupRouteRulePO::getRuleId, routeRuleId));
+                .eq(GroupRouteRule::getRuleId, routeRuleId));
         if (CollectionUtil.isEmpty(groupIdList)) {
             return;
         }
@@ -96,7 +99,7 @@ public class GroupConfigServiceImpl implements GroupConfigService {
     @Override
     public void updateGroupVNAT(Long vnatId, List<Long> groupIdList) {
         groupVNATRepository.delete(groupVNATRepository.lambdaQuery()
-                .eq(GroupVNATPO::getVnatId, vnatId));
+                .eq(GroupVNAT::getVnatId, vnatId));
         if (CollectionUtil.isEmpty(groupIdList)) {
             return;
         }
@@ -116,8 +119,8 @@ public class GroupConfigServiceImpl implements GroupConfigService {
     @Override
     public List<Long> queryGroupRouteList(Long routeId) {
         List<Long> collect = groupRouteRepository.list(groupRouteRepository.lambdaQuery()
-                        .select(GroupRoutePO::getGroupId)
-                        .eq(GroupRoutePO::getRouteId, routeId))
+                        .select(GroupRoute::getGroupId)
+                        .eq(GroupRoute::getRouteId, routeId))
                 .stream().map(e -> e.getGroupId()).collect(Collectors.toList());
         return collect;
     }
@@ -125,8 +128,8 @@ public class GroupConfigServiceImpl implements GroupConfigService {
     @Override
     public List<Long> queryGroupRouteRuleList(Long routeRuleId) {
         List<Long> collect = groupRouteRuleRepository.list(groupRouteRuleRepository.lambdaQuery()
-                        .select(GroupRouteRulePO::getGroupId)
-                        .eq(GroupRouteRulePO::getRuleId, routeRuleId))
+                        .select(GroupRouteRule::getGroupId)
+                        .eq(GroupRouteRule::getRuleId, routeRuleId))
                 .stream().map(e -> e.getGroupId()).collect(Collectors.toList());
         return collect;
     }
@@ -134,8 +137,8 @@ public class GroupConfigServiceImpl implements GroupConfigService {
     @Override
     public List<Long> queryGroupVNATList(Long vnatId) {
         List<Long> collect = groupVNATRepository.list(groupVNATRepository.lambdaQuery()
-                        .select(GroupVNATPO::getGroupId)
-                        .eq(GroupVNATPO::getVnatId, vnatId))
+                        .select(GroupVNAT::getGroupId)
+                        .eq(GroupVNAT::getVnatId, vnatId))
                 .stream().map(e -> e.getGroupId()).collect(Collectors.toList());
         return collect;
     }

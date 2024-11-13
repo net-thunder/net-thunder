@@ -166,7 +166,7 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
     @Override
     public List<Node> queryByTenantId(Long tenantId) {
         List<Node> list = nodeRepository.list(nodeRepository.lambdaQuery()
-                .eq(NodePO::getTenantId, tenantId));
+                .eq(Node::getTenantId, tenantId));
         return list;
     }
 
@@ -174,7 +174,7 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
     public NodeDetailResponse applyNodeInfo(Long tenantId, String macAddress) {
         try (LockGroup.Lock lock = lockGroup.getLock(tenantId)) {
             Node node = nodeRepository.one(nodeRepository.lambdaQuery()
-                    .eq(NodePO::getMac, macAddress));
+                    .eq(Node::getMac, macAddress));
             if (null == node) {
                 Tenant tenant = tenantService.queryById(tenantId);
                 NodePO nodePO = new NodePO();
@@ -225,7 +225,7 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
     @Override
     public boolean existsNode(Long nodeId) {
         Long count = nodeRepository.count(nodeRepository.lambdaQuery()
-                .eq(NodePO::getId, nodeId));
+                .eq(Node::getId, nodeId));
         return count > 0;
     }
 }

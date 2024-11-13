@@ -8,4 +8,5 @@ import lombok.Setter;
 public class BaseEntity {
 
     private Long id;
+    private Long tenantId;
 }

@@ -6,9 +6,10 @@ import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.server.controller.request.EditGroupRequest;
 import io.jaspercloud.sdwan.server.controller.response.GroupResponse;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
-import io.jaspercloud.sdwan.server.entity.Group;
+import io.jaspercloud.sdwan.server.entity.*;
 import io.jaspercloud.sdwan.server.repository.*;
-import io.jaspercloud.sdwan.server.repository.po.*;
+import io.jaspercloud.sdwan.server.repository.po.GroupMemberPO;
+import io.jaspercloud.sdwan.server.repository.po.GroupPO;
 import io.jaspercloud.sdwan.server.service.GroupService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -61,7 +62,7 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public void del(EditGroupRequest request) {
         Long count = groupMemberRepository.count(groupMemberRepository.lambdaQuery()
-                .eq(GroupMemberPO::getMemberId, request.getId()));
+                .eq(GroupMember::getMemberId, request.getId()));
         if (count > 0) {
             throw new ProcessException("group used");
         }
@@ -83,8 +84,8 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public void addMember(Long groupId, Long memberId) {
         Long count = groupMemberRepository.count(groupMemberRepository.lambdaQuery()
-                .eq(GroupMemberPO::getGroupId, groupId)
-                .in(GroupMemberPO::getMemberId, memberId));
+                .eq(GroupMember::getGroupId, groupId)
+                .in(GroupMember::getMemberId, memberId));
         if (count > 0) {
             return;
         }
@@ -97,7 +98,7 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public void updateMemberList(Long groupId, List<Long> memberIdList) {
         groupMemberRepository.delete(groupMemberRepository.lambdaQuery()
-                .eq(GroupMemberPO::getGroupId, groupId));
+                .eq(GroupMember::getGroupId, groupId));
         for (Long memberId : memberIdList) {
             GroupMemberPO groupMemberPO = new GroupMemberPO();
             groupMemberPO.setGroupId(groupId);
@@ -115,7 +116,7 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public List<Long> memberList(Long groupId) {
         List<Long> idList = groupMemberRepository.list(groupMemberRepository.lambdaQuery()
-                        .eq(GroupMemberPO::getGroupId, groupId))
+                        .eq(GroupMember::getGroupId, groupId))
                 .stream().map(e -> e.getMemberId()).collect(Collectors.toList());
         return idList;
     }
@@ -123,8 +124,8 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public List<Group> queryByMemberId(Long memberId) {
         List<Long> idList = groupMemberRepository.list(groupMemberRepository.lambdaQuery()
-                        .select(GroupMemberPO::getGroupId)
-                        .eq(GroupMemberPO::getMemberId, memberId))
+                        .select(GroupMember::getGroupId)
+                        .eq(GroupMember::getMemberId, memberId))
                 .stream().map(e -> e.getGroupId()).collect(Collectors.toList());
         if (CollectionUtil.isEmpty(idList)) {
             return Collections.emptyList();
@@ -136,8 +137,8 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public List<Long> queryGroupIdListByMemberId(Long memberId) {
         List<Long> collect = groupMemberRepository.list(groupMemberRepository.lambdaQuery()
-                        .select(GroupMemberPO::getGroupId)
-                        .eq(GroupMemberPO::getMemberId, memberId))
+                        .select(GroupMember::getGroupId)
+                        .eq(GroupMember::getMemberId, memberId))
                 .stream().map(e -> e.getGroupId()).collect(Collectors.toList());
         return collect;
     }
@@ -148,16 +149,16 @@ public class GroupServiceImpl implements GroupService {
             return Collections.emptyList();
         }
         List<Group> groupList = groupRepository.list(groupRepository.lambdaQuery()
-                .in(GroupPO::getId, groupIdList));
+                .in(Group::getId, groupIdList));
         groupList.forEach(group -> {
             List<Long> routeIdList = groupRouteRepository.list(groupRouteRepository.lambdaQuery()
-                            .eq(GroupRoutePO::getGroupId, group.getId()))
+                            .eq(GroupRoute::getGroupId, group.getId()))
                     .stream().map(e -> e.getRouteId()).collect(Collectors.toList());
             List<Long> ruleIdList = groupRouteRuleRepository.list(groupRouteRuleRepository.lambdaQuery()
-                            .eq(GroupRouteRulePO::getGroupId, group.getId()))
+                            .eq(GroupRouteRule::getGroupId, group.getId()))
                     .stream().map(e -> e.getRuleId()).collect(Collectors.toList());
             List<Long> vnatIdList = groupVNATRepository.list(groupVNATRepository.lambdaQuery()
-                            .eq(GroupVNATPO::getGroupId, group.getId()))
+                            .eq(GroupVNAT::getGroupId, group.getId()))
                     .stream().map(e -> e.getVnatId()).collect(Collectors.toList());
             group.setRouteIdList(routeIdList);
             group.setRouteRuleIdList(ruleIdList);
@@ -169,13 +170,13 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public Group queryDefaultGroup() {
         Group group = groupRepository.one(groupRepository.lambdaQuery()
-                .eq(GroupPO::getDefaultGroup, true));
+                .eq(Group::getDefaultGroup, true));
         return group;
     }
 
     @Override
     public void delAllGroupMember(Long memberId) {
         groupMemberRepository.delete(groupMemberRepository.lambdaQuery()
-                .eq(GroupMemberPO::getMemberId, memberId));
+                .eq(GroupMember::getMemberId, memberId));
     }
 }
