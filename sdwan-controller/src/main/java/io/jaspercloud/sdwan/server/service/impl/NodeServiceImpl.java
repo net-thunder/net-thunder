@@ -87,7 +87,7 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
     public void edit(EditNodeRequest request) {
         NodePO node = BeanUtil.toBean(request, NodePO.class);
         node.updateById();
-        if (CollectionUtil.isNotEmpty(request.getGroupIdList())) {
+        if (null != request.getGroupIdList()) {
             groupService.delAllGroupMember(node.getId());
             request.getGroupIdList().forEach(id -> {
                 Group group = groupService.queryById(id);
@@ -96,9 +96,6 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
                 }
                 groupService.addMember(group.getId(), node.getId());
             });
-        } else {
-            Group group = groupService.queryDefaultGroup();
-            groupService.addMember(group.getId(), node.getId());
         }
     }
 
