@@ -1,0 +1,34 @@
+### login root
+POST http://localhost:11805/account/login
+Content-Type: application/json
+
+{
+  "username": "root",
+  "password": "root"
+}
+
+> {%
+    client.global.set("token", response.body.accessToken);
+%}
+
+### login tenant
+POST http://localhost:11805/account/login
+Content-Type: application/json
+
+{
+  "username": "test",
+  "password": "test"
+}
+
+> {%
+    client.global.set("token", response.body.accessToken);
+%}
+
+
+### userInfo
+POST http://localhost:11805/account/userInfo
+Content-Type: application/json
+Access-Token: {{token}}
+
+
+

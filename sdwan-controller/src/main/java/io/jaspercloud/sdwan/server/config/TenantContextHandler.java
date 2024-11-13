@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.extension.plugins.handler.TenantLineHandler;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -18,14 +17,6 @@ public class TenantContextHandler implements TenantLineHandler {
             "biz_tenant",
             "biz_account"
     );
-
-    public static void setTenantId(String tenantId) {
-        if (StringUtils.isEmpty(tenantId)) {
-            threadLocal.set(null);
-        } else {
-            threadLocal.set(Long.parseLong(tenantId));
-        }
-    }
 
     public static void setTenantId(Long tenantId) {
         threadLocal.set(tenantId);
