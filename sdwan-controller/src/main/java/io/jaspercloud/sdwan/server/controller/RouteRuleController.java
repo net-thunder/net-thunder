@@ -37,7 +37,7 @@ public class RouteRuleController {
         routeRuleService.del(request);
     }
 
-    @PostMapping("/page")
+    @GetMapping("/page")
     public PageResponse<RouteRuleResponse> page() {
         PageResponse<RouteRuleResponse> response = routeRuleService.page();
         return response;

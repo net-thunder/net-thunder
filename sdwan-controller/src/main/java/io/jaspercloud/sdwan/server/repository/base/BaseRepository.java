@@ -3,6 +3,7 @@ package io.jaspercloud.sdwan.server.repository.base;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.reflect.GenericTypeUtils;
@@ -73,7 +74,7 @@ public class BaseRepository<D extends BaseEntity, P extends BasePO, M extends Ba
         return getBaseMapper().updateById(p);
     }
 
-    public int update(LambdaUpdateWrapper<P> updateWrapper) {
+    public int update(UpdateWrapper updateWrapper) {
         return getBaseMapper().update(updateWrapper);
     }
 
@@ -89,15 +90,7 @@ public class BaseRepository<D extends BaseEntity, P extends BasePO, M extends Ba
         return collect;
     }
 
-    public LambdaQueryWrapper<P> lambdaQuery() {
-        return new LambdaQueryWrapper<P>();
-    }
-
-    public LambdaUpdateWrapper<P> lambdaUpdate() {
-        return new LambdaUpdateWrapper<P>();
-    }
-
-    public Long count(Wrapper<P> queryWrapper) {
+    public Long count(Wrapper queryWrapper) {
         return baseMapper.selectCount(queryWrapper);
     }
 
@@ -105,7 +98,7 @@ public class BaseRepository<D extends BaseEntity, P extends BasePO, M extends Ba
         return count(Wrappers.emptyWrapper());
     }
 
-    public List<D> list(Wrapper<P> queryWrapper) {
+    public List<D> list(Wrapper queryWrapper) {
         List<P> list = baseMapper.selectList(queryWrapper);
         List<D> collect = list.stream().map(e -> transformer.output(e)).collect(Collectors.toList());
         return collect;
@@ -115,8 +108,8 @@ public class BaseRepository<D extends BaseEntity, P extends BasePO, M extends Ba
         return list(Wrappers.emptyWrapper());
     }
 
-    public D one(Wrapper<P> queryWrapper) {
-        P selectOne = baseMapper.selectOne(queryWrapper);
+    public D one(Wrapper queryWrapper) {
+        P selectOne = (P) baseMapper.selectOne(queryWrapper);
         if (null == selectOne) {
             return null;
         }
@@ -124,7 +117,15 @@ public class BaseRepository<D extends BaseEntity, P extends BasePO, M extends Ba
         return output;
     }
 
-    public int delete(Wrapper<P> queryWrapper) {
+    public int delete(Wrapper queryWrapper) {
         return baseMapper.delete(queryWrapper);
+    }
+
+    public LambdaQueryWrapper<D> lambdaQuery() {
+        return new LambdaQueryWrapper(currentPOClass());
+    }
+
+    public LambdaUpdateWrapper<D> lambdaUpdate() {
+        return new LambdaUpdateWrapper(currentPOClass());
     }
 }

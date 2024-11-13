@@ -74,7 +74,7 @@ public class VNATServiceImpl implements VNATService {
             return Collections.emptyList();
         }
         List<VNAT> list = vnatRepository.list(vnatRepository.lambdaQuery()
-                .in(VNATPO::getId, idList));
+                .in(VNAT::getId, idList));
         return list;
     }
 }

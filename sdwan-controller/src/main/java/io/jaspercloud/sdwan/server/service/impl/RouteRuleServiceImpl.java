@@ -76,7 +76,7 @@ public class RouteRuleServiceImpl implements RouteRuleService {
             return Collections.emptyList();
         }
         List<RouteRule> list = routeRuleRepository.list(routeRuleRepository.lambdaQuery()
-                .in(RouteRulePO::getId, idList));
+                .in(RouteRule::getId, idList));
         return list;
     }
 }

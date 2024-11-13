@@ -39,7 +39,7 @@ public class TenantServiceImpl implements TenantService {
     @Override
     public void add(EditTenantRequest request) {
         Long usernameCount = accountRepository.count(accountRepository.lambdaQuery()
-                .eq(AccountPO::getUsername, request.getUsername()));
+                .eq(Account::getUsername, request.getUsername()));
         if (usernameCount > 0) {
             throw new ProcessException("username exists");
         }
@@ -49,7 +49,7 @@ public class TenantServiceImpl implements TenantService {
         accountPO.setRole(UserRole.TenantAdmin.name());
         accountPO.insert();
         Long codeCount = tenantRepository.count(tenantRepository.lambdaQuery()
-                .eq(TenantPO::getCode, request.getCode()));
+                .eq(Tenant::getCode, request.getCode()));
         if (codeCount > 0) {
             throw new ProcessException("code exists");
         }
@@ -72,7 +72,7 @@ public class TenantServiceImpl implements TenantService {
             return;
         }
         Account account = accountRepository.one(accountRepository.lambdaQuery()
-                .eq(AccountPO::getId, tenant.getAccountId()));
+                .eq(Account::getId, tenant.getAccountId()));
         if (null != request.getPassword()) {
             account.setPassword(request.getPassword());
         }
@@ -127,7 +127,7 @@ public class TenantServiceImpl implements TenantService {
     @Override
     public TenantResponse queryByTenantCode(String tenantCode) {
         Tenant tenant = tenantRepository.one(tenantRepository.lambdaQuery()
-                .eq(TenantPO::getCode, tenantCode));
+                .eq(Tenant::getCode, tenantCode));
         if (null == tenant) {
             return null;
         }
@@ -147,9 +147,9 @@ public class TenantServiceImpl implements TenantService {
             Integer ipIndex = tenant.getIpIndex();
             index = ipIndex + 1;
             update = tenantRepository.update(tenantRepository.lambdaUpdate()
-                    .eq(TenantPO::getId, tenantId)
-                    .eq(TenantPO::getIpIndex, ipIndex)
-                    .set(TenantPO::getIpIndex, index));
+                    .eq(Tenant::getId, tenantId)
+                    .eq(Tenant::getIpIndex, ipIndex)
+                    .set(Tenant::getIpIndex, index));
         } while (update <= 0);
         return index;
     }
@@ -157,7 +157,7 @@ public class TenantServiceImpl implements TenantService {
     @Override
     public Tenant queryByAccountId(Long accountId) {
         Tenant tenant = tenantRepository.one(tenantRepository.lambdaQuery()
-                .eq(TenantPO::getAccountId, accountId));
+                .eq(Tenant::getAccountId, accountId));
         return tenant;
     }
 }
