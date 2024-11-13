@@ -1,7 +1,7 @@
 ### add
 POST http://localhost:11805/group/add
 Content-Type: application/json
-X-Tenant-Id: 1
+Access-Token: {{token}}
 
 {
   "name": "test",
@@ -11,7 +11,7 @@ X-Tenant-Id: 1
 ### edit
 POST http://localhost:11805/group/edit
 Content-Type: application/json
-X-Tenant-Id: 1
+Access-Token: {{token}}
 
 {
   "id": 3,
@@ -22,12 +22,12 @@ X-Tenant-Id: 1
 ### page
 GET http://127.0.0.1:11805/group/page
 Content-Type: application/json
-X-Tenant-Id: 1
+Access-Token: {{token}}
 
 ### del
 POST http://127.0.0.1:11805/group/del
 Content-Type: application/json
-X-Tenant-Id: 1
+Access-Token: {{token}}
 
 {
   "id": 1
@@ -36,7 +36,7 @@ X-Tenant-Id: 1
 ### updateMemberList
 POST http://localhost:11805/group/updateMemberList
 Content-Type: application/json
-X-Tenant-Id: 1
+Access-Token: {{token}}
 
 {
   "groupId": 1,
@@ -49,4 +49,4 @@ X-Tenant-Id: 1
 ### queryMemberList
 GET http://localhost:11805/group/memberList/1
 Content-Type: application/json
-X-Tenant-Id: 1
+Access-Token: {{token}}

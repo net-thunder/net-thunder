@@ -20,4 +20,6 @@ public interface TenantService {
     TenantResponse queryByTenantCode(String tenantCode);
 
     Integer incIpIndex(Long tenantId);
+
+    Tenant queryByAccountId(Long accountId);
 }

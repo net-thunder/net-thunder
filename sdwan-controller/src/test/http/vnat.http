@@ -1,7 +1,7 @@
 ### add
 POST http://localhost:11805/vnat/add
 Content-Type: application/json
-X-Tenant-Id: 1
+Access-Token: {{token}}
 
 {
   "name": "test",
@@ -14,7 +14,7 @@ X-Tenant-Id: 1
 ### edit
 POST http://localhost:11805/vnat/edit
 Content-Type: application/json
-X-Tenant-Id: 1
+Access-Token: {{token}}
 
 {
   "id": 1,
@@ -28,12 +28,12 @@ X-Tenant-Id: 1
 ### page
 GET http://127.0.0.1:11805/vnat/page
 Content-Type: application/json
-X-Tenant-Id: 1
+Access-Token: {{token}}
 
 ### del
 POST http://127.0.0.1:11805/vnat/del
 Content-Type: application/json
-X-Tenant-Id: 1
+Access-Token: {{token}}
 
 {
   "id": 1
@@ -42,7 +42,7 @@ X-Tenant-Id: 1
 ### updateConfigList
 POST http://127.0.0.1:11805/vnat/updateConfigList
 Content-Type: application/json
-X-Tenant-Id: 1
+Access-Token: {{token}}
 
 {
   "id": 1,
@@ -54,4 +54,4 @@ X-Tenant-Id: 1
 ### queryConfigList
 GET http://127.0.0.1:11805/vnat/configList/1
 Content-Type: application/json
-X-Tenant-Id: 1
+Access-Token: {{token}}

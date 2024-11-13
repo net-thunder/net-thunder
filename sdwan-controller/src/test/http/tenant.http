@@ -1,6 +1,7 @@
 ### add
 POST http://localhost:11805/tenant/add
 Content-Type: application/json
+Access-Token: {{token}}
 
 {
   "name": "test3",
@@ -21,6 +22,7 @@ Content-Type: application/json
 ### edit
 POST http://localhost:11805/tenant/edit
 Content-Type: application/json
+Access-Token: {{token}}
 
 {
   "id": 3,
@@ -40,10 +42,12 @@ Content-Type: application/json
 ### page
 GET http://127.0.0.1:11805/tenant/page
 Content-Type: application/json
+Access-Token: {{token}}
 
 ### del
 POST http://127.0.0.1:11805/tenant/del
 Content-Type: application/json
+Access-Token: {{token}}
 
 {
   "id": 1

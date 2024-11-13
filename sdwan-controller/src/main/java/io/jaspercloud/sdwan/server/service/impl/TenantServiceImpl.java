@@ -153,4 +153,11 @@ public class TenantServiceImpl implements TenantService {
         } while (update <= 0);
         return index;
     }
+
+    @Override
+    public Tenant queryByAccountId(Long accountId) {
+        Tenant tenant = tenantRepository.one(tenantRepository.lambdaQuery()
+                .eq(TenantPO::getAccountId, accountId));
+        return tenant;
+    }
 }
