@@ -3,7 +3,7 @@ package io.jaspercloud.sdwan.server.repository;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import io.jaspercloud.sdwan.server.entity.Route;
 import io.jaspercloud.sdwan.server.entity.RouteNodeItem;
-import io.jaspercloud.sdwan.server.repository.base.BaseRepository;
+import io.jaspercloud.sdwan.server.repository.base.BaseRepositoryImpl;
 import io.jaspercloud.sdwan.server.repository.mapper.RouteMapper;
 import io.jaspercloud.sdwan.server.repository.po.RoutePO;
 import jakarta.annotation.Resource;
@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Repository
-public class RouteRepository extends BaseRepository<Route, RoutePO, RouteMapper> {
+public class RouteRepository extends BaseRepositoryImpl<Route, RoutePO, RouteMapper> {
 
     @Resource
     private RouteNodeItemRepository routeNodeItemRepository;
@@ -23,9 +23,10 @@ public class RouteRepository extends BaseRepository<Route, RoutePO, RouteMapper>
     public List<Route> list(Wrapper queryWrapper) {
         List<Route> list = super.list(queryWrapper);
         list.forEach(route -> {
-            List<Long> collect = routeNodeItemRepository.list(routeNodeItemRepository.lambdaQuery()
-                            .select(RouteNodeItem::getNodeId)
-                            .eq(RouteNodeItem::getRouteId, route.getId()))
+            List<Long> collect = routeNodeItemRepository.lambdaQueryChain()
+                    .select(RouteNodeItem::getNodeId)
+                    .eq(RouteNodeItem::getRouteId, route.getId())
+                    .list()
                     .stream().map(e -> e.getNodeId()).collect(Collectors.toList());
             route.setNodeIdList(collect);
         });

@@ -3,14 +3,14 @@ package io.jaspercloud.sdwan.server.repository;
 import cn.hutool.json.JSONUtil;
 import io.jaspercloud.sdwan.server.enums.DirectionEnum;
 import io.jaspercloud.sdwan.server.entity.RouteRule;
-import io.jaspercloud.sdwan.server.repository.base.BaseRepository;
+import io.jaspercloud.sdwan.server.repository.base.BaseRepositoryImpl;
 import io.jaspercloud.sdwan.server.repository.mapper.RouteRuleMapper;
 import io.jaspercloud.sdwan.server.repository.po.RouteRulePO;
 import io.jaspercloud.sdwan.server.support.BeanTransformer;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class RouteRuleRepository extends BaseRepository<RouteRule, RouteRulePO, RouteRuleMapper> {
+public class RouteRuleRepository extends BaseRepositoryImpl<RouteRule, RouteRulePO, RouteRuleMapper> {
 
     @Override
     protected BeanTransformer.Builder<RouteRule, RouteRulePO> transformerBuilder() {

@@ -54,8 +54,8 @@ public class RouteRuleServiceImpl implements RouteRuleService {
 
     @Override
     public PageResponse<RouteRuleResponse> page() {
-        Long total = routeRuleRepository.count();
-        List<RouteRule> list = routeRuleRepository.list();
+        Long total = routeRuleRepository.lambdaQueryChain().count();
+        List<RouteRule> list = routeRuleRepository.lambdaQueryChain().list();
         List<RouteRuleResponse> collect = list.stream().map(e -> {
             RouteRuleResponse routeRuleResponse = BeanUtil.toBean(e, RouteRuleResponse.class);
             return routeRuleResponse;
@@ -75,8 +75,9 @@ public class RouteRuleServiceImpl implements RouteRuleService {
         if (CollectionUtil.isEmpty(idList)) {
             return Collections.emptyList();
         }
-        List<RouteRule> list = routeRuleRepository.list(routeRuleRepository.lambdaQuery()
-                .in(RouteRule::getId, idList));
+        List<RouteRule> list = routeRuleRepository.lambdaQueryChain()
+                .in(RouteRule::getId, idList)
+                .list();
         return list;
     }
 }

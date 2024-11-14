@@ -52,8 +52,8 @@ public class VNATServiceImpl implements VNATService {
 
     @Override
     public PageResponse<VNATResponse> page() {
-        Long total = vnatRepository.count();
-        List<VNAT> list = vnatRepository.list();
+        Long total = vnatRepository.lambdaQueryChain().count();
+        List<VNAT> list = vnatRepository.lambdaQueryChain().list();
         List<VNATResponse> collect = list.stream().map(e -> {
             VNATResponse vnatResponse = BeanUtil.toBean(e, VNATResponse.class);
             return vnatResponse;
@@ -73,8 +73,9 @@ public class VNATServiceImpl implements VNATService {
         if (CollectionUtil.isEmpty(idList)) {
             return Collections.emptyList();
         }
-        List<VNAT> list = vnatRepository.list(vnatRepository.lambdaQuery()
-                .in(VNAT::getId, idList));
+        List<VNAT> list = vnatRepository.lambdaQueryChain()
+                .in(VNAT::getId, idList)
+                .list();
         return list;
     }
 }

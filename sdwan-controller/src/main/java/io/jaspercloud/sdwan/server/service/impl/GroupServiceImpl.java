@@ -50,6 +50,7 @@ public class GroupServiceImpl implements GroupService {
     public void add(EditGroupRequest request) {
         GroupPO group = BeanUtil.toBean(request, GroupPO.class);
         group.setId(null);
+        group.setDefaultGroup(false);
         group.insert();
     }
 
@@ -61,8 +62,9 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public void del(EditGroupRequest request) {
-        Long count = groupMemberRepository.count(groupMemberRepository.lambdaQuery()
-                .eq(GroupMember::getMemberId, request.getId()));
+        Long count = groupMemberRepository.lambdaQueryChain()
+                .eq(GroupMember::getMemberId, request.getId())
+                .count();
         if (count > 0) {
             throw new ProcessException("group used");
         }
@@ -71,8 +73,8 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public PageResponse<GroupResponse> page() {
-        Long total = groupRepository.count();
-        List<Group> list = groupRepository.list();
+        Long total = groupRepository.lambdaQueryChain().count();
+        List<Group> list = groupRepository.lambdaQueryChain().list();
         List<GroupResponse> collect = list.stream().map(e -> {
             GroupResponse groupResponse = BeanUtil.toBean(e, GroupResponse.class);
             return groupResponse;
@@ -83,9 +85,10 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public void addMember(Long groupId, Long memberId) {
-        Long count = groupMemberRepository.count(groupMemberRepository.lambdaQuery()
+        Long count = groupMemberRepository.lambdaQueryChain()
                 .eq(GroupMember::getGroupId, groupId)
-                .in(GroupMember::getMemberId, memberId));
+                .in(GroupMember::getMemberId, memberId)
+                .count();
         if (count > 0) {
             return;
         }
@@ -115,17 +118,19 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public List<Long> memberList(Long groupId) {
-        List<Long> idList = groupMemberRepository.list(groupMemberRepository.lambdaQuery()
-                        .eq(GroupMember::getGroupId, groupId))
+        List<Long> idList = groupMemberRepository.lambdaQueryChain()
+                .eq(GroupMember::getGroupId, groupId)
+                .list()
                 .stream().map(e -> e.getMemberId()).collect(Collectors.toList());
         return idList;
     }
 
     @Override
     public List<Group> queryByMemberId(Long memberId) {
-        List<Long> idList = groupMemberRepository.list(groupMemberRepository.lambdaQuery()
-                        .select(GroupMember::getGroupId)
-                        .eq(GroupMember::getMemberId, memberId))
+        List<Long> idList = groupMemberRepository.lambdaQueryChain()
+                .select(GroupMember::getGroupId)
+                .eq(GroupMember::getMemberId, memberId)
+                .list()
                 .stream().map(e -> e.getGroupId()).collect(Collectors.toList());
         if (CollectionUtil.isEmpty(idList)) {
             return Collections.emptyList();
@@ -136,9 +141,10 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public List<Long> queryGroupIdListByMemberId(Long memberId) {
-        List<Long> collect = groupMemberRepository.list(groupMemberRepository.lambdaQuery()
-                        .select(GroupMember::getGroupId)
-                        .eq(GroupMember::getMemberId, memberId))
+        List<Long> collect = groupMemberRepository.lambdaQueryChain()
+                .select(GroupMember::getGroupId)
+                .eq(GroupMember::getMemberId, memberId)
+                .list()
                 .stream().map(e -> e.getGroupId()).collect(Collectors.toList());
         return collect;
     }
@@ -148,17 +154,20 @@ public class GroupServiceImpl implements GroupService {
         if (CollectionUtil.isEmpty(groupIdList)) {
             return Collections.emptyList();
         }
-        List<Group> groupList = groupRepository.list(groupRepository.lambdaQuery()
-                .in(Group::getId, groupIdList));
+        List<Group> groupList = groupRepository.lambdaQueryChain()
+                .in(Group::getId, groupIdList).list();
         groupList.forEach(group -> {
-            List<Long> routeIdList = groupRouteRepository.list(groupRouteRepository.lambdaQuery()
-                            .eq(GroupRoute::getGroupId, group.getId()))
+            List<Long> routeIdList = groupRouteRepository.lambdaQueryChain()
+                    .eq(GroupRoute::getGroupId, group.getId())
+                    .list()
                     .stream().map(e -> e.getRouteId()).collect(Collectors.toList());
-            List<Long> ruleIdList = groupRouteRuleRepository.list(groupRouteRuleRepository.lambdaQuery()
-                            .eq(GroupRouteRule::getGroupId, group.getId()))
+            List<Long> ruleIdList = groupRouteRuleRepository.lambdaQueryChain()
+                    .eq(GroupRouteRule::getGroupId, group.getId())
+                    .list()
                     .stream().map(e -> e.getRuleId()).collect(Collectors.toList());
-            List<Long> vnatIdList = groupVNATRepository.list(groupVNATRepository.lambdaQuery()
-                            .eq(GroupVNAT::getGroupId, group.getId()))
+            List<Long> vnatIdList = groupVNATRepository.lambdaQueryChain()
+                    .eq(GroupVNAT::getGroupId, group.getId())
+                    .list()
                     .stream().map(e -> e.getVnatId()).collect(Collectors.toList());
             group.setRouteIdList(routeIdList);
             group.setRouteRuleIdList(ruleIdList);
@@ -169,8 +178,9 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public Group queryDefaultGroup() {
-        Group group = groupRepository.one(groupRepository.lambdaQuery()
-                .eq(Group::getDefaultGroup, true));
+        Group group = groupRepository.lambdaQueryChain()
+                .eq(Group::getDefaultGroup, true)
+                .one();
         return group;
     }
 
