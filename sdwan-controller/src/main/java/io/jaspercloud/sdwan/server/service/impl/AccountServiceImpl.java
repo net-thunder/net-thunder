@@ -14,9 +14,10 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Account queryAccount(String username, String password) {
-        Account account = accountRepository.one(accountRepository.lambdaQuery()
+        Account account = accountRepository.lambdaQueryChain()
                 .eq(Account::getUsername, username)
-                .eq(Account::getPassword, password));
+                .eq(Account::getPassword, password)
+                .one();
         return account;
     }
 }

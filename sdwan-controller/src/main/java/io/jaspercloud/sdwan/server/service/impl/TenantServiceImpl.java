@@ -38,8 +38,9 @@ public class TenantServiceImpl implements TenantService {
 
     @Override
     public void add(EditTenantRequest request) {
-        Long usernameCount = accountRepository.count(accountRepository.lambdaQuery()
-                .eq(Account::getUsername, request.getUsername()));
+        Long usernameCount = accountRepository.lambdaQueryChain()
+                .eq(Account::getUsername, request.getUsername())
+                .count();
         if (usernameCount > 0) {
             throw new ProcessException("username exists");
         }
@@ -48,8 +49,9 @@ public class TenantServiceImpl implements TenantService {
         accountPO.setPassword(request.getPassword());
         accountPO.setRole(UserRole.TenantAdmin.name());
         accountPO.insert();
-        Long codeCount = tenantRepository.count(tenantRepository.lambdaQuery()
-                .eq(Tenant::getCode, request.getCode()));
+        Long codeCount = tenantRepository.lambdaQueryChain()
+                .eq(Tenant::getCode, request.getCode())
+                .count();
         if (codeCount > 0) {
             throw new ProcessException("code exists");
         }
@@ -71,8 +73,9 @@ public class TenantServiceImpl implements TenantService {
         if (null == tenant) {
             return;
         }
-        Account account = accountRepository.one(accountRepository.lambdaQuery()
-                .eq(Account::getId, tenant.getAccountId()));
+        Account account = accountRepository.lambdaQueryChain()
+                .eq(Account::getId, tenant.getAccountId())
+                .one();
         if (null != request.getPassword()) {
             account.setPassword(request.getPassword());
         }
@@ -118,16 +121,17 @@ public class TenantServiceImpl implements TenantService {
 
     @Override
     public PageResponse<Tenant> page() {
-        Long total = tenantRepository.count();
-        List<Tenant> list = tenantRepository.list();
+        Long total = tenantRepository.lambdaQueryChain().count();
+        List<Tenant> list = tenantRepository.lambdaQueryChain().list();
         PageResponse<Tenant> response = PageResponse.build(list, total, 0L, 0L);
         return response;
     }
 
     @Override
     public TenantResponse queryByTenantCode(String tenantCode) {
-        Tenant tenant = tenantRepository.one(tenantRepository.lambdaQuery()
-                .eq(Tenant::getCode, tenantCode));
+        Tenant tenant = tenantRepository.lambdaQueryChain()
+                .eq(Tenant::getCode, tenantCode)
+                .one();
         if (null == tenant) {
             return null;
         }
@@ -140,24 +144,26 @@ public class TenantServiceImpl implements TenantService {
 
     @Override
     public Integer incIpIndex(Long tenantId) {
-        int update;
+        boolean update;
         Integer index;
         do {
             Tenant tenant = tenantRepository.selectById(tenantId);
             Integer ipIndex = tenant.getIpIndex();
             index = ipIndex + 1;
-            update = tenantRepository.update(tenantRepository.lambdaUpdate()
+            update = tenantRepository.lambdaUpdateChain()
                     .eq(Tenant::getId, tenantId)
                     .eq(Tenant::getIpIndex, ipIndex)
-                    .set(Tenant::getIpIndex, index));
-        } while (update <= 0);
+                    .set(Tenant::getIpIndex, index)
+                    .update();
+        } while (!update);
         return index;
     }
 
     @Override
     public Tenant queryByAccountId(Long accountId) {
-        Tenant tenant = tenantRepository.one(tenantRepository.lambdaQuery()
-                .eq(Tenant::getAccountId, accountId));
+        Tenant tenant = tenantRepository.lambdaQueryChain()
+                .eq(Tenant::getAccountId, accountId)
+                .one();
         return tenant;
     }
 }

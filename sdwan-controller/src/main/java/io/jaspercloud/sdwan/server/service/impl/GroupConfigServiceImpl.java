@@ -37,22 +37,25 @@ public class GroupConfigServiceImpl implements GroupConfigService {
 
     @Override
     public boolean usedRoute(Long routeId) {
-        Long count = groupRouteRepository.count(groupRouteRepository.lambdaQuery()
-                .eq(GroupRoute::getRouteId, routeId));
+        Long count = groupRouteRepository.lambdaQueryChain()
+                .eq(GroupRoute::getRouteId, routeId)
+                .count();
         return count > 0;
     }
 
     @Override
     public boolean usedRouteRule(Long routeRuleId) {
-        Long count = groupRouteRuleRepository.count(groupRouteRuleRepository.lambdaQuery()
-                .eq(GroupRouteRule::getRuleId, routeRuleId));
+        Long count = groupRouteRuleRepository.lambdaQueryChain()
+                .eq(GroupRouteRule::getRuleId, routeRuleId)
+                .count();
         return count > 0;
     }
 
     @Override
     public boolean usedVNAT(Long vnatId) {
-        Long count = groupVNATRepository.count(groupVNATRepository.lambdaQuery()
-                .eq(GroupVNAT::getVnatId, vnatId));
+        Long count = groupVNATRepository.lambdaQueryChain()
+                .eq(GroupVNAT::getVnatId, vnatId)
+                .count();
         return count > 0;
     }
 
@@ -118,27 +121,30 @@ public class GroupConfigServiceImpl implements GroupConfigService {
 
     @Override
     public List<Long> queryGroupRouteList(Long routeId) {
-        List<Long> collect = groupRouteRepository.list(groupRouteRepository.lambdaQuery()
-                        .select(GroupRoute::getGroupId)
-                        .eq(GroupRoute::getRouteId, routeId))
+        List<Long> collect = groupRouteRepository.lambdaQueryChain()
+                .select(GroupRoute::getGroupId)
+                .eq(GroupRoute::getRouteId, routeId)
+                .list()
                 .stream().map(e -> e.getGroupId()).collect(Collectors.toList());
         return collect;
     }
 
     @Override
     public List<Long> queryGroupRouteRuleList(Long routeRuleId) {
-        List<Long> collect = groupRouteRuleRepository.list(groupRouteRuleRepository.lambdaQuery()
-                        .select(GroupRouteRule::getGroupId)
-                        .eq(GroupRouteRule::getRuleId, routeRuleId))
+        List<Long> collect = groupRouteRuleRepository.lambdaQueryChain()
+                .select(GroupRouteRule::getGroupId)
+                .eq(GroupRouteRule::getRuleId, routeRuleId)
+                .list()
                 .stream().map(e -> e.getGroupId()).collect(Collectors.toList());
         return collect;
     }
 
     @Override
     public List<Long> queryGroupVNATList(Long vnatId) {
-        List<Long> collect = groupVNATRepository.list(groupVNATRepository.lambdaQuery()
-                        .select(GroupVNAT::getGroupId)
-                        .eq(GroupVNAT::getVnatId, vnatId))
+        List<Long> collect = groupVNATRepository.lambdaQueryChain()
+                .select(GroupVNAT::getGroupId)
+                .eq(GroupVNAT::getVnatId, vnatId)
+                .list()
                 .stream().map(e -> e.getGroupId()).collect(Collectors.toList());
         return collect;
     }

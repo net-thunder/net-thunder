@@ -110,8 +110,8 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
 
     @Override
     public PageResponse<NodeResponse> page() {
-        Long total = nodeRepository.count();
-        List<Node> list = nodeRepository.list();
+        Long total = nodeRepository.lambdaQueryChain().count();
+        List<Node> list = nodeRepository.lambdaQueryChain().list();
         List<NodeResponse> collect = list.stream().map(e -> {
             NodeResponse nodeResponse = BeanUtil.toBean(e, NodeResponse.class);
             return nodeResponse;
@@ -165,16 +165,18 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
 
     @Override
     public List<Node> queryByTenantId(Long tenantId) {
-        List<Node> list = nodeRepository.list(nodeRepository.lambdaQuery()
-                .eq(Node::getTenantId, tenantId));
+        List<Node> list = nodeRepository.lambdaQueryChain()
+                .eq(Node::getTenantId, tenantId)
+                .list();
         return list;
     }
 
     @Override
     public NodeDetailResponse applyNodeInfo(Long tenantId, String macAddress) {
         try (LockGroup.Lock lock = lockGroup.getLock(tenantId)) {
-            Node node = nodeRepository.one(nodeRepository.lambdaQuery()
-                    .eq(Node::getMac, macAddress));
+            Node node = nodeRepository.lambdaQueryChain()
+                    .eq(Node::getMac, macAddress)
+                    .one();
             if (null == node) {
                 Tenant tenant = tenantService.queryById(tenantId);
                 NodePO nodePO = new NodePO();
@@ -224,8 +226,9 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
 
     @Override
     public boolean existsNode(Long nodeId) {
-        Long count = nodeRepository.count(nodeRepository.lambdaQuery()
-                .eq(Node::getId, nodeId));
+        Long count = nodeRepository.lambdaQueryChain()
+                .eq(Node::getId, nodeId)
+                .count();
         return count > 0;
     }
 }
