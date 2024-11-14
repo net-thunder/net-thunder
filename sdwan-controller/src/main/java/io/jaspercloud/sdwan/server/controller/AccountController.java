@@ -44,6 +44,9 @@ public class AccountController {
         String tokenValue = StpUtil.getTokenValue();
         LoginResponse response = new LoginResponse();
         response.setAccessToken(tokenValue);
+        if (null != tenant) {
+            response.setTenantId(tenant.getId());
+        }
         return response;
     }
 

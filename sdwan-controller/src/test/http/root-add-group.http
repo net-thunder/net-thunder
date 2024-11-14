@@ -1,0 +1,23 @@
+### login root
+POST http://localhost:11805/account/login
+Content-Type: application/json
+
+{
+  "username": "root",
+  "password": "root"
+}
+
+> {%
+    client.global.set("token", response.body.accessToken);
+%}
+
+### add
+POST http://localhost:11805/group/add
+Content-Type: application/json
+Access-Token: {{token}}
+X-Tenant-Id: 1
+
+{
+  "name": "test",
+  "description": "test"
+}
