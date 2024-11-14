@@ -51,12 +51,7 @@ public class LambdaQueryChainWrapperX<D, P> extends LambdaQueryChainWrapper<D>
 
     @Override
     public Optional<D> oneOpt() {
-        P p = (P) super.oneOpt().orElse(null);
-        if (null == p) {
-            return Optional.empty();
-        }
-        D d = transformer.output(p);
-        return Optional.of(d);
+        return super.oneOpt().map(p -> transformer.output((P) p));
     }
 
     @Override

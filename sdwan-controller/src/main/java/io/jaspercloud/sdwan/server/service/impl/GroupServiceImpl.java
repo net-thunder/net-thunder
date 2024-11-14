@@ -62,7 +62,7 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public void del(EditGroupRequest request) {
-        Long count = groupMemberRepository.lambdaQueryChain()
+        Long count = groupMemberRepository.query()
                 .eq(GroupMember::getMemberId, request.getId())
                 .count();
         if (count > 0) {
@@ -73,8 +73,8 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public PageResponse<GroupResponse> page() {
-        Long total = groupRepository.lambdaQueryChain().count();
-        List<Group> list = groupRepository.lambdaQueryChain().list();
+        Long total = groupRepository.query().count();
+        List<Group> list = groupRepository.query().list();
         List<GroupResponse> collect = list.stream().map(e -> {
             GroupResponse groupResponse = BeanUtil.toBean(e, GroupResponse.class);
             return groupResponse;
@@ -85,7 +85,7 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public void addMember(Long groupId, Long memberId) {
-        Long count = groupMemberRepository.lambdaQueryChain()
+        Long count = groupMemberRepository.query()
                 .eq(GroupMember::getGroupId, groupId)
                 .in(GroupMember::getMemberId, memberId)
                 .count();
@@ -118,7 +118,7 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public List<Long> memberList(Long groupId) {
-        List<Long> idList = groupMemberRepository.lambdaQueryChain()
+        List<Long> idList = groupMemberRepository.query()
                 .eq(GroupMember::getGroupId, groupId)
                 .list()
                 .stream().map(e -> e.getMemberId()).collect(Collectors.toList());
@@ -127,7 +127,7 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public List<Group> queryByMemberId(Long memberId) {
-        List<Long> idList = groupMemberRepository.lambdaQueryChain()
+        List<Long> idList = groupMemberRepository.query()
                 .select(GroupMember::getGroupId)
                 .eq(GroupMember::getMemberId, memberId)
                 .list()
@@ -141,7 +141,7 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public List<Long> queryGroupIdListByMemberId(Long memberId) {
-        List<Long> collect = groupMemberRepository.lambdaQueryChain()
+        List<Long> collect = groupMemberRepository.query()
                 .select(GroupMember::getGroupId)
                 .eq(GroupMember::getMemberId, memberId)
                 .list()
@@ -154,18 +154,18 @@ public class GroupServiceImpl implements GroupService {
         if (CollectionUtil.isEmpty(groupIdList)) {
             return Collections.emptyList();
         }
-        List<Group> groupList = groupRepository.lambdaQueryChain()
+        List<Group> groupList = groupRepository.query()
                 .in(Group::getId, groupIdList).list();
         groupList.forEach(group -> {
-            List<Long> routeIdList = groupRouteRepository.lambdaQueryChain()
+            List<Long> routeIdList = groupRouteRepository.query()
                     .eq(GroupRoute::getGroupId, group.getId())
                     .list()
                     .stream().map(e -> e.getRouteId()).collect(Collectors.toList());
-            List<Long> ruleIdList = groupRouteRuleRepository.lambdaQueryChain()
+            List<Long> ruleIdList = groupRouteRuleRepository.query()
                     .eq(GroupRouteRule::getGroupId, group.getId())
                     .list()
                     .stream().map(e -> e.getRuleId()).collect(Collectors.toList());
-            List<Long> vnatIdList = groupVNATRepository.lambdaQueryChain()
+            List<Long> vnatIdList = groupVNATRepository.query()
                     .eq(GroupVNAT::getGroupId, group.getId())
                     .list()
                     .stream().map(e -> e.getVnatId()).collect(Collectors.toList());
@@ -178,7 +178,7 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public Group queryDefaultGroup() {
-        Group group = groupRepository.lambdaQueryChain()
+        Group group = groupRepository.query()
                 .eq(Group::getDefaultGroup, true)
                 .one();
         return group;

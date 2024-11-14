@@ -76,8 +76,8 @@ public class RouteServiceImpl implements RouteService {
 
     @Override
     public PageResponse<Route> page() {
-        Long total = routeRepository.lambdaQueryChain().count();
-        List<Route> list = routeRepository.lambdaQueryChain().list();
+        Long total = routeRepository.query().count();
+        List<Route> list = routeRepository.query().list();
         PageResponse<Route> response = PageResponse.build(list, total, 0L, 0L);
         return response;
     }
@@ -94,7 +94,7 @@ public class RouteServiceImpl implements RouteService {
         if (null == route) {
             return null;
         }
-        List<Long> collect = routeNodeItemRepository.lambdaQueryChain()
+        List<Long> collect = routeNodeItemRepository.query()
                 .select(RouteNodeItem::getNodeId)
                 .eq(RouteNodeItem::getRouteId, id)
                 .list()
@@ -106,7 +106,7 @@ public class RouteServiceImpl implements RouteService {
     @Override
     public List<Route> queryDetailByIdList(List<Long> idList) {
         List<Route> routeList = routeRepository.selectBatchIds(idList);
-        Map<Long, List<RouteNodeItem>> map = routeNodeItemRepository.lambdaQueryChain()
+        Map<Long, List<RouteNodeItem>> map = routeNodeItemRepository.query()
                 .in(RouteNodeItem::getRouteId, routeList.stream().map(e -> e.getId()).collect(Collectors.toList()))
                 .list()
                 .stream().collect(Collectors.groupingBy(e -> e.getRouteId()));
@@ -130,7 +130,7 @@ public class RouteServiceImpl implements RouteService {
 
     @Override
     public boolean usedNode(Long nodeId) {
-        Long count = routeNodeItemRepository.lambdaQueryChain()
+        Long count = routeNodeItemRepository.query()
                 .eq(RouteNodeItem::getNodeId, nodeId)
                 .count();
         return count > 0;
