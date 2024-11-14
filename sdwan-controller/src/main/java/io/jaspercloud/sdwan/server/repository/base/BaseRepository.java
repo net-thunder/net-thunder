@@ -33,7 +33,9 @@ public interface BaseRepository<D extends BaseEntity> {
 
     LambdaQueryWrapper<D> lambdaQuery();
 
-    LambdaUpdateChainWrapperX<D, ?> update();
+    LambdaUpdateChainWrapperX<D> update();
+
+    LambdaDeleteChainWrapperX<D> delete();
 
     LambdaQueryChainWrapperX<D, ?> query();
 }
