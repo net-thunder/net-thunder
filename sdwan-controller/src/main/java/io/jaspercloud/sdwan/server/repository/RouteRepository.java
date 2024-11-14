@@ -23,7 +23,7 @@ public class RouteRepository extends BaseRepositoryImpl<Route, RoutePO, RouteMap
     public List<Route> list(Wrapper queryWrapper) {
         List<Route> list = super.list(queryWrapper);
         list.forEach(route -> {
-            List<Long> collect = routeNodeItemRepository.lambdaQueryChain()
+            List<Long> collect = routeNodeItemRepository.query()
                     .select(RouteNodeItem::getNodeId)
                     .eq(RouteNodeItem::getRouteId, route.getId())
                     .list()

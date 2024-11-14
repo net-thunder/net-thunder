@@ -37,7 +37,7 @@ public class GroupConfigServiceImpl implements GroupConfigService {
 
     @Override
     public boolean usedRoute(Long routeId) {
-        Long count = groupRouteRepository.lambdaQueryChain()
+        Long count = groupRouteRepository.query()
                 .eq(GroupRoute::getRouteId, routeId)
                 .count();
         return count > 0;
@@ -45,7 +45,7 @@ public class GroupConfigServiceImpl implements GroupConfigService {
 
     @Override
     public boolean usedRouteRule(Long routeRuleId) {
-        Long count = groupRouteRuleRepository.lambdaQueryChain()
+        Long count = groupRouteRuleRepository.query()
                 .eq(GroupRouteRule::getRuleId, routeRuleId)
                 .count();
         return count > 0;
@@ -53,7 +53,7 @@ public class GroupConfigServiceImpl implements GroupConfigService {
 
     @Override
     public boolean usedVNAT(Long vnatId) {
-        Long count = groupVNATRepository.lambdaQueryChain()
+        Long count = groupVNATRepository.query()
                 .eq(GroupVNAT::getVnatId, vnatId)
                 .count();
         return count > 0;
@@ -121,7 +121,7 @@ public class GroupConfigServiceImpl implements GroupConfigService {
 
     @Override
     public List<Long> queryGroupRouteList(Long routeId) {
-        List<Long> collect = groupRouteRepository.lambdaQueryChain()
+        List<Long> collect = groupRouteRepository.query()
                 .select(GroupRoute::getGroupId)
                 .eq(GroupRoute::getRouteId, routeId)
                 .list()
@@ -131,7 +131,7 @@ public class GroupConfigServiceImpl implements GroupConfigService {
 
     @Override
     public List<Long> queryGroupRouteRuleList(Long routeRuleId) {
-        List<Long> collect = groupRouteRuleRepository.lambdaQueryChain()
+        List<Long> collect = groupRouteRuleRepository.query()
                 .select(GroupRouteRule::getGroupId)
                 .eq(GroupRouteRule::getRuleId, routeRuleId)
                 .list()
@@ -141,7 +141,7 @@ public class GroupConfigServiceImpl implements GroupConfigService {
 
     @Override
     public List<Long> queryGroupVNATList(Long vnatId) {
-        List<Long> collect = groupVNATRepository.lambdaQueryChain()
+        List<Long> collect = groupVNATRepository.query()
                 .select(GroupVNAT::getGroupId)
                 .eq(GroupVNAT::getVnatId, vnatId)
                 .list()
