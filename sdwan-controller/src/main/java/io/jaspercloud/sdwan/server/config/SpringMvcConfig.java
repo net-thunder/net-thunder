@@ -1,5 +1,6 @@
 package io.jaspercloud.sdwan.server.config;
 
+import cn.dev33.satoken.context.SaHolder;
 import cn.dev33.satoken.fun.SaParamFunction;
 import cn.dev33.satoken.interceptor.SaInterceptor;
 import cn.dev33.satoken.router.SaRouter;
@@ -21,7 +22,13 @@ public class SpringMvcConfig implements WebMvcConfigurer {
                     StpUtil.checkLogin();
                     String token = StpUtil.getTokenValue();
                     SessionInfo sessionInfo = (SessionInfo) StpUtil.getSession().getTokenSign(token).getTag();
-                    TenantContextHandler.setTenantId(sessionInfo.getTenantId());
+                    String tenantId = SaHolder.getRequest().getHeader("X-Tenant-Id");
+                    if (UserRole.Root.equals(sessionInfo.getRole())
+                            && null != tenantId) {
+                        TenantContextHandler.setTenantId(Long.parseLong(tenantId));
+                    } else {
+                        TenantContextHandler.setTenantId(sessionInfo.getTenantId());
+                    }
                     SaRouter.newMatch()
                             .match("/tenant/**")
                             .check(r -> StpUtil.checkRole(UserRole.Root.name()))
