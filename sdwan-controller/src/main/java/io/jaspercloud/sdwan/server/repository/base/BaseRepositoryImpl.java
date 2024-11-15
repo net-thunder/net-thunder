@@ -1,5 +1,6 @@
 package io.jaspercloud.sdwan.server.repository.base;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -96,6 +98,9 @@ public class BaseRepositoryImpl<D extends BaseEntity, P extends BasePO, M extend
 
     @Override
     public List<D> selectBatchIds(Collection<? extends Serializable> idList) {
+        if (CollectionUtil.isEmpty(idList)) {
+            return Collections.emptyList();
+        }
         List<P> list = getBaseMapper().selectBatchIds(idList);
         List<D> collect = list.stream().map(e -> transformer.output(e)).collect(Collectors.toList());
         return collect;
