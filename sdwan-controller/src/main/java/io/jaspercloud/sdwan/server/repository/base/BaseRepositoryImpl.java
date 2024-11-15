@@ -11,6 +11,7 @@ import io.jaspercloud.sdwan.server.support.BeanTransformer;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -55,27 +56,32 @@ public class BaseRepositoryImpl<D extends BaseEntity, P extends BasePO, M extend
         return BeanTransformer.builder(currentDOClass(), currentPOClass());
     }
 
+    @Transactional(rollbackFor = Throwable.class)
     @Override
     public int insert(D entity) {
         P p = transformer.build(entity);
-        return getBaseMapper().insert(p);
+        int insert = getBaseMapper().insert(p);
+        entity.setId(p.getId());
+        return insert;
     }
 
+    @Transactional(rollbackFor = Throwable.class)
     @Override
     public int updateById(D entity) {
         P p = transformer.build(entity);
         return getBaseMapper().updateById(p);
     }
 
+    @Transactional(rollbackFor = Throwable.class)
     @Override
     public int deleteById(Serializable id) {
         return getBaseMapper().deleteById(id);
     }
 
+    @Transactional(rollbackFor = Throwable.class)
     @Override
-    public int deleteById(D entity) {
-        P p = transformer.build(entity);
-        return deleteById(p.getId());
+    public int delete(LambdaQueryWrapper queryWrapper) {
+        return baseMapper.delete(queryWrapper);
     }
 
     @Override
@@ -119,11 +125,6 @@ public class BaseRepositoryImpl<D extends BaseEntity, P extends BasePO, M extend
         IPage<D> result = Page.of(page.getCurrent(), page.getSize(), page.getTotal(), page.searchCount());
         result.setRecords(collect);
         return result;
-    }
-
-    @Override
-    public int delete(LambdaQueryWrapper queryWrapper) {
-        return baseMapper.delete(queryWrapper);
     }
 
     @Override

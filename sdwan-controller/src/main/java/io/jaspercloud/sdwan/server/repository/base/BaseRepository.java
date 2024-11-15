@@ -17,8 +17,6 @@ public interface BaseRepository<D extends BaseEntity> {
 
     int deleteById(Serializable id);
 
-    int deleteById(D entity);
-
     D selectById(Serializable id);
 
     List<D> selectBatchIds(Collection<? extends Serializable> idList);
