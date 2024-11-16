@@ -127,7 +127,7 @@ public class BaseRepositoryImpl<D extends BaseEntity, P extends BasePO, M extend
 
     @Override
     public LambdaUpdateChainWrapperX<D> update() {
-        return new LambdaUpdateChainWrapperX(baseMapper, currentPOClass());
+        return new LambdaUpdateChainWrapperX<>(baseMapper, currentPOClass());
     }
 
     @Override
