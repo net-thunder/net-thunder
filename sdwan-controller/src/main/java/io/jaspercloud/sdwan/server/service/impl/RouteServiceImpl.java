@@ -55,8 +55,9 @@ public class RouteServiceImpl implements RouteService {
         Route route = BeanUtil.toBean(request, Route.class);
         routeRepository.updateById(route);
         if (CollectionUtil.isNotEmpty(request.getNodeIdList())) {
-            routeNodeItemRepository.delete(routeNodeItemRepository.lambdaQuery()
-                    .eq(RouteNodeItem::getRouteId, request.getId()));
+            routeNodeItemRepository.delete()
+                    .eq(RouteNodeItem::getRouteId, request.getId())
+                    .delete();
             for (Long nodeId : request.getNodeIdList()) {
                 RouteNodeItemPO routeNodeItem = new RouteNodeItemPO();
                 routeNodeItem.setRouteId(route.getId());
@@ -123,8 +124,9 @@ public class RouteServiceImpl implements RouteService {
         if (CollectionUtil.isEmpty(idList)) {
             return Collections.emptyList();
         }
-        List<Route> list = routeRepository.list(routeRepository.lambdaQuery()
-                .in(Route::getId, idList));
+        List<Route> list = routeRepository.query()
+                .in(Route::getId, idList)
+                .list();
         return list;
     }
 

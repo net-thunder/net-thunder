@@ -100,8 +100,9 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public void updateMemberList(Long groupId, List<Long> memberIdList) {
-        groupMemberRepository.delete(groupMemberRepository.lambdaQuery()
-                .eq(GroupMember::getGroupId, groupId));
+        groupMemberRepository.delete()
+                .eq(GroupMember::getGroupId, groupId)
+                .delete();
         for (Long memberId : memberIdList) {
             GroupMemberPO groupMemberPO = new GroupMemberPO();
             groupMemberPO.setGroupId(groupId);
@@ -186,7 +187,8 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public void delAllGroupMember(Long memberId) {
-        groupMemberRepository.delete(groupMemberRepository.lambdaQuery()
-                .eq(GroupMember::getMemberId, memberId));
+        groupMemberRepository.delete()
+                .eq(GroupMember::getMemberId, memberId)
+                .delete();
     }
 }

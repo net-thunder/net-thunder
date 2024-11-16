@@ -1,11 +1,7 @@
 package io.jaspercloud.sdwan.server.repository.base;
 
-import com.baomidou.mybatisplus.core.conditions.query.Query;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
-import com.baomidou.mybatisplus.extension.conditions.query.ChainQuery;
-import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.jaspercloud.sdwan.server.support.BeanTransformer;
 
@@ -13,13 +9,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class LambdaQueryChainWrapperX<D, P> extends LambdaQueryChainWrapper<D>
-        implements ChainQuery<D>, Query<LambdaQueryChainWrapper<D>, D, SFunction<D, ?>> {
+public class LambdaQueryChainWrapperX<D, P> extends BaseLambdaQueryChainWrapperX<D, LambdaQueryChainWrapperX<D, P>> {
 
-    private BeanTransformer<D, P> transformer;
+    private final BeanTransformer<D, P> transformer;
 
     public LambdaQueryChainWrapperX(BaseMapper<P> baseMapper, Class<P> entityClass, BeanTransformer<D, P> transformer) {
-        super((BaseMapper<D>) baseMapper, (Class<D>) entityClass);
+        super(baseMapper, entityClass);
         this.transformer = transformer;
     }
 
