@@ -22,7 +22,6 @@ public class BaseLambdaQueryChainWrapperX<D, Children extends BaseLambdaQueryCha
         super();
         this.baseMapper = baseMapper;
         super.wrapperChildren = new LambdaQueryWrapper(entityClass);
-
     }
 
     @Override
