@@ -35,8 +35,9 @@ public class RouteRepository extends BaseRepositoryImpl<Route, RoutePO, RouteMap
 
     @Override
     public int deleteById(Serializable id) {
-        routeNodeItemRepository.delete(routeNodeItemRepository.lambdaQuery()
-                .eq(RouteNodeItem::getRouteId, id));
+        routeNodeItemRepository.delete()
+                .eq(RouteNodeItem::getRouteId, id)
+                .delete();
         return super.deleteById(id);
     }
 }

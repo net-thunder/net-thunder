@@ -61,8 +61,9 @@ public class GroupConfigServiceImpl implements GroupConfigService {
 
     @Override
     public void updateGroupRoute(Long routeId, List<Long> groupIdList) {
-        groupRouteRepository.delete(groupRouteRepository.lambdaQuery()
-                .eq(GroupRoute::getRouteId, routeId));
+        groupRouteRepository.delete()
+                .eq(GroupRoute::getRouteId, routeId)
+                .delete();
         if (CollectionUtil.isEmpty(groupIdList)) {
             return;
         }
@@ -81,8 +82,9 @@ public class GroupConfigServiceImpl implements GroupConfigService {
 
     @Override
     public void updateGroupRouteRule(Long routeRuleId, List<Long> groupIdList) {
-        groupRouteRuleRepository.delete(groupRouteRuleRepository.lambdaQuery()
-                .eq(GroupRouteRule::getRuleId, routeRuleId));
+        groupRouteRuleRepository.delete()
+                .eq(GroupRouteRule::getRuleId, routeRuleId)
+                .delete();
         if (CollectionUtil.isEmpty(groupIdList)) {
             return;
         }
@@ -101,8 +103,9 @@ public class GroupConfigServiceImpl implements GroupConfigService {
 
     @Override
     public void updateGroupVNAT(Long vnatId, List<Long> groupIdList) {
-        groupVNATRepository.delete(groupVNATRepository.lambdaQuery()
-                .eq(GroupVNAT::getVnatId, vnatId));
+        groupVNATRepository.delete()
+                .eq(GroupVNAT::getVnatId, vnatId)
+                .delete();
         if (CollectionUtil.isEmpty(groupIdList)) {
             return;
         }

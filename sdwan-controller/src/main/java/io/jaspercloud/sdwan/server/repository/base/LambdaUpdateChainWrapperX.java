@@ -13,9 +13,4 @@ public class LambdaUpdateChainWrapperX<D> extends LambdaUpdateChainWrapper<D>
         super(baseMapper);
         super.wrapperChildren = new LambdaUpdateWrapper(entityClass);
     }
-
-    @Override
-    public boolean update() {
-        return super.update();
-    }
 }

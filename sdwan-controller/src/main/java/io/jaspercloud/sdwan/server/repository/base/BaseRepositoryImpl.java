@@ -2,7 +2,6 @@ package io.jaspercloud.sdwan.server.repository.base;
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.reflect.GenericTypeUtils;
@@ -80,12 +79,6 @@ public class BaseRepositoryImpl<D extends BaseEntity, P extends BasePO, M extend
         return getBaseMapper().deleteById(id);
     }
 
-    @Transactional(rollbackFor = Throwable.class)
-    @Override
-    public int delete(LambdaQueryWrapper queryWrapper) {
-        return baseMapper.delete(queryWrapper);
-    }
-
     @Override
     public D selectById(Serializable id) {
         P p = getBaseMapper().selectById(id);
@@ -133,22 +126,17 @@ public class BaseRepositoryImpl<D extends BaseEntity, P extends BasePO, M extend
     }
 
     @Override
-    public LambdaQueryWrapper<D> lambdaQuery() {
-        return new LambdaQueryWrapper(currentPOClass());
-    }
-
-    @Override
     public LambdaUpdateChainWrapperX<D> update() {
         return new LambdaUpdateChainWrapperX(baseMapper, currentPOClass());
     }
 
     @Override
     public LambdaDeleteChainWrapperX<D> delete() {
-        return new LambdaDeleteChainWrapperX(baseMapper, currentPOClass());
+        return new LambdaDeleteChainWrapperX<>(baseMapper, currentPOClass());
     }
 
     @Override
     public LambdaQueryChainWrapperX<D, ?> query() {
-        return new LambdaQueryChainWrapperX(baseMapper, currentPOClass(), transformer);
+        return new LambdaQueryChainWrapperX<>(baseMapper, currentPOClass(), transformer);
     }
 }
