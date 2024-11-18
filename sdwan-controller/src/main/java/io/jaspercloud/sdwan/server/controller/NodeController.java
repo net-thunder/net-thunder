@@ -4,7 +4,9 @@ import io.jaspercloud.sdwan.server.controller.request.EditNodeRequest;
 import io.jaspercloud.sdwan.server.controller.response.NodeDetailResponse;
 import io.jaspercloud.sdwan.server.controller.response.NodeResponse;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
+import io.jaspercloud.sdwan.server.entity.Tenant;
 import io.jaspercloud.sdwan.server.service.NodeService;
+import io.jaspercloud.sdwan.server.service.TenantService;
 import io.jaspercloud.sdwan.tranport.SdWanServer;
 import io.netty.channel.Channel;
 import jakarta.annotation.Resource;
@@ -18,6 +20,9 @@ public class NodeController {
 
     @Resource
     private NodeService nodeService;
+
+    @Resource
+    private TenantService tenantService;
 
     @Resource
     private SdWanServer sdWanServer;
@@ -43,7 +48,8 @@ public class NodeController {
         if (null == nodeResponse) {
             return null;
         }
-        Channel channel = sdWanServer.getChannelSpace(String.valueOf(nodeResponse.getTenantId()), nodeResponse.getVip());
+        Tenant tenant = tenantService.queryById(nodeResponse.getTenantId());
+        Channel channel = sdWanServer.getChannelSpace(tenant.getCode(), nodeResponse.getVip());
         nodeResponse.setOnline(null != channel);
         return nodeResponse;
     }
@@ -52,7 +58,8 @@ public class NodeController {
     public List<NodeResponse> list() {
         List<NodeResponse> list = nodeService.list();
         list.forEach(e -> {
-            Channel channel = sdWanServer.getChannelSpace(String.valueOf(e.getTenantId()), e.getVip());
+            Tenant tenant = tenantService.queryById(e.getTenantId());
+            Channel channel = sdWanServer.getChannelSpace(tenant.getCode(), e.getVip());
             e.setOnline(null != channel);
         });
         return list;

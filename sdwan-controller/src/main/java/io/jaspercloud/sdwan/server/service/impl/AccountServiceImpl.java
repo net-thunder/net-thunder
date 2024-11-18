@@ -20,4 +20,12 @@ public class AccountServiceImpl implements AccountService {
                 .one();
         return account;
     }
+
+    @Override
+    public Account queryByTenantId(Long tenantId) {
+        Account account = accountRepository.query()
+                .eq(Account::getTenantId, tenantId)
+                .one();
+        return account;
+    }
 }

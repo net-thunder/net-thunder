@@ -5,19 +5,17 @@ import io.jaspercloud.sdwan.server.config.TenantContextHandler;
 import io.jaspercloud.sdwan.server.controller.request.EditTenantRequest;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.controller.response.TenantResponse;
+import io.jaspercloud.sdwan.server.entity.Account;
 import io.jaspercloud.sdwan.server.entity.Node;
 import io.jaspercloud.sdwan.server.entity.Tenant;
+import io.jaspercloud.sdwan.server.service.AccountService;
 import io.jaspercloud.sdwan.server.service.NodeService;
 import io.jaspercloud.sdwan.server.service.TenantService;
-import io.jaspercloud.sdwan.support.ChannelAttributes;
 import io.jaspercloud.sdwan.tranport.SdWanServer;
-import io.netty.channel.Channel;
 import jakarta.annotation.Resource;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
@@ -26,6 +24,9 @@ public class TenantController {
 
     @Resource
     private TenantService tenantService;
+
+    @Resource
+    private AccountService accountService;
 
     @Resource
     private NodeService nodeService;
@@ -48,6 +49,23 @@ public class TenantController {
         tenantService.del(request);
     }
 
+    @GetMapping("/detail/{id}")
+    public TenantResponse detail(@PathVariable("id") Long id) {
+        Tenant tenant = tenantService.queryById(id);
+        if (null == tenant) {
+            return null;
+        }
+        TenantContextHandler.setTenantId(tenant.getId());
+        TenantResponse tenantResponse = BeanUtil.toBean(tenant, TenantResponse.class);
+        Account account = accountService.queryByTenantId(tenant.getId());
+        tenantResponse.setUsername(account.getUsername());
+        List<Node> nodeList = nodeService.queryByTenantId(tenant.getId());
+        tenantResponse.setTotalNode(nodeList.size());
+        int online = sdWanServer.getOnlineChannel(tenant.getCode());
+        tenantResponse.setOnlineNode(online);
+        return tenantResponse;
+    }
+
     @GetMapping("/list")
     public List<TenantResponse> list() {
         List<Tenant> list = tenantService.list();
@@ -56,7 +74,8 @@ public class TenantController {
             TenantContextHandler.setTenantId(e.getId());
             List<Node> nodeList = nodeService.queryByTenantId(e.getId());
             tenantResponse.setTotalNode(nodeList.size());
-            tenantResponse.setOnlineNode(calcOnlineCount(e, sdWanServer.getOnlineChannel()));
+            int online = sdWanServer.getOnlineChannel(e.getCode());
+            tenantResponse.setOnlineNode(online);
             return tenantResponse;
         }).collect(Collectors.toList());
         return collect;
@@ -71,21 +90,11 @@ public class TenantController {
             TenantContextHandler.setTenantId(e.getId());
             List<Node> nodeList = nodeService.queryByTenantId(e.getId());
             tenantResponse.setTotalNode(nodeList.size());
-            tenantResponse.setOnlineNode(calcOnlineCount(e, sdWanServer.getOnlineChannel()));
+            int online = sdWanServer.getOnlineChannel(e.getCode());
+            tenantResponse.setOnlineNode(online);
             return tenantResponse;
         }).collect(Collectors.toList());
         PageResponse<TenantResponse> response = PageResponse.build(collect, pageResponse.getTotal(), pageResponse.getSize(), pageResponse.getCurrent());
         return response;
-    }
-
-    private int calcOnlineCount(Tenant tenant, Set<Channel> channelSet) {
-        int count = 0;
-        for (Channel channel : channelSet) {
-            ChannelAttributes attr = ChannelAttributes.attr(channel);
-            if (StringUtils.equals(attr.getTenantId(), tenant.getCode())) {
-                count++;
-            }
-        }
-        return count;
     }
 }

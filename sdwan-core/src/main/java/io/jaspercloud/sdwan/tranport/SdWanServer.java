@@ -21,7 +21,9 @@ import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -43,10 +45,6 @@ public class SdWanServer implements Lifecycle, Runnable {
     private Map<Channel, NodeConfig> registChannelMap = new ConcurrentHashMap<>();
     private Map<String, ChannelSpace> channelSpaceMap = new ConcurrentHashMap<>();
 
-    public Set<Channel> getOnlineChannel() {
-        return Collections.unmodifiableSet(registChannelMap.keySet());
-    }
-
     public Channel getChannelSpace(String tenantId, String vip) {
         ChannelSpace space = channelSpaceMap.get(tenantId);
         if (null == space) {
@@ -54,6 +52,15 @@ public class SdWanServer implements Lifecycle, Runnable {
         }
         Channel channel = space.getChannel(vip);
         return channel;
+    }
+
+    public int getOnlineChannel(String tenantId) {
+        ChannelSpace space = channelSpaceMap.get(tenantId);
+        if (null == space) {
+            return 0;
+        }
+        int count = space.count();
+        return count;
     }
 
     public SdWanServer(SdWanServerConfig config, SdWanDataService sdWanDataService, Supplier<ChannelHandler> handler) {
