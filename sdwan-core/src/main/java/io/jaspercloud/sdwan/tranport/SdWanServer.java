@@ -47,6 +47,15 @@ public class SdWanServer implements Lifecycle, Runnable {
         return Collections.unmodifiableSet(registChannelMap.keySet());
     }
 
+    public Channel getChannelSpace(String tenantId, String vip) {
+        ChannelSpace space = channelSpaceMap.get(tenantId);
+        if (null == space) {
+            return null;
+        }
+        Channel channel = space.getChannel(vip);
+        return channel;
+    }
+
     public SdWanServer(SdWanServerConfig config, SdWanDataService sdWanDataService, Supplier<ChannelHandler> handler) {
         this.config = config;
         this.sdWanDataService = sdWanDataService;

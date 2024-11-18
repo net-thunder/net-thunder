@@ -16,6 +16,7 @@ import io.jaspercloud.sdwan.server.service.GroupConfigService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -36,27 +37,24 @@ public class GroupConfigServiceImpl implements GroupConfigService {
     private GroupVNATRepository groupVNATRepository;
 
     @Override
-    public boolean usedRoute(Long routeId) {
-        Long count = groupRouteRepository.query()
+    public void deleteGroupRoute(Long routeId) {
+        groupRouteRepository.delete()
                 .eq(GroupRoute::getRouteId, routeId)
-                .count();
-        return count > 0;
+                .delete();
     }
 
     @Override
-    public boolean usedRouteRule(Long routeRuleId) {
-        Long count = groupRouteRuleRepository.query()
+    public void deleteGroupRouteRule(Long routeRuleId) {
+        groupRouteRuleRepository.delete()
                 .eq(GroupRouteRule::getRuleId, routeRuleId)
-                .count();
-        return count > 0;
+                .delete();
     }
 
     @Override
-    public boolean usedVNAT(Long vnatId) {
-        Long count = groupVNATRepository.query()
+    public void deleteGroupVNAT(Long vnatId) {
+        groupVNATRepository.delete()
                 .eq(GroupVNAT::getVnatId, vnatId)
-                .count();
-        return count > 0;
+                .delete();
     }
 
     @Override
@@ -130,6 +128,17 @@ public class GroupConfigServiceImpl implements GroupConfigService {
                 .list()
                 .stream().map(e -> e.getGroupId()).collect(Collectors.toList());
         return collect;
+    }
+
+    @Override
+    public List<GroupRoute> queryGroupRouteList(List<Long> routeIdList) {
+        if (CollectionUtil.isEmpty(routeIdList)) {
+            return Collections.emptyList();
+        }
+        List<GroupRoute> list = groupRouteRepository.query()
+                .in(GroupRoute::getRouteId, routeIdList)
+                .list();
+        return list;
     }
 
     @Override

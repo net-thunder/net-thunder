@@ -31,7 +31,7 @@ Access-Token: {{token}}
 }
 
 ### page
-GET http://127.0.0.1:11805/route/page
+GET http://127.0.0.1:11805/route/list
 Content-Type: application/json
 Access-Token: {{token}}
 
@@ -44,19 +44,7 @@ Access-Token: {{token}}
   "id": 4
 }
 
-### updateConfigList
-POST http://127.0.0.1:11805/route/updateConfigList
-Content-Type: application/json
-Access-Token: {{token}}
-
-{
-  "id": 1,
-  "groupIdList": [
-    1
-  ]
-}
-
-### queryConfigList
-GET http://127.0.0.1:11805/route/configList/1
+### detail
+GET http://127.0.0.1:11805/route/detail/1
 Content-Type: application/json
 Access-Token: {{token}}

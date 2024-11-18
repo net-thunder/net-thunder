@@ -17,6 +17,8 @@ public interface GroupService {
 
     void del(EditGroupRequest request);
 
+    List<GroupResponse> list();
+
     PageResponse<GroupResponse> page();
 
     void addMember(Long groupId, Long memberId);
@@ -34,6 +36,8 @@ public interface GroupService {
     List<Long> queryGroupIdListByMemberId(Long memberId);
 
     List<Group> queryDetailList(List<Long> groupIdList);
+
+    List<Group> queryByIdList(List<Long> groupIdList);
 
     Group queryDefaultGroup();
 }

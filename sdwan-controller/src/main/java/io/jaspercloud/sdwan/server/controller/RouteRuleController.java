@@ -1,11 +1,11 @@
 package io.jaspercloud.sdwan.server.controller;
 
-import io.jaspercloud.sdwan.exception.ProcessException;
+import cn.hutool.core.bean.BeanUtil;
 import io.jaspercloud.sdwan.server.controller.request.EditRouteRuleRequest;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.controller.response.RouteRuleResponse;
 import io.jaspercloud.sdwan.server.entity.RouteRule;
-import io.jaspercloud.sdwan.server.service.GroupConfigService;
+import io.jaspercloud.sdwan.server.service.GroupService;
 import io.jaspercloud.sdwan.server.service.RouteRuleService;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +20,7 @@ public class RouteRuleController {
     private RouteRuleService routeRuleService;
 
     @Resource
-    private GroupConfigService groupConfigService;
+    private GroupService groupService;
 
     @PostMapping("/add")
     public void add(@RequestBody EditRouteRuleRequest request) {
@@ -37,26 +37,26 @@ public class RouteRuleController {
         routeRuleService.del(request);
     }
 
+    @GetMapping("/detail/{id}")
+    public RouteRuleResponse detail(@PathVariable("id") Long id) {
+        RouteRule routeRule = routeRuleService.queryDetailById(id);
+        if (null == routeRule) {
+            return null;
+        }
+        RouteRuleResponse response = BeanUtil.toBean(routeRule, RouteRuleResponse.class);
+        response.setGroupIdList(routeRule.getGroupIdList());
+        return response;
+    }
+
+    @GetMapping("/list")
+    public List<RouteRuleResponse> list() {
+        List<RouteRuleResponse> list = routeRuleService.list();
+        return list;
+    }
+
     @GetMapping("/page")
     public PageResponse<RouteRuleResponse> page() {
         PageResponse<RouteRuleResponse> response = routeRuleService.page();
         return response;
-    }
-
-    @PostMapping("/updateConfigList")
-    public void updateConfigList(@RequestBody EditRouteRuleRequest request) {
-        Long id = request.getId();
-        List<Long> groupIdList = request.getGroupIdList();
-        RouteRule routeRule = routeRuleService.queryById(id);
-        if (null == routeRule) {
-            throw new ProcessException("not found routeRule");
-        }
-        groupConfigService.updateGroupRouteRule(id, groupIdList);
-    }
-
-    @GetMapping("/configList/{id}")
-    public List<Long> configList(@PathVariable("id") Long id) {
-        List<Long> list = groupConfigService.queryGroupRouteRuleList(id);
-        return list;
     }
 }

@@ -14,7 +14,6 @@ public class EditVNATRequest {
     private String description;
     private String srcCidr;
     private String dstCidr;
-    private Boolean enable;
-
     private List<Long> groupIdList;
+    private Boolean enable;
 }

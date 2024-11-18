@@ -2,7 +2,6 @@ package io.jaspercloud.sdwan.server.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
-import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.server.controller.request.EditRouteRequest;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.entity.Route;
@@ -48,13 +47,16 @@ public class RouteServiceImpl implements RouteService {
                 routeNodeItem.insert();
             }
         }
+        if (CollectionUtil.isNotEmpty(request.getGroupIdList())) {
+            groupConfigService.updateGroupRoute(route.getId(), request.getGroupIdList());
+        }
     }
 
     @Override
     public void edit(EditRouteRequest request) {
         Route route = BeanUtil.toBean(request, Route.class);
         routeRepository.updateById(route);
-        if (CollectionUtil.isNotEmpty(request.getNodeIdList())) {
+        if (null != request.getNodeIdList()) {
             routeNodeItemRepository.delete()
                     .eq(RouteNodeItem::getRouteId, request.getId())
                     .delete();
@@ -65,20 +67,47 @@ public class RouteServiceImpl implements RouteService {
                 routeNodeItem.insert();
             }
         }
+        if (null != request.getGroupIdList()) {
+            groupConfigService.updateGroupRoute(route.getId(), request.getGroupIdList());
+        }
     }
 
     @Override
     public void del(EditRouteRequest request) {
-        if (groupConfigService.usedRoute(request.getId())) {
-            throw new ProcessException("node used");
-        }
+        groupConfigService.deleteGroupRoute(request.getId());
         routeRepository.deleteById(request.getId());
+    }
+
+    @Override
+    public List<Route> list() {
+        List<Route> list = routeRepository.query().list();
+        Map<Long, List<RouteNodeItem>> routeItemMap;
+        Map<Long, List<Long>> groupMap;
+        if (CollectionUtil.isNotEmpty(list)) {
+            routeItemMap = routeNodeItemRepository.query()
+                    .in(RouteNodeItem::getRouteId, list.stream().map(e -> e.getId()).collect(Collectors.toList()))
+                    .list()
+                    .stream().collect(Collectors.groupingBy(RouteNodeItem::getRouteId));
+            groupMap = groupConfigService.queryGroupRouteList(list.stream().map(e -> e.getId()).collect(Collectors.toList()))
+                    .stream()
+                    .collect(Collectors.groupingBy(e -> e.getRouteId(), Collectors.mapping(e -> e.getGroupId(), Collectors.toList())));
+        } else {
+            routeItemMap = Collections.emptyMap();
+            groupMap = Collections.emptyMap();
+        }
+        list.forEach(route -> {
+            List<RouteNodeItem> nodeList = routeItemMap.getOrDefault(route.getId(), Collections.emptyList());
+            route.setNodeIdList(nodeList.stream().map(e -> e.getNodeId()).collect(Collectors.toList()));
+            List<Long> groupIdList = groupMap.getOrDefault(route.getId(), Collections.emptyList());
+            route.setGroupIdList(groupIdList);
+        });
+        return list;
     }
 
     @Override
     public PageResponse<Route> page() {
         Long total = routeRepository.query().count();
-        List<Route> list = routeRepository.query().list();
+        List<Route> list = list();
         PageResponse<Route> response = PageResponse.build(list, total, 0L, 0L);
         return response;
     }
@@ -87,6 +116,17 @@ public class RouteServiceImpl implements RouteService {
     public Route queryById(Long id) {
         Route route = routeRepository.selectById(id);
         return route;
+    }
+
+    @Override
+    public List<Route> queryByIdList(List<Long> idList) {
+        if (CollectionUtil.isEmpty(idList)) {
+            return Collections.emptyList();
+        }
+        List<Route> list = routeRepository.query()
+                .in(Route::getId, idList)
+                .list();
+        return list;
     }
 
     @Override
@@ -101,6 +141,8 @@ public class RouteServiceImpl implements RouteService {
                 .list()
                 .stream().map(e -> e.getNodeId()).collect(Collectors.toList());
         route.setNodeIdList(collect);
+        List<Long> groupIdList = groupConfigService.queryGroupRouteList(route.getId());
+        route.setGroupIdList(groupIdList);
         return route;
     }
 
@@ -117,17 +159,6 @@ public class RouteServiceImpl implements RouteService {
             route.setNodeIdList(collect);
         });
         return routeList;
-    }
-
-    @Override
-    public List<Route> queryByIdList(List<Long> idList) {
-        if (CollectionUtil.isEmpty(idList)) {
-            return Collections.emptyList();
-        }
-        List<Route> list = routeRepository.query()
-                .in(Route::getId, idList)
-                .list();
-        return list;
     }
 
     @Override

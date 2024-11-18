@@ -62,13 +62,41 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public void del(EditGroupRequest request) {
-        Long count = groupMemberRepository.query()
+        Long memberCount = groupMemberRepository.query()
                 .eq(GroupMember::getMemberId, request.getId())
                 .count();
-        if (count > 0) {
-            throw new ProcessException("group used");
+        if (memberCount > 0) {
+            throw new ProcessException("member used");
+        }
+        Long routeCount = groupRouteRepository.query()
+                .eq(GroupRoute::getGroupId, request.getId())
+                .count();
+        if (routeCount > 0) {
+            throw new ProcessException("route used");
+        }
+        Long routeRuleCount = groupRouteRuleRepository.query()
+                .eq(GroupRouteRule::getGroupId, request.getId())
+                .count();
+        if (routeRuleCount > 0) {
+            throw new ProcessException("routeRule used");
+        }
+        Long vnatCount = groupVNATRepository.query()
+                .eq(GroupVNAT::getGroupId, request.getId())
+                .count();
+        if (vnatCount > 0) {
+            throw new ProcessException("vnat used");
         }
         groupRepository.deleteById(request.getId());
+    }
+
+    @Override
+    public List<GroupResponse> list() {
+        List<Group> list = groupRepository.query().list();
+        List<GroupResponse> collect = list.stream().map(e -> {
+            GroupResponse groupResponse = BeanUtil.toBean(e, GroupResponse.class);
+            return groupResponse;
+        }).collect(Collectors.toList());
+        return collect;
     }
 
     @Override
@@ -174,6 +202,16 @@ public class GroupServiceImpl implements GroupService {
             group.setRouteRuleIdList(ruleIdList);
             group.setVnatIdList(vnatIdList);
         });
+        return groupList;
+    }
+
+    @Override
+    public List<Group> queryByIdList(List<Long> groupIdList) {
+        if (CollectionUtil.isEmpty(groupIdList)) {
+            return Collections.emptyList();
+        }
+        List<Group> groupList = groupRepository.query()
+                .in(Group::getId, groupIdList).list();
         return groupList;
     }
 

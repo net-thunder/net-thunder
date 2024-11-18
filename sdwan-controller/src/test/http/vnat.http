@@ -38,20 +38,3 @@ Access-Token: {{token}}
 {
   "id": 1
 }
-
-### updateConfigList
-POST http://127.0.0.1:11805/vnat/updateConfigList
-Content-Type: application/json
-Access-Token: {{token}}
-
-{
-  "id": 1,
-  "groupIdList": [
-    1
-  ]
-}
-
-### queryConfigList
-GET http://127.0.0.1:11805/vnat/configList/1
-Content-Type: application/json
-Access-Token: {{token}}

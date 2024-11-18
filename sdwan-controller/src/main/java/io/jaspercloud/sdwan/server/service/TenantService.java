@@ -5,6 +5,8 @@ import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.controller.response.TenantResponse;
 import io.jaspercloud.sdwan.server.entity.Tenant;
 
+import java.util.List;
+
 public interface TenantService {
 
     void add(EditTenantRequest request);
@@ -14,6 +16,8 @@ public interface TenantService {
     void del(EditTenantRequest request);
 
     Tenant queryById(Long id);
+
+    List<Tenant> list();
 
     PageResponse<Tenant> page();
 

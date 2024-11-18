@@ -17,6 +17,7 @@ public class RouteRule extends BaseEntity {
     private String description;
     private DirectionEnum direction;
     private List<String> ruleList;
+    private List<Long> groupIdList;
     private Boolean enable;
 
     public static final BeanTransformer<RouteRule, RouteRulePO> Transformer = BeanTransformer.builder(RouteRule.class, RouteRulePO.class)

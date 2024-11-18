@@ -14,7 +14,6 @@ public class EditRouteRequest {
     private String description;
     private String destination;
     private List<Long> nodeIdList;
-    private Boolean enable;
-
     private List<Long> groupIdList;
+    private Boolean enable;
 }

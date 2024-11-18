@@ -2,7 +2,6 @@ package io.jaspercloud.sdwan.server.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
-import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.server.controller.request.EditVNATRequest;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.controller.response.VNATResponse;
@@ -34,20 +33,34 @@ public class VNATServiceImpl implements VNATService {
         VNATPO vnat = BeanUtil.toBean(request, VNATPO.class);
         vnat.setId(null);
         vnat.insert();
+        if (CollectionUtil.isNotEmpty(request.getGroupIdList())) {
+            groupConfigService.updateGroupVNAT(vnat.getId(), request.getGroupIdList());
+        }
     }
 
     @Override
     public void edit(EditVNATRequest request) {
         VNATPO vnat = BeanUtil.toBean(request, VNATPO.class);
         vnat.updateById();
+        if (null != request.getGroupIdList()) {
+            groupConfigService.updateGroupVNAT(vnat.getId(), request.getGroupIdList());
+        }
     }
 
     @Override
     public void del(EditVNATRequest request) {
-        if (groupConfigService.usedVNAT(request.getId())) {
-            throw new ProcessException("vnat used");
-        }
+        groupConfigService.deleteGroupVNAT(request.getId());
         vnatRepository.deleteById(request.getId());
+    }
+
+    @Override
+    public List<VNATResponse> list() {
+        List<VNAT> list = vnatRepository.query().list();
+        List<VNATResponse> collect = list.stream().map(e -> {
+            VNATResponse vnatResponse = BeanUtil.toBean(e, VNATResponse.class);
+            return vnatResponse;
+        }).collect(Collectors.toList());
+        return collect;
     }
 
     @Override
@@ -77,5 +90,16 @@ public class VNATServiceImpl implements VNATService {
                 .in(VNAT::getId, idList)
                 .list();
         return list;
+    }
+
+    @Override
+    public VNAT queryDetailById(Long id) {
+        VNAT vnat = vnatRepository.selectById(id);
+        if (null == vnat) {
+            return null;
+        }
+        List<Long> list = groupConfigService.queryGroupVNATList(id);
+        vnat.setGroupIdList(list);
+        return vnat;
     }
 }

@@ -120,6 +120,12 @@ public class TenantServiceImpl implements TenantService {
     }
 
     @Override
+    public List<Tenant> list() {
+        List<Tenant> list = tenantRepository.query().list();
+        return list;
+    }
+
+    @Override
     public PageResponse<Tenant> page() {
         Long total = tenantRepository.query().count();
         List<Tenant> list = tenantRepository.query().list();
