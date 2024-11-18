@@ -5,4 +5,6 @@ import io.jaspercloud.sdwan.server.entity.Account;
 public interface AccountService {
 
     Account queryAccount(String username, String password);
+
+    Account queryByTenantId(Long tenantId);
 }

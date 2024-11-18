@@ -17,4 +17,8 @@ public class ChannelSpace {
     public void addChannel(String vip, Channel channel) {
         channelMap.put(vip, channel);
     }
+
+    public int count() {
+        return channelMap.size();
+    }
 }

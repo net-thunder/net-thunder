@@ -14,6 +14,7 @@ public class TenantResponse {
     private String description;
     private String code;
     private String cidr;
+    private String username;
     private List<String> stunServerList;
     private List<String> relayServerList;
     private Boolean enable;

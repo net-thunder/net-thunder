@@ -11,6 +11,8 @@ public class Tenant extends BaseEntity {
     private String description;
     private String code;
     private String cidr;
+    private String username;
+    private String password;
     private String config;
     private Boolean enable;
     private Integer ipIndex;
