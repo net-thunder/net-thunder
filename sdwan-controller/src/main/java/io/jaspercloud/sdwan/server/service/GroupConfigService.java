@@ -1,14 +1,16 @@
 package io.jaspercloud.sdwan.server.service;
 
+import io.jaspercloud.sdwan.server.entity.GroupRoute;
+
 import java.util.List;
 
 public interface GroupConfigService {
 
-    boolean usedRoute(Long routeId);
+    void deleteGroupRoute(Long routeId);
 
-    boolean usedRouteRule(Long routeRuleId);
+    void deleteGroupRouteRule(Long routeRuleId);
 
-    boolean usedVNAT(Long vnatId);
+    void deleteGroupVNAT(Long vnatId);
 
     void updateGroupRoute(Long routeId, List<Long> groupIdList);
 
@@ -17,6 +19,8 @@ public interface GroupConfigService {
     void updateGroupVNAT(Long vnatId, List<Long> groupIdList);
 
     List<Long> queryGroupRouteList(Long routeId);
+
+    List<GroupRoute> queryGroupRouteList(List<Long> routeIdList);
 
     List<Long> queryGroupRouteRuleList(Long routeRuleId);
 

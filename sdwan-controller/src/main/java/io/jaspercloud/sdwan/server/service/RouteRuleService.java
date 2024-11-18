@@ -15,9 +15,13 @@ public interface RouteRuleService {
 
     void del(EditRouteRuleRequest request);
 
+    List<RouteRuleResponse> list();
+
     PageResponse<RouteRuleResponse> page();
 
     RouteRule queryById(Long id);
+
+    RouteRule queryDetailById(Long id);
 
     List<RouteRule> queryByIdList(List<Long> idList);
 }

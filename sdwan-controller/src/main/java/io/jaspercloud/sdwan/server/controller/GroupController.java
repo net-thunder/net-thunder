@@ -38,6 +38,12 @@ public class GroupController {
         groupService.del(request);
     }
 
+    @GetMapping("/list")
+    public List<GroupResponse> list() {
+        List<GroupResponse> list = groupService.list();
+        return list;
+    }
+
     @GetMapping("/page")
     public PageResponse<GroupResponse> page() {
         PageResponse<GroupResponse> response = groupService.page();

@@ -13,5 +13,6 @@ public class Route extends BaseEntity {
     private String description;
     private String destination;
     private List<Long> nodeIdList;
+    private List<Long> groupIdList;
     private Boolean enable;
 }

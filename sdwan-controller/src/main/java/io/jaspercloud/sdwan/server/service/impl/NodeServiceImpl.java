@@ -77,9 +77,6 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
                 }
                 groupService.addMember(group.getId(), node.getId());
             });
-        } else {
-            Group group = groupService.queryDefaultGroup();
-            groupService.addMember(group.getId(), node.getId());
         }
     }
 
@@ -89,13 +86,15 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
         node.updateById();
         if (null != request.getGroupIdList()) {
             groupService.delAllGroupMember(node.getId());
-            request.getGroupIdList().forEach(id -> {
-                Group group = groupService.queryById(id);
-                if (null == group) {
-                    throw new ProcessException("not found group");
-                }
-                groupService.addMember(group.getId(), node.getId());
-            });
+            if (CollectionUtil.isNotEmpty(request.getGroupIdList())) {
+                request.getGroupIdList().forEach(id -> {
+                    Group group = groupService.queryById(id);
+                    if (null == group) {
+                        throw new ProcessException("not found group");
+                    }
+                    groupService.addMember(group.getId(), node.getId());
+                });
+            }
         }
     }
 
@@ -106,6 +105,16 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
         }
         groupService.delAllGroupMember(request.getId());
         nodeRepository.deleteById(request.getId());
+    }
+
+    @Override
+    public List<NodeResponse> list() {
+        List<Node> list = nodeRepository.query().list();
+        List<NodeResponse> collect = list.stream().map(e -> {
+            NodeResponse nodeResponse = BeanUtil.toBean(e, NodeResponse.class);
+            return nodeResponse;
+        }).collect(Collectors.toList());
+        return collect;
     }
 
     @Override
@@ -148,6 +157,7 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
                 .flatMap(e -> e.getRouteRuleIdList().stream()).distinct().collect(Collectors.toList()));
         List<VNAT> vnatList = vnatService.queryIdList(groupList.stream()
                 .flatMap(e -> e.getVnatIdList().stream()).distinct().collect(Collectors.toList()));
+        nodeDetail.setGroupList(groupList);
         nodeDetail.setRouteList(routeList);
         nodeDetail.setRouteRuleList(routeRuleList);
         nodeDetail.setVnatList(vnatList);

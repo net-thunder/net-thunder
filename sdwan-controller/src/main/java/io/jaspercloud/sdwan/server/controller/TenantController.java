@@ -48,6 +48,20 @@ public class TenantController {
         tenantService.del(request);
     }
 
+    @GetMapping("/list")
+    public List<TenantResponse> list() {
+        List<Tenant> list = tenantService.list();
+        List<TenantResponse> collect = list.stream().map(e -> {
+            TenantResponse tenantResponse = BeanUtil.toBean(e, TenantResponse.class);
+            TenantContextHandler.setTenantId(e.getId());
+            List<Node> nodeList = nodeService.queryByTenantId(e.getId());
+            tenantResponse.setTotalNode(nodeList.size());
+            tenantResponse.setOnlineNode(calcOnlineCount(e, sdWanServer.getOnlineChannel()));
+            return tenantResponse;
+        }).collect(Collectors.toList());
+        return collect;
+    }
+
     @GetMapping("/page")
     public PageResponse<TenantResponse> page() {
         PageResponse<Tenant> pageResponse = tenantService.page();

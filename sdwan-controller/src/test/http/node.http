@@ -23,8 +23,8 @@ Access-Token: {{token}}
   "groupIdList": []
 }
 
-### page
-GET http://127.0.0.1:11805/node/page
+### list
+GET http://127.0.0.1:11805/node/list
 Content-Type: application/json
 Access-Token: {{token}}
 

@@ -2,7 +2,6 @@ package io.jaspercloud.sdwan.server.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
-import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.server.controller.request.EditRouteRuleRequest;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.controller.response.RouteRuleResponse;
@@ -35,6 +34,9 @@ public class RouteRuleServiceImpl implements RouteRuleService {
         RouteRulePO rulePO = RouteRule.Transformer.build(routeRule);
         rulePO.setId(null);
         rulePO.insert();
+        if (CollectionUtil.isNotEmpty(request.getGroupIdList())) {
+            groupConfigService.updateGroupRoute(rulePO.getId(), request.getGroupIdList());
+        }
     }
 
     @Override
@@ -42,14 +44,25 @@ public class RouteRuleServiceImpl implements RouteRuleService {
         RouteRule routeRule = BeanUtil.toBean(request, RouteRule.class);
         RouteRulePO rulePO = RouteRule.Transformer.build(routeRule);
         rulePO.updateById();
+        if (null != request.getGroupIdList()) {
+            groupConfigService.updateGroupRouteRule(rulePO.getId(), request.getGroupIdList());
+        }
     }
 
     @Override
     public void del(EditRouteRuleRequest request) {
-        if (groupConfigService.usedRouteRule(request.getId())) {
-            throw new ProcessException("routeRule used");
-        }
+        groupConfigService.deleteGroupRouteRule(request.getId());
         routeRuleRepository.deleteById(request.getId());
+    }
+
+    @Override
+    public List<RouteRuleResponse> list() {
+        List<RouteRule> list = routeRuleRepository.query().list();
+        List<RouteRuleResponse> collect = list.stream().map(e -> {
+            RouteRuleResponse routeRuleResponse = BeanUtil.toBean(e, RouteRuleResponse.class);
+            return routeRuleResponse;
+        }).collect(Collectors.toList());
+        return collect;
     }
 
     @Override
@@ -67,6 +80,17 @@ public class RouteRuleServiceImpl implements RouteRuleService {
     @Override
     public RouteRule queryById(Long id) {
         RouteRule routeRule = routeRuleRepository.selectById(id);
+        return routeRule;
+    }
+
+    @Override
+    public RouteRule queryDetailById(Long id) {
+        RouteRule routeRule = routeRuleRepository.selectById(id);
+        if (null == routeRule) {
+            return null;
+        }
+        List<Long> list = groupConfigService.queryGroupRouteRuleList(id);
+        routeRule.setGroupIdList(list);
         return routeRule;
     }
 

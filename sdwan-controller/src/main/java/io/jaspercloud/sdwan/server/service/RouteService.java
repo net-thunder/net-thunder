@@ -14,15 +14,17 @@ public interface RouteService {
 
     void del(EditRouteRequest request);
 
+    List<Route> list();
+
     PageResponse<Route> page();
 
     Route queryById(Long id);
 
+    List<Route> queryByIdList(List<Long> idList);
+
     Route queryDetailById(Long id);
 
     List<Route> queryDetailByIdList(List<Long> idList);
-
-    List<Route> queryByIdList(List<Long> idList);
 
     boolean usedNode(Long nodeId);
 }

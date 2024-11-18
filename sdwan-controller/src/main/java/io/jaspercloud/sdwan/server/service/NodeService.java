@@ -16,6 +16,8 @@ public interface NodeService {
 
     void del(EditNodeRequest request);
 
+    List<NodeResponse> list();
+
     PageResponse<NodeResponse> page();
 
     Node queryById(Long id);

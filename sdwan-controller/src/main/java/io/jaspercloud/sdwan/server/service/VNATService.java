@@ -15,9 +15,13 @@ public interface VNATService {
 
     void del(EditVNATRequest request);
 
+    List<VNATResponse> list();
+
     PageResponse<VNATResponse> page();
 
     VNAT queryId(Long id);
 
     List<VNAT> queryIdList(List<Long> idList);
+
+    VNAT queryDetailById(Long id);
 }

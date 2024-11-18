@@ -15,4 +15,5 @@ public class Node extends BaseEntity {
     private String vip;
     private Boolean enable;
     private List<Long> groupIdList;
+    private Boolean online;
 }

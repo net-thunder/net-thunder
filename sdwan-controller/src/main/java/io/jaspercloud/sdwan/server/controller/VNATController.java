@@ -1,6 +1,6 @@
 package io.jaspercloud.sdwan.server.controller;
 
-import io.jaspercloud.sdwan.exception.ProcessException;
+import cn.hutool.core.bean.BeanUtil;
 import io.jaspercloud.sdwan.server.controller.request.EditVNATRequest;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.controller.response.VNATResponse;
@@ -37,26 +37,25 @@ public class VNATController {
         vnatService.del(request);
     }
 
+    @GetMapping("/detail/{id}")
+    public VNATResponse detail(@PathVariable("id") Long id) {
+        VNAT vnat = vnatService.queryDetailById(id);
+        if (null == vnat) {
+            return null;
+        }
+        VNATResponse routeResponse = BeanUtil.toBean(vnat, VNATResponse.class);
+        return routeResponse;
+    }
+
+    @GetMapping("/list")
+    public List<VNATResponse> list() {
+        List<VNATResponse> list = vnatService.list();
+        return list;
+    }
+
     @GetMapping("/page")
     public PageResponse<VNATResponse> page() {
         PageResponse<VNATResponse> response = vnatService.page();
         return response;
-    }
-
-    @PostMapping("/updateConfigList")
-    public void updateConfigList(@RequestBody EditVNATRequest request) {
-        Long id = request.getId();
-        List<Long> groupIdList = request.getGroupIdList();
-        VNAT vnat = vnatService.queryId(id);
-        if (null == vnat) {
-            throw new ProcessException("not found vnat");
-        }
-        groupConfigService.updateGroupVNAT(id, groupIdList);
-    }
-
-    @GetMapping("/configList/{id}")
-    public List<Long> configList(@PathVariable("id") Long id) {
-        List<Long> list = groupConfigService.queryGroupVNATList(id);
-        return list;
     }
 }

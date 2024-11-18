@@ -8,8 +8,12 @@ import lombok.Setter;
 public class NodeResponse {
 
     private Long id;
+    private String name;
+    private String description;
     private String mac;
     private String ip;
     private String vip;
     private Boolean enable;
+    private Boolean online;
+    private Long tenantId;
 }
