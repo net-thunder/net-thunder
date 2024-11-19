@@ -60,7 +60,10 @@ public class DatabaseSdWanDataService implements SdWanDataService {
                 List<RouteConfig> collect = detailResponse.getRouteList().stream()
                         .map(route -> {
                             List<String> vipList = nodeService.queryByIdList(route.getNodeIdList())
-                                    .stream().map(e -> e.getVip()).collect(Collectors.toList());
+                                    .stream()
+                                    .map(e -> e.getVip())
+                                    .filter(e -> null != e)
+                                    .collect(Collectors.toList());
                             RouteConfig config = new RouteConfig();
                             config.setDestination(route.getDestination());
                             config.setNexthop(vipList);

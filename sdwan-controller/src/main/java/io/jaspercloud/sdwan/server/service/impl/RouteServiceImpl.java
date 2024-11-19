@@ -5,8 +5,10 @@ import cn.hutool.core.collection.CollectionUtil;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.server.controller.request.EditRouteRequest;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
+import io.jaspercloud.sdwan.server.entity.Node;
 import io.jaspercloud.sdwan.server.entity.Route;
 import io.jaspercloud.sdwan.server.entity.RouteNodeItem;
+import io.jaspercloud.sdwan.server.repository.NodeRepository;
 import io.jaspercloud.sdwan.server.repository.RouteNodeItemRepository;
 import io.jaspercloud.sdwan.server.repository.RouteRepository;
 import io.jaspercloud.sdwan.server.repository.po.RouteNodeItemPO;
@@ -33,6 +35,9 @@ public class RouteServiceImpl implements RouteService {
     private RouteNodeItemRepository routeNodeItemRepository;
 
     @Resource
+    private NodeRepository nodeRepository;
+
+    @Resource
     private GroupConfigService groupConfigService;
 
     @Override
@@ -43,6 +48,10 @@ public class RouteServiceImpl implements RouteService {
         route.insert();
         if (CollectionUtil.isNotEmpty(request.getNodeIdList())) {
             for (Long nodeId : request.getNodeIdList()) {
+                Node node = nodeRepository.selectById(nodeId);
+                if (null == node) {
+                    throw new ProcessException("节点不存在");
+                }
                 RouteNodeItemPO routeNodeItem = new RouteNodeItemPO();
                 routeNodeItem.setRouteId(route.getId());
                 routeNodeItem.setNodeId(nodeId);
@@ -64,6 +73,10 @@ public class RouteServiceImpl implements RouteService {
                     .eq(RouteNodeItem::getRouteId, request.getId())
                     .delete();
             for (Long nodeId : request.getNodeIdList()) {
+                Node node = nodeRepository.selectById(nodeId);
+                if (null == node) {
+                    throw new ProcessException("节点不存在");
+                }
                 RouteNodeItemPO routeNodeItem = new RouteNodeItemPO();
                 routeNodeItem.setRouteId(route.getId());
                 routeNodeItem.setNodeId(nodeId);
