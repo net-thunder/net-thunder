@@ -17,6 +17,7 @@ public class NodeDetailResponse {
     private String name;
     private String description;
     private String mac;
+    private String ip;
     private String vip;
     private List<Group> groupList;
     private List<Route> routeList;

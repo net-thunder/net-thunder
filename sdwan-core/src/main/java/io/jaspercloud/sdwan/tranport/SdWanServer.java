@@ -50,6 +50,9 @@ public class SdWanServer implements Lifecycle, Runnable {
         if (null == space) {
             return null;
         }
+        if (null == vip) {
+            return null;
+        }
         Channel channel = space.getChannel(vip);
         return channel;
     }
