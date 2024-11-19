@@ -164,15 +164,17 @@ public class RouteServiceImpl implements RouteService {
     @Override
     public List<Route> queryDetailByIdList(List<Long> idList) {
         List<Route> routeList = routeRepository.selectBatchIds(idList);
-        Map<Long, List<RouteNodeItem>> map = routeNodeItemRepository.query()
-                .in(RouteNodeItem::getRouteId, routeList.stream().map(e -> e.getId()).collect(Collectors.toList()))
-                .list()
-                .stream().collect(Collectors.groupingBy(e -> e.getRouteId()));
-        routeList.forEach(route -> {
-            List<Long> collect = map.getOrDefault(route.getId(), Collections.emptyList())
-                    .stream().map(e -> e.getNodeId()).collect(Collectors.toList());
-            route.setNodeIdList(collect);
-        });
+        if (CollectionUtil.isNotEmpty(routeList)) {
+            Map<Long, List<RouteNodeItem>> map = routeNodeItemRepository.query()
+                    .in(RouteNodeItem::getRouteId, routeList.stream().map(e -> e.getId()).collect(Collectors.toList()))
+                    .list()
+                    .stream().collect(Collectors.groupingBy(e -> e.getRouteId()));
+            routeList.forEach(route -> {
+                List<Long> collect = map.getOrDefault(route.getId(), Collections.emptyList())
+                        .stream().map(e -> e.getNodeId()).collect(Collectors.toList());
+                route.setNodeIdList(collect);
+            });
+        }
         return routeList;
     }
 

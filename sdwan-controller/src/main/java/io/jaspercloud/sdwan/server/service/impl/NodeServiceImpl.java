@@ -15,6 +15,7 @@ import io.jaspercloud.sdwan.server.repository.po.NodePO;
 import io.jaspercloud.sdwan.server.service.*;
 import io.jaspercloud.sdwan.server.support.LockGroup;
 import io.jaspercloud.sdwan.support.Cidr;
+import io.jaspercloud.sdwan.util.ShortUUID;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -214,7 +215,7 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
                 Tenant tenant = tenantService.queryById(tenantId);
                 NodePO nodePO = new NodePO();
                 transactionTemplate.executeWithoutResult(s -> {
-                    nodePO.setName(macAddress);
+                    nodePO.setName(ShortUUID.gen());
                     nodePO.setMac(macAddress);
                     if (tenant.getNodeGrant()) {
                         nodePO.setEnable(false);

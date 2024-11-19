@@ -14,6 +14,7 @@ import jakarta.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.InetSocketAddress;
 import java.util.List;
 
 @RestController
@@ -52,6 +53,10 @@ public class NodeController {
         }
         Tenant tenant = tenantService.queryById(nodeResponse.getTenantId());
         Channel channel = sdWanServer.getChannelSpace(tenant.getCode(), nodeResponse.getVip());
+        if (null != channel) {
+            InetSocketAddress remotedAddress = (InetSocketAddress) channel.remoteAddress();
+            nodeResponse.setIp(remotedAddress.getHostString());
+        }
         nodeResponse.setOnline(null != channel);
         return nodeResponse;
     }
@@ -62,6 +67,10 @@ public class NodeController {
         list.forEach(e -> {
             Tenant tenant = tenantService.queryById(e.getTenantId());
             Channel channel = sdWanServer.getChannelSpace(tenant.getCode(), e.getVip());
+            if (null != channel) {
+                InetSocketAddress remotedAddress = (InetSocketAddress) channel.remoteAddress();
+                e.setIp(remotedAddress.getHostString());
+            }
             e.setOnline(null != channel);
         });
         return list;
