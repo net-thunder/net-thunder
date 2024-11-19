@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/vnat")
+@RequestMapping("/api/vnat")
 public class VNATController {
 
     @Resource

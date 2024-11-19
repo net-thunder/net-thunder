@@ -18,7 +18,7 @@ import java.net.InetSocketAddress;
 import java.util.List;
 
 @RestController
-@RequestMapping("/node")
+@RequestMapping("/api/node")
 public class NodeController {
 
     @Resource
