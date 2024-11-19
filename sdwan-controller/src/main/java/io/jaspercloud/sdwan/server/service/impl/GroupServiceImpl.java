@@ -66,25 +66,25 @@ public class GroupServiceImpl implements GroupService {
                 .eq(GroupMember::getMemberId, request.getId())
                 .count();
         if (memberCount > 0) {
-            throw new ProcessException("member used");
+            throw new ProcessException("被组内成员使用");
         }
         Long routeCount = groupRouteRepository.query()
                 .eq(GroupRoute::getGroupId, request.getId())
                 .count();
         if (routeCount > 0) {
-            throw new ProcessException("route used");
+            throw new ProcessException("被路由使用");
         }
         Long routeRuleCount = groupRouteRuleRepository.query()
                 .eq(GroupRouteRule::getGroupId, request.getId())
                 .count();
         if (routeRuleCount > 0) {
-            throw new ProcessException("routeRule used");
+            throw new ProcessException("被路由规则使用");
         }
         Long vnatCount = groupVNATRepository.query()
                 .eq(GroupVNAT::getGroupId, request.getId())
                 .count();
         if (vnatCount > 0) {
-            throw new ProcessException("vnat used");
+            throw new ProcessException("被地址转换使用");
         }
         groupRepository.deleteById(request.getId());
     }

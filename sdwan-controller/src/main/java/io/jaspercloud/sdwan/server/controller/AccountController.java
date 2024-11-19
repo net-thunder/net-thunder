@@ -11,6 +11,7 @@ import io.jaspercloud.sdwan.server.entity.Tenant;
 import io.jaspercloud.sdwan.server.service.AccountService;
 import io.jaspercloud.sdwan.server.service.TenantService;
 import jakarta.annotation.Resource;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -24,7 +25,7 @@ public class AccountController {
     private TenantService tenantService;
 
     @PostMapping("/login")
-    public LoginResponse login(@RequestBody LoginRequest request) {
+    public LoginResponse login(@Validated @RequestBody LoginRequest request) {
         Account account = accountService.queryAccount(request.getUsername(), request.getPassword());
         if (null == account) {
             throw new ProcessException("not found account");
@@ -50,7 +51,7 @@ public class AccountController {
         return response;
     }
 
-    @PostMapping("/userInfo")
+    @GetMapping("/userInfo")
     public SessionInfo userInfo(@RequestHeader("Access-Token") String token) {
         SessionInfo sessionInfo = (SessionInfo) StpUtil.getSession().getTokenSign(token).getTag();
         return sessionInfo;

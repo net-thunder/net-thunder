@@ -101,7 +101,7 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
     @Override
     public void del(EditNodeRequest request) {
         if (routeService.usedNode(request.getId())) {
-            throw new ProcessException("route used");
+            throw new ProcessException("被路由使用");
         }
         groupService.delAllGroupMember(request.getId());
         nodeRepository.deleteById(request.getId());

@@ -1,6 +1,7 @@
 package io.jaspercloud.sdwan.server.controller;
 
 import cn.hutool.core.bean.BeanUtil;
+import io.jaspercloud.sdwan.server.controller.common.ValidGroup;
 import io.jaspercloud.sdwan.server.controller.request.EditRouteRuleRequest;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.controller.response.RouteRuleResponse;
@@ -8,6 +9,7 @@ import io.jaspercloud.sdwan.server.entity.RouteRule;
 import io.jaspercloud.sdwan.server.service.GroupService;
 import io.jaspercloud.sdwan.server.service.RouteRuleService;
 import jakarta.annotation.Resource;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,17 +25,19 @@ public class RouteRuleController {
     private GroupService groupService;
 
     @PostMapping("/add")
-    public void add(@RequestBody EditRouteRuleRequest request) {
+    public void add(@Validated(ValidGroup.Add.class) @RequestBody EditRouteRuleRequest request) {
+        request.check();
         routeRuleService.add(request);
     }
 
     @PostMapping("/edit")
-    public void edit(@RequestBody EditRouteRuleRequest request) {
+    public void edit(@Validated(ValidGroup.Update.class) @RequestBody EditRouteRuleRequest request) {
+        request.check();
         routeRuleService.edit(request);
     }
 
     @PostMapping("/del")
-    public void del(@RequestBody EditRouteRuleRequest request) {
+    public void del(@Validated(ValidGroup.Delete.class) @RequestBody EditRouteRuleRequest request) {
         routeRuleService.del(request);
     }
 

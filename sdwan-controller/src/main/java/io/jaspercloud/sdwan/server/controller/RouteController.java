@@ -3,6 +3,7 @@ package io.jaspercloud.sdwan.server.controller;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import io.jaspercloud.sdwan.exception.ProcessException;
+import io.jaspercloud.sdwan.server.controller.common.ValidGroup;
 import io.jaspercloud.sdwan.server.controller.request.EditRouteRequest;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.controller.response.RouteResponse;
@@ -13,6 +14,7 @@ import io.jaspercloud.sdwan.server.service.GroupService;
 import io.jaspercloud.sdwan.server.service.NodeService;
 import io.jaspercloud.sdwan.server.service.RouteService;
 import jakarta.annotation.Resource;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,7 +34,8 @@ public class RouteController {
     private GroupService groupService;
 
     @PostMapping("/add")
-    public void add(@RequestBody EditRouteRequest request) {
+    public void add(@Validated(ValidGroup.Add.class) @RequestBody EditRouteRequest request) {
+        request.check();
         if (CollectionUtil.isNotEmpty(request.getNodeIdList())) {
             for (Long nodeId : request.getNodeIdList()) {
                 boolean exists = nodeService.existsNode(nodeId);
@@ -45,7 +48,8 @@ public class RouteController {
     }
 
     @PostMapping("/edit")
-    public void edit(@RequestBody EditRouteRequest request) {
+    public void edit(@Validated(ValidGroup.Update.class) @RequestBody EditRouteRequest request) {
+        request.check();
         if (CollectionUtil.isNotEmpty(request.getNodeIdList())) {
             for (Long nodeId : request.getNodeIdList()) {
                 boolean exists = nodeService.existsNode(nodeId);
@@ -58,7 +62,7 @@ public class RouteController {
     }
 
     @PostMapping("/del")
-    public void del(@RequestBody EditRouteRequest request) {
+    public void del(@Validated(ValidGroup.Delete.class) @RequestBody EditRouteRequest request) {
         routeService.del(request);
     }
 
