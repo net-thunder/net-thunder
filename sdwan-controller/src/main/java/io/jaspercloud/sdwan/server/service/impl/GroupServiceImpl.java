@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
+@Transactional(rollbackFor = Exception.class)
 public class GroupServiceImpl implements GroupService {
 
     @Resource
@@ -48,6 +48,7 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public void add(EditGroupRequest request) {
+        checkUnique(request.getId(), request.getName());
         GroupPO group = BeanUtil.toBean(request, GroupPO.class);
         group.setId(null);
         group.setDefaultGroup(false);
@@ -56,8 +57,21 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public void edit(EditGroupRequest request) {
+        checkUnique(request.getId(), request.getName());
         GroupPO group = BeanUtil.toBean(request, GroupPO.class);
         group.updateById();
+    }
+
+    private void checkUnique(Long id, String name) {
+        Long count = groupRepository.query()
+                .eq(Group::getName, name)
+                .func(null != id, w -> {
+                    w.ne(Group::getId, id);
+                })
+                .count();
+        if (count > 0) {
+            throw new ProcessException("名称已存在");
+        }
     }
 
     @Override

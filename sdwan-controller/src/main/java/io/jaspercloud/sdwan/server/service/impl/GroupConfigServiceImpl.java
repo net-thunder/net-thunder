@@ -15,6 +15,7 @@ import io.jaspercloud.sdwan.server.repository.po.GroupVNATPO;
 import io.jaspercloud.sdwan.server.service.GroupConfigService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
@@ -22,6 +23,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional(rollbackFor = Exception.class)
 public class GroupConfigServiceImpl implements GroupConfigService {
 
     @Resource

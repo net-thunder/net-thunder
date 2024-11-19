@@ -35,12 +35,12 @@ public class EditVNATRequest implements ValidCheck {
         try {
             Cidr.parseCidr(srcCidr);
         } catch (Exception e) {
-            throw new ProcessException("srcCidr格式错误: " + srcCidr);
+            throw new ProcessException("源地址池格式错误: " + srcCidr);
         }
         try {
             Cidr.parseCidr(dstCidr);
         } catch (Exception e) {
-            throw new ProcessException("dstCidr格式错误: " + dstCidr);
+            throw new ProcessException("目标地址池格式错误: " + dstCidr);
         }
     }
 }

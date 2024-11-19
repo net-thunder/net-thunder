@@ -3,6 +3,8 @@ package io.jaspercloud.sdwan.server.entity;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class Tenant extends BaseEntity {
@@ -13,9 +15,10 @@ public class Tenant extends BaseEntity {
     private String cidr;
     private String username;
     private String password;
-    private String config;
+    private List<String> stunServerList;
+    private List<String> relayServerList;
     private Boolean enable;
+    private Boolean nodeGrant;
     private Integer ipIndex;
     private Long accountId;
-    private Boolean nodeGrant;
 }

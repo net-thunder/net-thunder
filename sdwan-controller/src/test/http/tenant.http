@@ -25,19 +25,29 @@ POST http://localhost:11805/tenant/edit
 Content-Type: application/json
 Access-Token: {{token}}
 
+### edit
+POST http://localhost:11805/tenant/edit
+Content-Type: application/json
+Access-Token: {{token}}
+
 {
-  "id": 3,
-  "name": "test22",
-  "description": "test22",
-  "cidr": "10.5.0.0/16",
-  "password": "test22",
+  "id": 6,
+  "name": "ttttttttttt",
+  "description": "ttttttttttt",
+  "code": "tttttt",
+  "cidr": "192.222.0.1/24",
+  "username": "ttttttttttt",
   "stunServerList": [
-    "127.0.0.1"
+    "192.222.0.1:80"
   ],
   "relayServerList": [
-    "127.0.0.1"
+    "192.222.0.1:80"
   ],
-  "enable": true
+  "enable": true,
+  "nodeGrant": true,
+  "totalNode": 0,
+  "onlineNode": 0,
+  "password": "ttttttttttt"
 }
 
 ### page

@@ -36,7 +36,7 @@ public class EditRouteRuleRequest implements ValidCheck {
             try {
                 Cidr.parseCidr(rule);
             } catch (Exception e) {
-                throw new ProcessException("rule格式错误: " + rule);
+                throw new ProcessException("规则格式错误: " + rule);
             }
         });
     }
