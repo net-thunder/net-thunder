@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/route")
+@RequestMapping("/api/route")
 public class RouteController {
 
     @Resource

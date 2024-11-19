@@ -30,17 +30,16 @@ public class SpringMvcConfig implements WebMvcConfigurer {
                         TenantContextHandler.setTenantId(sessionInfo.getTenantId());
                     }
                     SaRouter.newMatch()
-                            .match("/tenant/**")
+                            .match("/api/tenant/**")
                             .check(r -> StpUtil.checkRole(UserRole.Root.name()))
-                            .match("/**")
+                            .match("/api/**")
                             .check(r -> StpUtil.checkRoleOr(
                                     UserRole.Root.name(),
                                     UserRole.TenantAdmin.name()
                             ));
                 }))
-                .addPathPatterns("/**")
-                .excludePathPatterns("/account/login")
-                .excludePathPatterns("/index.html", "/static/**");
+                .addPathPatterns("/api/**")
+                .excludePathPatterns("/api/account/login");
     }
 
     private static class SaTenantInterceptor extends SaInterceptor {

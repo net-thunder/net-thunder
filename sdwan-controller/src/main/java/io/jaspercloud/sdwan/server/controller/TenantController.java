@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/tenant")
+@RequestMapping("/api/tenant")
 public class TenantController {
 
     @Resource

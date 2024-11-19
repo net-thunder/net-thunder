@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/route-rule")
+@RequestMapping("/api/route-rule")
 public class RouteRuleController {
 
     @Resource
