@@ -2,7 +2,6 @@ package io.jaspercloud.sdwan.server.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.json.JSONObject;
-import cn.hutool.json.JSONUtil;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.server.config.TenantContextHandler;
 import io.jaspercloud.sdwan.server.controller.request.EditTenantRequest;
@@ -24,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-@Transactional
+@Transactional(rollbackFor = Exception.class)
 public class TenantServiceImpl implements TenantService {
 
     @Resource
@@ -38,29 +37,12 @@ public class TenantServiceImpl implements TenantService {
 
     @Override
     public void add(EditTenantRequest request) {
-        Long usernameCount = accountRepository.query()
-                .eq(Account::getUsername, request.getUsername())
-                .count();
-        if (usernameCount > 0) {
-            throw new ProcessException("账号名已存在");
-        }
+        checkUnique(request.getId(), request.getUsername(), request.getName(), request.getCode());
         AccountPO accountPO = new AccountPO();
         accountPO.setUsername(request.getUsername());
         accountPO.setPassword(request.getPassword());
         accountPO.setRole(UserRole.TenantAdmin.name());
         accountPO.insert();
-        Long nameCount = tenantRepository.query()
-                .eq(Tenant::getName, request.getName())
-                .count();
-        if (nameCount > 0) {
-            throw new ProcessException("租户名已存在");
-        }
-        Long codeCount = tenantRepository.query()
-                .eq(Tenant::getCode, request.getCode())
-                .count();
-        if (codeCount > 0) {
-            throw new ProcessException("租户编码已存在");
-        }
         TenantPO tenant = BeanUtil.toBean(request, TenantPO.class);
         JSONObject jsonObject = new JSONObject();
         jsonObject.set("stunServerList", request.getStunServerList());
@@ -75,6 +57,7 @@ public class TenantServiceImpl implements TenantService {
 
     @Override
     public void edit(EditTenantRequest request) {
+        checkUnique(request.getId(), request.getUsername(), request.getName(), request.getCode());
         Tenant tenant = tenantRepository.selectById(request.getId());
         if (null == tenant) {
             return;
@@ -86,32 +69,52 @@ public class TenantServiceImpl implements TenantService {
             account.setPassword(request.getPassword());
         }
         accountRepository.updateById(account);
-        JSONObject config = JSONUtil.parseObj(tenant.getConfig());
-        JSONObject jsonObject = new JSONObject();
         if (null != request.getName()) {
             tenant.setName(request.getName());
         }
         if (null != request.getDescription()) {
             tenant.setDescription(request.getDescription());
         }
+        tenant.setStunServerList(request.getStunServerList());
+        tenant.setRelayServerList(request.getRelayServerList());
         if (null != request.getEnable()) {
             tenant.setEnable(request.getEnable());
         }
         if (null != request.getNodeGrant()) {
             tenant.setNodeGrant(request.getNodeGrant());
         }
-        if (null != request.getStunServerList()) {
-            jsonObject.set("stunServerList", request.getStunServerList());
-        } else {
-            jsonObject.set("stunServerList", config.getJSONArray("stunServerList"));
-        }
-        if (null != request.getRelayServerList()) {
-            jsonObject.set("relayServerList", request.getRelayServerList());
-        } else {
-            jsonObject.set("relayServerList", config.getJSONArray("relayServerList"));
-        }
-        tenant.setConfig(jsonObject.toString());
         tenantRepository.updateById(tenant);
+    }
+
+    private void checkUnique(Long tenantId, String username, String name, String code) {
+        Long usernameCount = accountRepository.query()
+                .eq(Account::getUsername, username)
+                .func(null != tenantId, w -> {
+                    Tenant tenant = tenantRepository.selectById(tenantId);
+                    w.ne(Account::getId, tenant.getAccountId());
+                })
+                .count();
+        if (usernameCount > 0) {
+            throw new ProcessException("账号名已存在");
+        }
+        Long nameCount = tenantRepository.query()
+                .eq(Tenant::getName, name)
+                .func(null != tenantId, w -> {
+                    w.ne(Tenant::getId, tenantId);
+                })
+                .count();
+        if (nameCount > 0) {
+            throw new ProcessException("租户名已存在");
+        }
+        Long codeCount = tenantRepository.query()
+                .eq(Tenant::getCode, code)
+                .func(null != tenantId, w -> {
+                    w.ne(Tenant::getId, tenantId);
+                })
+                .count();
+        if (codeCount > 0) {
+            throw new ProcessException("租户编码已存在");
+        }
     }
 
     @Override
@@ -147,10 +150,7 @@ public class TenantServiceImpl implements TenantService {
         if (null == tenant) {
             return null;
         }
-        JSONObject jsonObject = JSONUtil.parseObj(tenant.getConfig());
         TenantResponse tenantResponse = BeanUtil.toBean(tenant, TenantResponse.class);
-        tenantResponse.setStunServerList(jsonObject.getBeanList("stunServerList", String.class));
-        tenantResponse.setRelayServerList(jsonObject.getBeanList("relayServerList", String.class));
         return tenantResponse;
     }
 

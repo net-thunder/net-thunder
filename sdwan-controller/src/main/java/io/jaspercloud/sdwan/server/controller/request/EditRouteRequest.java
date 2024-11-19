@@ -35,7 +35,7 @@ public class EditRouteRequest implements ValidCheck {
         try {
             Cidr.parseCidr(destination);
         } catch (Exception e) {
-            throw new ProcessException("destination格式错误: " + destination);
+            throw new ProcessException("目标地址格式错误: " + destination);
         }
     }
 }

@@ -2,6 +2,7 @@ package io.jaspercloud.sdwan.server.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.server.controller.request.EditRouteRuleRequest;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.controller.response.RouteRuleResponse;
@@ -19,7 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
+@Transactional(rollbackFor = Exception.class)
 public class RouteRuleServiceImpl implements RouteRuleService {
 
     @Resource
@@ -30,6 +31,7 @@ public class RouteRuleServiceImpl implements RouteRuleService {
 
     @Override
     public void add(EditRouteRuleRequest request) {
+        checkUnique(request.getId(), request.getName());
         RouteRule routeRule = BeanUtil.toBean(request, RouteRule.class);
         RouteRulePO rulePO = RouteRule.Transformer.build(routeRule);
         rulePO.setId(null);
@@ -41,11 +43,24 @@ public class RouteRuleServiceImpl implements RouteRuleService {
 
     @Override
     public void edit(EditRouteRuleRequest request) {
+        checkUnique(request.getId(), request.getName());
         RouteRule routeRule = BeanUtil.toBean(request, RouteRule.class);
         RouteRulePO rulePO = RouteRule.Transformer.build(routeRule);
         rulePO.updateById();
         if (null != request.getGroupIdList()) {
             groupConfigService.updateGroupRouteRule(rulePO.getId(), request.getGroupIdList());
+        }
+    }
+
+    private void checkUnique(Long id, String name) {
+        Long count = routeRuleRepository.query()
+                .eq(RouteRule::getName, name)
+                .func(null != id, w -> {
+                    w.ne(RouteRule::getId, id);
+                })
+                .count();
+        if (count > 0) {
+            throw new ProcessException("名称已存在");
         }
     }
 

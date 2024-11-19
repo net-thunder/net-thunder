@@ -12,6 +12,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.regex.Matcher;
 
 @Getter
 @Setter
@@ -28,7 +29,6 @@ public class EditTenantRequest implements ValidCheck {
     private String cidr;
     @Pattern(regexp = ValidGroup.UNAME_PWD, groups = {ValidGroup.Add.class, ValidGroup.Update.class})
     private String username;
-    @Pattern(regexp = ValidGroup.UNAME_PWD, groups = {ValidGroup.Add.class, ValidGroup.Update.class})
     private String password;
     @NotEmpty(groups = {ValidGroup.Add.class, ValidGroup.Update.class})
     private List<String> stunServerList;
@@ -44,7 +44,14 @@ public class EditTenantRequest implements ValidCheck {
         try {
             Cidr.parseCidr(cidr);
         } catch (Exception e) {
-            throw new ProcessException("cidr格式错误: " + cidr);
+            throw new ProcessException("地址池格式错误: " + cidr);
+        }
+        if (null != password) {
+            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(ValidGroup.UNAME_PWD);
+            Matcher matcher = pattern.matcher(password);
+            if (!matcher.find()) {
+                throw new ProcessException("密码格式错误: " + ValidGroup.UNAME_PWD);
+            }
         }
         stunServerList.forEach(socket -> {
             try {
