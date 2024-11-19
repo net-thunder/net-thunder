@@ -315,7 +315,9 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         SDWanProtos.RegistReq.Builder builder = SDWanProtos.RegistReq.newBuilder()
                 .setTenantId(config.getTenantId())
                 .setNodeType(SDWanProtos.NodeTypeCode.SimpleType)
-                .setMacAddress(macAddress);
+                .setMacAddress(macAddress)
+                .setOs(PlatformDependent.normalizedOs())
+                .setOsVersion(System.getProperty("os.name"));
         SDWanProtos.RegistReq registReq = builder.build();
         SDWanProtos.RegistResp regResp = sdWanClient.regist(registReq, 3000).get();
         if (!SDWanProtos.MessageCode.Success.equals(regResp.getCode())) {

@@ -20,6 +20,8 @@ public class ChannelAttributes {
     private Long lastHeartTime;
 
     private String macAddress;
+    private String os;
+    private String osVersion;
     private List<String> addressUriList;
 
     private ChannelAttributes() {

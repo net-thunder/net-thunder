@@ -67,6 +67,8 @@ message RegistReq {
   required NodeTypeCode nodeType = 2;
   required string macAddress = 3;
   repeated string addressUri = 4;
+  optional string os = 5;
+  optional string osVersion = 6;
 }
 
 message RegistResp {

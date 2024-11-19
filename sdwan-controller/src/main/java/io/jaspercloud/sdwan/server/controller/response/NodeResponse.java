@@ -11,6 +11,8 @@ public class NodeResponse {
     private String name;
     private String description;
     private String mac;
+    private String os;
+    private String osVersion;
     private String ip;
     private String vip;
     private Boolean enable;
