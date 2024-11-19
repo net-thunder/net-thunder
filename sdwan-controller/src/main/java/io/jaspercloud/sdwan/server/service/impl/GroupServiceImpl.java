@@ -77,7 +77,7 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public void del(EditGroupRequest request) {
         Long memberCount = groupMemberRepository.query()
-                .eq(GroupMember::getMemberId, request.getId())
+                .eq(GroupMember::getGroupId, request.getId())
                 .count();
         if (memberCount > 0) {
             throw new ProcessException("被组内成员使用");

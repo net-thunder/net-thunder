@@ -5,6 +5,7 @@ import cn.dev33.satoken.exception.NotPermissionException;
 import cn.dev33.satoken.exception.NotRoleException;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -18,7 +19,7 @@ public class ExceptionControllerAdvice {
     @ExceptionHandler(NotLoginException.class)
     public ResponseEntity<String> onNotLoginException(NotLoginException e) {
         log.error(e.getMessage(), e);
-        return ResponseEntity.badRequest().body("用户未登录");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("用户未登录");
     }
 
     @ExceptionHandler(NotRoleException.class)

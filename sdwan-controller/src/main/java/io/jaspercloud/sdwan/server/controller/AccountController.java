@@ -28,7 +28,7 @@ public class AccountController {
     public LoginResponse login(@Validated @RequestBody LoginRequest request) {
         Account account = accountService.queryAccount(request.getUsername(), request.getPassword());
         if (null == account) {
-            throw new ProcessException("not found account");
+            throw new ProcessException("账号密码错误");
         }
         SessionInfo sessionInfo = new SessionInfo();
         sessionInfo.setAccountId(account.getId());
