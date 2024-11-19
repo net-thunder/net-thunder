@@ -8,6 +8,7 @@ import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.entity.Tenant;
 import io.jaspercloud.sdwan.server.service.NodeService;
 import io.jaspercloud.sdwan.server.service.TenantService;
+import io.jaspercloud.sdwan.support.ChannelAttributes;
 import io.jaspercloud.sdwan.tranport.SdWanServer;
 import io.netty.channel.Channel;
 import jakarta.annotation.Resource;
@@ -54,8 +55,11 @@ public class NodeController {
         Tenant tenant = tenantService.queryById(nodeResponse.getTenantId());
         Channel channel = sdWanServer.getChannelSpace(tenant.getCode(), nodeResponse.getVip());
         if (null != channel) {
+            ChannelAttributes attr = ChannelAttributes.attr(channel);
             InetSocketAddress remotedAddress = (InetSocketAddress) channel.remoteAddress();
             nodeResponse.setIp(remotedAddress.getHostString());
+            nodeResponse.setOs(attr.getOs());
+            nodeResponse.setOsVersion(attr.getOsVersion());
         }
         nodeResponse.setOnline(null != channel);
         return nodeResponse;
@@ -68,8 +72,11 @@ public class NodeController {
             Tenant tenant = tenantService.queryById(e.getTenantId());
             Channel channel = sdWanServer.getChannelSpace(tenant.getCode(), e.getVip());
             if (null != channel) {
+                ChannelAttributes attr = ChannelAttributes.attr(channel);
                 InetSocketAddress remotedAddress = (InetSocketAddress) channel.remoteAddress();
                 e.setIp(remotedAddress.getHostString());
+                e.setOs(attr.getOs());
+                e.setOsVersion(attr.getOsVersion());
             }
             e.setOnline(null != channel);
         });

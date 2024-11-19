@@ -12,6 +12,8 @@ public class Node extends BaseEntity {
     private String name;
     private String description;
     private String mac;
+    private String os;
+    private String osVersion;
     private String vip;
     private Boolean enable;
     private List<Long> groupIdList;
