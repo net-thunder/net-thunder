@@ -43,7 +43,13 @@ public class EditTenantRequest implements ValidCheck {
     @Override
     public void check() {
         try {
-            Cidr.parseCidr(cidr);
+            Cidr cidrPool = Cidr.parseCidr(cidr);
+            int maskBits = cidrPool.getMaskBits();
+            if (maskBits < 16) {
+                throw new ProcessException("网络前缀长度 >= 16");
+            }
+        } catch (ProcessException e) {
+            throw e;
         } catch (Exception e) {
             throw new ProcessException("地址池格式错误: " + cidr);
         }

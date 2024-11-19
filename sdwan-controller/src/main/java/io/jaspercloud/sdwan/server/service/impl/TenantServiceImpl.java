@@ -155,20 +155,12 @@ public class TenantServiceImpl implements TenantService {
     }
 
     @Override
-    public Integer incIpIndex(Long tenantId) {
-        boolean update;
-        Integer index;
-        do {
-            Tenant tenant = tenantRepository.selectById(tenantId);
-            Integer ipIndex = tenant.getIpIndex();
-            index = ipIndex + 1;
-            update = tenantRepository.update()
-                    .eq(Tenant::getId, tenantId)
-                    .eq(Tenant::getIpIndex, ipIndex)
-                    .set(Tenant::getIpIndex, index)
-                    .update();
-        } while (!update);
-        return index;
+    public boolean updateIpIndex(Long tenantId, Integer oldIndex, Integer newIndex) {
+        return tenantRepository.update()
+                .eq(Tenant::getId, tenantId)
+                .eq(Tenant::getIpIndex, oldIndex)
+                .set(Tenant::getIpIndex, newIndex)
+                .update();
     }
 
     @Override
