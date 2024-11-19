@@ -10,6 +10,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.regex.Matcher;
@@ -46,7 +47,7 @@ public class EditTenantRequest implements ValidCheck {
         } catch (Exception e) {
             throw new ProcessException("地址池格式错误: " + cidr);
         }
-        if (null != password) {
+        if (StringUtils.isNotEmpty(password)) {
             java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(ValidGroup.UNAME_PWD);
             Matcher matcher = pattern.matcher(password);
             if (!matcher.find()) {

@@ -66,7 +66,7 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
 
     @Override
     public void add(EditNodeRequest request) {
-        checkUnique(request.getId(), request.getName());
+        checkUnique(request.getId(), request.getName(), request.getMac());
         NodePO node = BeanUtil.toBean(request, NodePO.class);
         node.setId(null);
         node.insert();
@@ -83,7 +83,7 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
 
     @Override
     public void edit(EditNodeRequest request) {
-        checkUnique(request.getId(), request.getName());
+        checkUnique(request.getId(), request.getName(), request.getMac());
         NodePO node = BeanUtil.toBean(request, NodePO.class);
         node.updateById();
         if (null != request.getGroupIdList()) {
@@ -100,15 +100,24 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
         }
     }
 
-    private void checkUnique(Long id, String name) {
-        Long count = nodeRepository.query()
+    private void checkUnique(Long id, String name, String mac) {
+        Long nameCount = nodeRepository.query()
                 .eq(Node::getName, name)
                 .func(null != id, w -> {
                     w.ne(Node::getId, id);
                 })
                 .count();
-        if (count > 0) {
+        if (nameCount > 0) {
             throw new ProcessException("名称已存在");
+        }
+        Long macCount = nodeRepository.query()
+                .eq(Node::getMac, mac)
+                .func(null != id, w -> {
+                    w.ne(Node::getId, id);
+                })
+                .count();
+        if (macCount > 0) {
+            throw new ProcessException("物理地址已存在");
         }
     }
 
