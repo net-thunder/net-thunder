@@ -3,6 +3,7 @@ package io.jaspercloud.sdwan.tranport;
 import com.google.protobuf.ByteString;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.node.SdWanNodeConfig;
+import io.jaspercloud.sdwan.tranport.service.LocalConfigSdWanDataService;
 import io.jaspercloud.sdwan.tranport.support.TestSdWanNode;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.junit.jupiter.api.Test;
@@ -46,7 +47,7 @@ public class TransferTest {
             return SdWanServerConfig.FixVip.builder().mac(e.getKey()).vip(e.getValue()).build();
         }).collect(Collectors.toList());
         List<SdWanServerConfig.Route> routeList = new ArrayList<>();
-        SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
+        SdWanServerConfig config = SdWanServerConfig.builder()
                 .port(1800)
                 .heartTimeout(30 * 1000)
                 .tenantConfig(Collections.singletonMap("default", SdWanServerConfig.TenantConfig.builder()
@@ -56,7 +57,9 @@ public class TransferTest {
                         .fixedVipList(fixVipList)
                         .routeList(routeList)
                         .build()))
-                .build(), () -> new ChannelInboundHandlerAdapter());
+                .build();
+        LocalConfigSdWanDataService dataService = new LocalConfigSdWanDataService(config);
+        SdWanServer sdWanServer = new SdWanServer(config, dataService, () -> new ChannelInboundHandlerAdapter());
         sdWanServer.start();
         TestSdWanNode sdWanNode1 = new TestSdWanNode(SdWanNodeConfig.builder()
                 .onlyRelayTransport(false)

@@ -5,6 +5,7 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import io.jaspercloud.sdwan.node.SdWanNodeConfig;
 import io.jaspercloud.sdwan.node.TunSdWanNode;
+import io.jaspercloud.sdwan.tranport.service.LocalConfigSdWanDataService;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.apache.commons.lang3.RandomUtils;
 import org.slf4j.LoggerFactory;
@@ -140,7 +141,8 @@ public class ChaosTest {
                             .build();
                     SdWanServerConfig config = new SdWanServerConfig();
                     config.setTenantConfig(Collections.singletonMap("default", tenantConfig));
-                    SdWanServer sdWanServer = new SdWanServer(config, () -> new ChannelInboundHandlerAdapter());
+                    LocalConfigSdWanDataService dataService = new LocalConfigSdWanDataService(config);
+                    SdWanServer sdWanServer = new SdWanServer(config, dataService, () -> new ChannelInboundHandlerAdapter());
                     sdWanServer.start();
                     countDownLatch.countDown();
                     Thread.sleep(RandomUtils.nextLong(min, max));
