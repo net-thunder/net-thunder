@@ -15,6 +15,8 @@ public interface TenantService {
 
     void del(EditTenantRequest request);
 
+    boolean updateIpIndex(Long tenantId, Integer oldIndex, Integer newIndex);
+
     Tenant queryById(Long id);
 
     List<Tenant> list();
@@ -22,8 +24,6 @@ public interface TenantService {
     PageResponse<Tenant> page();
 
     TenantResponse queryByTenantCode(String tenantCode);
-
-    Integer incIpIndex(Long tenantId);
 
     Tenant queryByAccountId(Long accountId);
 }

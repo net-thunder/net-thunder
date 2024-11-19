@@ -22,6 +22,10 @@ public class TenantContextHandler implements TenantLineHandler {
         threadLocal.set(tenantId);
     }
 
+    public static Long getCurrentTenantId() {
+        return threadLocal.get();
+    }
+
     public static void remove() {
         threadLocal.remove();
     }

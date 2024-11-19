@@ -18,6 +18,7 @@ public class Cidr {
     private String broadcastAddress;
     private String gatewayAddress;
     private int maskBits;
+    private int count;
 
     private Cidr() {
     }
@@ -49,6 +50,8 @@ public class Cidr {
         cidr.setMaskAddress(maskAddress);
         cidr.setBroadcastAddress(broadcastAddress);
         cidr.setGatewayAddress(gatewayAddress);
+        int count = (int) Math.pow(2, 32 - maskBits);
+        cidr.setCount(count);
         return cidr;
     }
 
@@ -77,10 +80,10 @@ public class Cidr {
 
     private static List<String> parseIpList(int address, int maskBits) {
         address = parseIdentifierAddress(address, maskBits);
-        int count = (int) Math.pow(2, 32 - maskBits) - 1;
+        int count = (int) Math.pow(2, 32 - maskBits);
         List<String> list = new ArrayList<>();
         int s = address;
-        for (int n = 0; n <= count; n++) {
+        for (int n = 0; n < count; n++) {
             String ip = IPUtil.int2ip(s);
             list.add(ip);
             s += 1;

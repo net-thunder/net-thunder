@@ -2,16 +2,21 @@ package io.jaspercloud.sdwan.server.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
+import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.exception.ProcessCodeException;
 import io.jaspercloud.sdwan.exception.ProcessException;
+import io.jaspercloud.sdwan.server.config.TenantContextHandler;
 import io.jaspercloud.sdwan.server.controller.request.EditNodeRequest;
 import io.jaspercloud.sdwan.server.controller.response.NodeDetailResponse;
 import io.jaspercloud.sdwan.server.controller.response.NodeResponse;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.entity.*;
 import io.jaspercloud.sdwan.server.repository.NodeRepository;
+import io.jaspercloud.sdwan.server.repository.mapper.VipPoolMapper;
 import io.jaspercloud.sdwan.server.repository.po.NodePO;
+import io.jaspercloud.sdwan.server.repository.po.VipPoolPO;
 import io.jaspercloud.sdwan.server.service.*;
 import io.jaspercloud.sdwan.server.support.LockGroup;
 import io.jaspercloud.sdwan.support.Cidr;
@@ -52,6 +57,9 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
     private TenantService tenantService;
 
     @Resource
+    private VipPoolMapper vipPoolMapper;
+
+    @Resource
     private LockGroup lockGroup;
 
     @Resource
@@ -68,8 +76,11 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
     @Override
     public void add(EditNodeRequest request) {
         checkUnique(request.getId(), request.getName(), request.getMac());
+        Tenant tenant = tenantService.queryById(TenantContextHandler.getCurrentTenantId());
         NodePO node = BeanUtil.toBean(request, NodePO.class);
         node.setId(null);
+        String vip = applyIp(tenant);
+        node.setVip(vip);
         node.insert();
         if (CollectionUtil.isNotEmpty(request.getGroupIdList())) {
             request.getGroupIdList().forEach(id -> {
@@ -126,6 +137,13 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
     public void del(EditNodeRequest request) {
         if (routeService.usedNode(request.getId())) {
             throw new ProcessException("被路由使用");
+        }
+        Node node = nodeRepository.selectById(request.getId());
+        if (null != node.getVip()) {
+            new LambdaUpdateChainWrapper<>(vipPoolMapper)
+                    .eq(VipPoolPO::getVip, node.getVip())
+                    .set(VipPoolPO::getUsed, false)
+                    .update();
         }
         groupService.delAllGroupMember(request.getId());
         nodeRepository.deleteById(request.getId());
@@ -233,14 +251,12 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
                 if (tenant.getNodeGrant() && false == node.getEnable()) {
                     throw new ProcessCodeException(SDWanProtos.MessageCode.NotGrant_VALUE);
                 }
-                Cidr cidr = Cidr.parseCidr(tenant.getCidr());
-                String vip;
-                do {
-                    Integer idx = tenantService.incIpIndex(tenantId);
-                    vip = cidr.genIpByIdx(idx);
-                } while (!cidr.isAvailableIp(vip));
+                String vip = applyIp(tenant);
                 node.setVip(vip);
                 nodeRepository.updateById(node);
+            }
+            if (!node.getEnable()) {
+                throw new ProcessCodeException(SDWanProtos.MessageCode.Disabled_VALUE);
             }
             NodeDetailResponse nodeDetail = BeanUtil.toBean(node, NodeDetailResponse.class);
             List<Long> groupIdList = groupService.queryGroupIdListByMemberId(node.getId());
@@ -256,6 +272,61 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
             nodeDetail.setVnatList(vnatList);
             return nodeDetail;
         }
+    }
+
+    private String applyIp(Tenant tenant) {
+        String vip = reuseIp(tenant);
+        if (null != vip) {
+            return vip;
+        }
+        Cidr cidr = Cidr.parseCidr(tenant.getCidr());
+        Integer idx = tenant.getIpIndex();
+        do {
+            if (idx > cidr.getCount()) {
+                throw new ProcessCodeException(SDWanProtos.MessageCode.NotEnough_VALUE);
+            }
+            idx = selectIdx(tenant.getId(), idx);
+            vip = cidr.genIpByIdx(idx);
+        } while (!cidr.isAvailableIp(vip));
+        VipPoolPO vipPoolPO = new VipPoolPO();
+        vipPoolPO.setVip(vip);
+        vipPoolPO.setUsed(true);
+        vipPoolPO.setTenantId(tenant.getId());
+        vipPoolPO.insert();
+        return vip;
+    }
+
+    private String reuseIp(Tenant tenant) {
+        while (true) {
+            VipPoolPO poolPO = new LambdaQueryChainWrapper<>(vipPoolMapper)
+                    .eq(VipPoolPO::getTenantId, tenant.getId())
+                    .eq(VipPoolPO::getUsed, false)
+                    .last("limit 1")
+                    .one();
+            if (null == poolPO) {
+                return null;
+            }
+            boolean update = new LambdaUpdateChainWrapper<>(vipPoolMapper)
+                    .eq(VipPoolPO::getId, poolPO.getId())
+                    .eq(VipPoolPO::getTenantId, tenant.getId())
+                    .eq(VipPoolPO::getUsed, false)
+                    .set(VipPoolPO::getUsed, true)
+                    .update();
+            if (update) {
+                return poolPO.getVip();
+            }
+        }
+    }
+
+    private int selectIdx(Long tenantId, int idx) {
+        boolean updated;
+        int next;
+        do {
+            next = idx + 1;
+            updated = tenantService.updateIpIndex(tenantId, idx, next);
+            idx = next;
+        } while (!updated);
+        return next;
     }
 
     @Override

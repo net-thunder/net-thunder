@@ -20,7 +20,7 @@ public class SdWanNodeConfig {
 
     private String tenantId = "default";
     private String controllerServer = "127.0.0.1:1800";
-    private int connectTimeout = 3 * 1000;
+    private int connectTimeout = 30 * 1000;
     private long heartTime = 15 * 1000;
 
     private List<String> stunServerList = Arrays.asList("127.0.0.1:2478");
@@ -30,11 +30,11 @@ public class SdWanNodeConfig {
     private int p2pPort = 0;
     private int relayPort = 0;
 
-    private long electionTimeout = 3000;
+    private long electionTimeout = 15 * 1000;
     private long iceHeartTime = 1000;
-    private long iceTimeout = 15000;
-    private long p2pHeartTime = 500;
-    private long p2pTimeout = 5000;
+    private long iceTimeout = 15 * 1000;
+    private long p2pHeartTime = 1000;
+    private long p2pTimeout = 15 * 1000;
 
     private boolean onlyRelayTransport = false;
 
