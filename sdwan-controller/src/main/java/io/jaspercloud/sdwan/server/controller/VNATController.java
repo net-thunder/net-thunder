@@ -1,6 +1,7 @@
 package io.jaspercloud.sdwan.server.controller;
 
 import cn.hutool.core.bean.BeanUtil;
+import io.jaspercloud.sdwan.server.controller.common.ValidGroup;
 import io.jaspercloud.sdwan.server.controller.request.EditVNATRequest;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.controller.response.VNATResponse;
@@ -8,6 +9,7 @@ import io.jaspercloud.sdwan.server.entity.VNAT;
 import io.jaspercloud.sdwan.server.service.GroupConfigService;
 import io.jaspercloud.sdwan.server.service.VNATService;
 import jakarta.annotation.Resource;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,17 +25,19 @@ public class VNATController {
     private GroupConfigService groupConfigService;
 
     @PostMapping("/add")
-    public void add(@RequestBody EditVNATRequest request) {
+    public void add(@Validated(ValidGroup.Add.class) @RequestBody EditVNATRequest request) {
+        request.check();
         vnatService.add(request);
     }
 
     @PostMapping("/edit")
-    public void edit(@RequestBody EditVNATRequest request) {
+    public void edit(@Validated(ValidGroup.Update.class) @RequestBody EditVNATRequest request) {
+        request.check();
         vnatService.edit(request);
     }
 
     @PostMapping("/del")
-    public void del(@RequestBody EditVNATRequest request) {
+    public void del(@Validated(ValidGroup.Delete.class) @RequestBody EditVNATRequest request) {
         vnatService.del(request);
     }
 

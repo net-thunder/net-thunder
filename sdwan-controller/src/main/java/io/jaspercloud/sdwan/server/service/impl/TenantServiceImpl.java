@@ -42,18 +42,24 @@ public class TenantServiceImpl implements TenantService {
                 .eq(Account::getUsername, request.getUsername())
                 .count();
         if (usernameCount > 0) {
-            throw new ProcessException("username exists");
+            throw new ProcessException("账号名已存在");
         }
         AccountPO accountPO = new AccountPO();
         accountPO.setUsername(request.getUsername());
         accountPO.setPassword(request.getPassword());
         accountPO.setRole(UserRole.TenantAdmin.name());
         accountPO.insert();
+        Long nameCount = tenantRepository.query()
+                .eq(Tenant::getName, request.getName())
+                .count();
+        if (nameCount > 0) {
+            throw new ProcessException("租户名已存在");
+        }
         Long codeCount = tenantRepository.query()
                 .eq(Tenant::getCode, request.getCode())
                 .count();
         if (codeCount > 0) {
-            throw new ProcessException("code exists");
+            throw new ProcessException("租户编码已存在");
         }
         TenantPO tenant = BeanUtil.toBean(request, TenantPO.class);
         JSONObject jsonObject = new JSONObject();
