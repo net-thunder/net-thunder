@@ -5,6 +5,7 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import io.jaspercloud.sdwan.node.SdWanNodeConfig;
 import io.jaspercloud.sdwan.node.TunSdWanNode;
+import io.jaspercloud.sdwan.tranport.service.LocalConfigSdWanDataService;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.apache.commons.lang3.RandomUtils;
 import org.slf4j.LoggerFactory;
@@ -117,15 +118,15 @@ public class ChaosServerTest {
                         }
                     };
                     List<SdWanServerConfig.Route> routeList = new ArrayList<>();
-                    SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
-                            .port(1800)
-                            .heartTimeout(30 * 1000)
-                            .tenantConfig(Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
-                                    .vipCidr("10.5.0.0/24")
-                                    .fixedVipList(Collections.emptyList())
-                                    .routeList(routeList)
-                                    .build()))
-                            .build(), () -> new ChannelInboundHandlerAdapter());
+                    Map<String, SdWanServerConfig.TenantConfig> tenantConfigMap = Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
+                            .vipCidr("10.5.0.0/24")
+                            .fixedVipList(Collections.emptyList())
+                            .routeList(routeList)
+                            .build());
+                    SdWanServerConfig config = new SdWanServerConfig();
+                    config.setTenantConfig(tenantConfigMap);
+                    LocalConfigSdWanDataService dataService = new LocalConfigSdWanDataService(config);
+                    SdWanServer sdWanServer = new SdWanServer(config, dataService, () -> new ChannelInboundHandlerAdapter());
                     sdWanServer.start();
                     countDownLatch.countDown();
                     Thread.sleep(RandomUtils.nextLong(min, max));

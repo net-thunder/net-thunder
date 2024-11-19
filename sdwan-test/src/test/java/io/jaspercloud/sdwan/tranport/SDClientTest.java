@@ -1,6 +1,7 @@
 package io.jaspercloud.sdwan.tranport;
 
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
+import io.jaspercloud.sdwan.tranport.service.LocalConfigSdWanDataService;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -18,13 +19,13 @@ public class SDClientTest {
 
     @Test
     public void regist() throws Exception {
-        SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
-                .port(1800)
-                .heartTimeout(30 * 1000)
-                .tenantConfig(Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
-                        .vipCidr("10.5.0.0/24")
-                        .build()))
-                .build(), () -> new ChannelInboundHandlerAdapter());
+        Map<String, SdWanServerConfig.TenantConfig> tenantConfigMap = Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
+                .vipCidr("10.5.0.0/24")
+                .build());
+        SdWanServerConfig config = new SdWanServerConfig();
+        config.setTenantConfig(tenantConfigMap);
+        LocalConfigSdWanDataService dataService = new LocalConfigSdWanDataService(config);
+        SdWanServer sdWanServer = new SdWanServer(config, dataService, () -> new ChannelInboundHandlerAdapter());
         sdWanServer.start();
         SdWanClient sdWanClient = new SdWanClient(SdWanClientConfig.builder()
                 .controllerServer("127.0.0.1:1800")
@@ -58,14 +59,14 @@ public class SDClientTest {
         List<SdWanServerConfig.FixVip> fixVipList = fixedVipMap.entrySet().stream().map(e -> {
             return SdWanServerConfig.FixVip.builder().mac(e.getKey()).vip(e.getValue()).build();
         }).collect(Collectors.toList());
-        SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
-                .port(1800)
-                .heartTimeout(30 * 1000)
-                .tenantConfig(Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
-                        .vipCidr("10.5.0.0/24")
-                        .fixedVipList(Collections.emptyList())
-                        .build()))
-                .build(), () -> new ChannelInboundHandlerAdapter());
+        Map<String, SdWanServerConfig.TenantConfig> tenantConfigMap = Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
+                .vipCidr("10.5.0.0/24")
+                .fixedVipList(Collections.emptyList())
+                .build());
+        SdWanServerConfig config = new SdWanServerConfig();
+        config.setTenantConfig(tenantConfigMap);
+        LocalConfigSdWanDataService dataService = new LocalConfigSdWanDataService(config);
+        SdWanServer sdWanServer = new SdWanServer(config, dataService, () -> new ChannelInboundHandlerAdapter());
         sdWanServer.start();
         SdWanClient sdWanClient = new SdWanClient(SdWanClientConfig.builder()
                 .controllerServer("127.0.0.1:1800")
@@ -91,13 +92,13 @@ public class SDClientTest {
 
     @Test
     public void push() throws Exception {
-        SdWanServer sdWanServer = new SdWanServer(SdWanServerConfig.builder()
-                .port(1800)
-                .heartTimeout(30 * 1000)
-                .tenantConfig(Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
-                        .vipCidr("10.5.0.0/24")
-                        .build()))
-                .build(), () -> new SimpleChannelInboundHandler<SDWanProtos.Message>() {
+        Map<String, SdWanServerConfig.TenantConfig> tenantConfigMap = Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
+                .vipCidr("10.5.0.0/24")
+                .build());
+        SdWanServerConfig config = new SdWanServerConfig();
+        config.setTenantConfig(tenantConfigMap);
+        LocalConfigSdWanDataService dataService = new LocalConfigSdWanDataService(config);
+        SdWanServer sdWanServer = new SdWanServer(config, dataService, () -> new SimpleChannelInboundHandler<SDWanProtos.Message>() {
             @Override
             public void channelActive(ChannelHandlerContext ctx) throws Exception {
                 {
