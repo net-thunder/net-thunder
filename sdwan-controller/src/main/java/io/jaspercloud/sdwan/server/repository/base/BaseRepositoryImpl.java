@@ -44,6 +44,10 @@ public class BaseRepositoryImpl<D extends BaseEntity, P extends BasePO, M extend
 
     private BeanTransformer<D, P> transformer;
 
+    public BeanTransformer<D, P> getTransformer() {
+        return transformer;
+    }
+
     @Override
     public void afterPropertiesSet() throws Exception {
         baseMapper = (M) beanFactory.getBean(currentMapperClass());
