@@ -18,7 +18,16 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "sdwan")
 public class SdWanControllerProperties {
 
+    private SdwanHttpServerConfig httpServer;
     private SdWanServerConfig sdwanServer;
     private RelayServerConfig relayServer;
     private StunServerConfig stunServer;
+
+    @Getter
+    @Setter
+    public static class SdwanHttpServerConfig {
+
+        private String controllerServer;
+        private String storage;
+    }
 }

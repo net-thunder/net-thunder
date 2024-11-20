@@ -15,7 +15,8 @@ public class TenantContextHandler implements TenantLineHandler {
 
     private static List<String> IgnoreTableList = Arrays.asList(
             "biz_tenant",
-            "biz_account"
+            "biz_account",
+            "biz_app_version"
     );
 
     public static void setTenantId(Long tenantId) {
