@@ -53,15 +53,21 @@ public class NodeController {
             return null;
         }
         Tenant tenant = tenantService.queryById(nodeResponse.getTenantId());
-        Channel channel = sdWanServer.getChannelSpace(tenant.getCode(), nodeResponse.getVip());
-        if (null != channel) {
-            ChannelAttributes attr = ChannelAttributes.attr(channel);
-            InetSocketAddress remotedAddress = (InetSocketAddress) channel.remoteAddress();
-            nodeResponse.setIp(remotedAddress.getHostString());
-            nodeResponse.setOs(attr.getOs());
-            nodeResponse.setOsVersion(attr.getOsVersion());
+        {
+            Channel channel = sdWanServer.getChannelSpace(tenant.getCode(), nodeResponse.getVip());
+            if (null != channel) {
+                ChannelAttributes attr = ChannelAttributes.attr(channel);
+                InetSocketAddress remotedAddress = (InetSocketAddress) channel.remoteAddress();
+                nodeResponse.setIp(remotedAddress.getHostString());
+                nodeResponse.setOs(attr.getOs());
+                nodeResponse.setOsVersion(attr.getOsVersion());
+            }
+            nodeResponse.setOnline(null != channel);
         }
-        nodeResponse.setOnline(null != channel);
+        nodeResponse.getNodeList().forEach(e -> {
+            Channel channel = sdWanServer.getChannelSpace(tenant.getCode(), e.getVip());
+            e.setOnline(null != channel);
+        });
         return nodeResponse;
     }
 

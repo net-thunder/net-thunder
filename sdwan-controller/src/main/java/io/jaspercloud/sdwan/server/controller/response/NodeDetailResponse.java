@@ -1,9 +1,6 @@
 package io.jaspercloud.sdwan.server.controller.response;
 
-import io.jaspercloud.sdwan.server.entity.Group;
-import io.jaspercloud.sdwan.server.entity.Route;
-import io.jaspercloud.sdwan.server.entity.RouteRule;
-import io.jaspercloud.sdwan.server.entity.VNAT;
+import io.jaspercloud.sdwan.server.entity.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,6 +22,7 @@ public class NodeDetailResponse {
     private List<Route> routeList;
     private List<RouteRule> routeRuleList;
     private List<VNAT> vnatList;
+    private List<Node> nodeList;
     private Boolean enable;
     private Boolean online;
     private Long tenantId;

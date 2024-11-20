@@ -1,11 +1,8 @@
 package io.jaspercloud.sdwan.server.repository.base;
 
 import cn.hutool.core.collection.CollectionUtil;
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.reflect.GenericTypeUtils;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.jaspercloud.sdwan.server.entity.BaseEntity;
 import io.jaspercloud.sdwan.server.support.BeanTransformer;
 import jakarta.annotation.Resource;
@@ -97,32 +94,6 @@ public class BaseRepositoryImpl<D extends BaseEntity, P extends BasePO, M extend
         List<P> list = getBaseMapper().selectBatchIds(idList);
         List<D> collect = list.stream().map(e -> transformer.output(e)).collect(Collectors.toList());
         return collect;
-    }
-
-    @Override
-    public D one(Wrapper queryWrapper) {
-        P p = (P) baseMapper.selectOne(queryWrapper);
-        if (null == p) {
-            return null;
-        }
-        D d = transformer.output(p);
-        return d;
-    }
-
-    @Override
-    public List<D> list(Wrapper queryWrapper) {
-        List<P> list = baseMapper.selectList(queryWrapper);
-        List<D> collect = list.stream().map(e -> transformer.output(e)).collect(Collectors.toList());
-        return collect;
-    }
-
-    @Override
-    public IPage<D> page(Wrapper queryWrapper, IPage pageParam) {
-        IPage<P> page = baseMapper.selectPage(pageParam, queryWrapper);
-        List<D> collect = page.getRecords().stream().map(e -> transformer.output(e)).collect(Collectors.toList());
-        IPage<D> result = Page.of(page.getCurrent(), page.getSize(), page.getTotal(), page.searchCount());
-        result.setRecords(collect);
-        return result;
     }
 
     @Override
