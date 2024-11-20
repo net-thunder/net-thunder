@@ -13,6 +13,7 @@ import io.jaspercloud.sdwan.server.controller.response.NodeDetailResponse;
 import io.jaspercloud.sdwan.server.controller.response.NodeResponse;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.entity.*;
+import io.jaspercloud.sdwan.server.repository.GroupMemberRepository;
 import io.jaspercloud.sdwan.server.repository.NodeRepository;
 import io.jaspercloud.sdwan.server.repository.mapper.VipPoolMapper;
 import io.jaspercloud.sdwan.server.repository.po.NodePO;
@@ -40,6 +41,9 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
 
     @Resource
     private GroupService groupService;
+
+    @Resource
+    private GroupMemberRepository groupMemberRepository;
 
     @Resource
     private RouteService routeService;
@@ -188,10 +192,9 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
         if (null == node) {
             return null;
         }
-        List<Long> collect = groupService.queryGroupIdListByMemberId(node.getId());
-        node.setGroupIdList(collect);
-        NodeDetailResponse nodeDetail = BeanUtil.toBean(node, NodeDetailResponse.class);
         List<Long> groupIdList = groupService.queryGroupIdListByMemberId(node.getId());
+        node.setGroupIdList(groupIdList);
+        NodeDetailResponse nodeDetail = BeanUtil.toBean(node, NodeDetailResponse.class);
         List<Group> groupList = groupService.queryDetailList(groupIdList);
         List<Route> routeList = routeService.queryByIdList(groupList.stream()
                 .flatMap(e -> e.getRouteIdList().stream()).distinct().collect(Collectors.toList()));
@@ -199,10 +202,26 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
                 .flatMap(e -> e.getRouteRuleIdList().stream()).distinct().collect(Collectors.toList()));
         List<VNAT> vnatList = vnatService.queryIdList(groupList.stream()
                 .flatMap(e -> e.getVnatIdList().stream()).distinct().collect(Collectors.toList()));
+        List<Node> nodeList;
+        if (CollectionUtil.isNotEmpty(groupIdList)) {
+            List<Long> nodeIdList = groupMemberRepository.query()
+                    .in(GroupMember::getGroupId, groupIdList)
+                    .list()
+                    .stream()
+                    .map(e -> e.getMemberId())
+                    .distinct()
+                    .collect(Collectors.toList());
+            nodeList = nodeRepository.query()
+                    .in(Node::getId, nodeIdList)
+                    .list();
+        } else {
+            nodeList = Collections.emptyList();
+        }
         nodeDetail.setGroupList(groupList);
         nodeDetail.setRouteList(routeList);
         nodeDetail.setRouteRuleList(routeRuleList);
         nodeDetail.setVnatList(vnatList);
+        nodeDetail.setNodeList(nodeList);
         return nodeDetail;
     }
 
