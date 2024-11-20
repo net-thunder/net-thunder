@@ -70,6 +70,18 @@ public class TenantController {
         return tenantResponse;
     }
 
+    @GetMapping("/detail/current")
+    public TenantResponse current() {
+        Long tenantId = TenantContextHandler.getCurrentTenantId();
+        Tenant tenant = tenantService.queryById(tenantId);
+        if (null == tenant) {
+            return null;
+        }
+        TenantContextHandler.setTenantId(tenant.getId());
+        TenantResponse tenantResponse = BeanUtil.toBean(tenant, TenantResponse.class);
+        return tenantResponse;
+    }
+
     @GetMapping("/list")
     public List<TenantResponse> list() {
         List<Tenant> list = tenantService.list();
