@@ -45,9 +45,22 @@ public class SpringMvcConfig implements WebMvcConfigurer {
                     }
                     SaRouter.newMatch()
                             .match("/api/tenant/**")
-                            .check(r -> StpUtil.checkRole(UserRole.Root.name()))
+                            .check(() -> {
+                                SaRouter.newMatch()
+                                        .match("/api/tenant/current")
+                                        .check(() -> {
+                                            StpUtil.checkRoleOr(
+                                                    UserRole.Root.name(),
+                                                    UserRole.TenantAdmin.name()
+                                            );
+                                        })
+                                        .notMatch("/api/tenant/current")
+                                        .check(() -> {
+                                            StpUtil.checkRole(UserRole.Root.name());
+                                        });
+                            })
                             .match("/api/**")
-                            .check(r -> StpUtil.checkRoleOr(
+                            .check(() -> StpUtil.checkRoleOr(
                                     UserRole.Root.name(),
                                     UserRole.TenantAdmin.name()
                             ));
