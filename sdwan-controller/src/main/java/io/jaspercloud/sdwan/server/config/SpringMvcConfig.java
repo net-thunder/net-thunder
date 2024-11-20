@@ -5,16 +5,30 @@ import cn.dev33.satoken.fun.SaParamFunction;
 import cn.dev33.satoken.interceptor.SaInterceptor;
 import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.stp.StpUtil;
+import io.jaspercloud.sdwan.server.component.SdWanControllerProperties;
 import io.jaspercloud.sdwan.server.controller.response.SessionInfo;
 import io.jaspercloud.sdwan.server.enums.UserRole;
+import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class SpringMvcConfig implements WebMvcConfigurer {
+
+    @Resource
+    private SdWanControllerProperties properties;
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        String storage = properties.getHttpServer().getStorage();
+        String location = String.format("file:%s/", storage);
+        registry.addResourceHandler("/api/storage/**")
+                .addResourceLocations(location);
+    }
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
@@ -39,7 +53,8 @@ public class SpringMvcConfig implements WebMvcConfigurer {
                             ));
                 }))
                 .addPathPatterns("/api/**")
-                .excludePathPatterns("/api/account/login");
+                .excludePathPatterns("/api/account/login")
+                .excludePathPatterns("/api/file/**");
     }
 
     private static class SaTenantInterceptor extends SaInterceptor {
