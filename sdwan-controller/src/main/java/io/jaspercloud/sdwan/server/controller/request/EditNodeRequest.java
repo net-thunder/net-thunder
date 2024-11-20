@@ -1,6 +1,5 @@
 package io.jaspercloud.sdwan.server.controller.request;
 
-import cn.hutool.core.lang.RegexPool;
 import io.jaspercloud.sdwan.server.controller.common.ValidGroup;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -18,7 +17,7 @@ public class EditNodeRequest {
     @Pattern(regexp = ValidGroup.NAME, groups = {ValidGroup.Add.class, ValidGroup.Update.class})
     private String name;
     private String description;
-    @Pattern(regexp = RegexPool.MAC_ADDRESS, groups = {ValidGroup.Add.class, ValidGroup.Update.class})
+    @Pattern(regexp = ValidGroup.MAC_ADDRESS, groups = {ValidGroup.Add.class, ValidGroup.Update.class})
     private String mac;
     @NotNull(groups = {ValidGroup.Add.class, ValidGroup.Update.class})
     private List<Long> groupIdList;
