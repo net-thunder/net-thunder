@@ -70,7 +70,7 @@ public class TenantController {
         return tenantResponse;
     }
 
-    @GetMapping("/detail/current")
+    @GetMapping("/current")
     public TenantResponse current() {
         Long tenantId = TenantContextHandler.getCurrentTenantId();
         Tenant tenant = tenantService.queryById(tenantId);
