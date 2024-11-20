@@ -9,6 +9,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/appVersion")
@@ -31,5 +33,12 @@ public class AppVersionController {
     public List<AppVersion> list() {
         List<AppVersion> list = appVersionService.list();
         return list;
+    }
+
+    @GetMapping("/lastVersion")
+    public Map<String, String> lastVersionList() {
+        List<AppVersion> list = appVersionService.lastVersionList();
+        Map<String, String> collect = list.stream().collect(Collectors.toMap(e -> e.getOs(), e -> e.getPath()));
+        return collect;
     }
 }

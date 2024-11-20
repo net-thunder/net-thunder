@@ -12,4 +12,6 @@ public interface AppVersionService {
     void del(EditAppVersionRequest request);
 
     List<AppVersion> list();
+
+    List<AppVersion> lastVersionList();
 }

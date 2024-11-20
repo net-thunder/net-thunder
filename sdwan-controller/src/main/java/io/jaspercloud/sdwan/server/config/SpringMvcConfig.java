@@ -53,8 +53,12 @@ public class SpringMvcConfig implements WebMvcConfigurer {
                             ));
                 }))
                 .addPathPatterns("/api/**")
-                .excludePathPatterns("/api/account/login")
-                .excludePathPatterns("/api/file/**");
+                .excludePathPatterns(
+                        "/api/account/login",
+                        "/api/appVersion/lastVersion"
+                )
+                .excludePathPatterns("/api/file/**")
+                .excludePathPatterns("/api/storage/**");
     }
 
     private static class SaTenantInterceptor extends SaInterceptor {
