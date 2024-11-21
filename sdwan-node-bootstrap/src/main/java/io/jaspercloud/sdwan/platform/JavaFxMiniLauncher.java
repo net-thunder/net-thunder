@@ -9,7 +9,6 @@ import io.jaspercloud.sdwan.platform.ui2.MainWindowController;
 import io.jaspercloud.sdwan.support.HttpApi;
 import io.jaspercloud.sdwan.util.AppFile;
 import io.jaspercloud.sdwan.util.PlatformUtil;
-import io.netty.util.internal.PlatformDependent;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
@@ -62,14 +61,7 @@ public class JavaFxMiniLauncher extends Application {
         }
         File jarFile = AppFile.getLauncherJar();
         String md5Hex = DigestUtil.md5Hex(jarFile);
-        String platform;
-        if (PlatformDependent.isWindows()) {
-            platform = PlatformUtil.WINDOWS;
-        } else if (PlatformDependent.isOsx()) {
-            platform = PlatformUtil.MACOS;
-        } else {
-            throw new UnsupportedOperationException();
-        }
+        String platform = PlatformUtil.normalizedOs();
         JSONObject result = HttpApi.checkVersion(config, platform, md5Hex);
         Integer code = result.getByPath("code", Integer.class);
         if (200 == code) {

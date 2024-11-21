@@ -2,6 +2,7 @@ package io.jaspercloud.sdwan.node;
 
 import com.google.protobuf.ByteString;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
+import io.jaspercloud.sdwan.exception.ProcessCodeException;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.node.event.UpdateNodeInfoEvent;
 import io.jaspercloud.sdwan.route.VirtualRouter;
@@ -316,12 +317,12 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                 .setTenantId(config.getTenantId())
                 .setNodeType(SDWanProtos.NodeTypeCode.SimpleType)
                 .setMacAddress(macAddress)
-                .setOs(PlatformDependent.normalizedOs())
+                .setOs(PlatformUtil.normalizedOs())
                 .setOsVersion(System.getProperty("os.name"));
         SDWanProtos.RegistReq registReq = builder.build();
         SDWanProtos.RegistResp regResp = sdWanClient.regist(registReq, 3000).get();
         if (!SDWanProtos.MessageCode.Success.equals(regResp.getCode())) {
-            throw new ProcessException("registSdwan failed=" + regResp.getCode().name());
+            throw new ProcessCodeException(regResp.getCode().getNumber(), "registSdwan failed=" + regResp.getCode().name());
         }
         log.info("registSdwan: vip={}", regResp.getVip());
         iceClient.registIceInfo();
