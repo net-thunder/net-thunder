@@ -6,6 +6,7 @@ import io.jaspercloud.sdwan.server.repository.AppVersionRepository;
 import io.jaspercloud.sdwan.server.repository.mapper.AppVersionMapper;
 import io.jaspercloud.sdwan.server.repository.po.AppVersionPO;
 import io.jaspercloud.sdwan.server.service.AppVersionService;
+import io.jaspercloud.sdwan.server.service.StorageService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,15 +25,20 @@ public class AppVersionServiceImpl implements AppVersionService {
     @Resource
     private AppVersionMapper appVersionMapper;
 
+    @Resource
+    private StorageService storageService;
+
     @Override
     public void add(EditAppVersionRequest request) {
+        String md5 = storageService.calcMd5(request.getPath());
         Date date = new Date();
-        request.getOsList().forEach(os -> {
+        request.getPlatformList().forEach(plat -> {
             AppVersionPO appVersionPO = new AppVersionPO();
             appVersionPO.setName(request.getName());
             appVersionPO.setDescription(request.getDescription());
             appVersionPO.setPath(request.getPath());
-            appVersionPO.setOs(os);
+            appVersionPO.setMd5(md5);
+            appVersionPO.setPlatform(plat);
             appVersionPO.setCreateTime(date);
             appVersionPO.insert();
         });
@@ -58,5 +64,15 @@ public class AppVersionServiceImpl implements AppVersionService {
                 .map(e -> appVersionRepository.getTransformer().output(e))
                 .collect(Collectors.toList());
         return collect;
+    }
+
+    @Override
+    public AppVersion queryLastVersion(String platform) {
+        AppVersion appVersion = appVersionRepository.query()
+                .eq(AppVersion::getPlatform, platform)
+                .orderByDesc(AppVersion::getCreateTime)
+                .last("limit 1")
+                .one();
+        return appVersion;
     }
 }

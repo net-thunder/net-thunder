@@ -1,6 +1,7 @@
 package io.jaspercloud.sdwan.server.service.impl;
 
 import cn.hutool.core.io.file.FileNameUtil;
+import cn.hutool.crypto.digest.DigestUtil;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.server.component.SdWanControllerProperties;
 import io.jaspercloud.sdwan.server.service.StorageService;
@@ -47,5 +48,15 @@ public class StorageServiceImpl implements StorageService, InitializingBean {
         } catch (Exception e) {
             throw new ProcessException("保存失败");
         }
+    }
+
+    @Override
+    public String calcMd5(String path) {
+        File file = new File(storage, path);
+        if (!file.exists()) {
+            throw new ProcessException("文件不存在");
+        }
+        String md5 = DigestUtil.md5Hex(file);
+        return md5;
     }
 }

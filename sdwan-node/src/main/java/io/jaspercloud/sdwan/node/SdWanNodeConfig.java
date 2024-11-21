@@ -19,6 +19,7 @@ import java.util.List;
 public class SdWanNodeConfig {
 
     private String tenantId = "default";
+    private String httpServer = "127.0.0.1:1805";
     private String controllerServer = "127.0.0.1:1800";
     private int connectTimeout = 30 * 1000;
     private long heartTime = 15 * 1000;
@@ -43,6 +44,7 @@ public class SdWanNodeConfig {
 
     private Boolean netMesh = false;
     private Boolean autoReconnect = true;
+    private Boolean autoUpdateVersion = true;
 
     private List<String> ifaceBlackList = Arrays.asList(
             "wt0",
@@ -65,7 +67,8 @@ public class SdWanNodeConfig {
         try {
             String hostAddress = Arrays.asList(InetAddress.getAllByName(InetAddress.getLocalHost().getHostName()))
                     .stream().filter(e -> !"127.0.0.1".equals(e.getHostAddress()))
-                    .findAny().get().getHostAddress();
+                    .findAny()
+                    .get().getHostAddress();
             return hostAddress;
         } catch (Exception e) {
             throw new ProcessException(e.getMessage(), e);

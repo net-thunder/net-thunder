@@ -15,7 +15,7 @@ import java.util.Arrays;
  */
 public class PathApi {
 
-    public static String getExecutableParent() {
+    public static String getAppDir() {
         if (GraalVM.isNative()) {
             if (PlatformDependent.isWindows()) {
                 String path = new File(getExecutableFromWin()).getParent();

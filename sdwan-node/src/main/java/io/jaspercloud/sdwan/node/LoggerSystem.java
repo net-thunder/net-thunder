@@ -99,7 +99,7 @@ public class LoggerSystem {
         consoleAppender.setEncoder(encoder);
         consoleAppender.start();
         //fileAppender
-        String logFile = new File(PathApi.getExecutableParent(), "app.log").getAbsolutePath();
+        String logFile = new File(PathApi.getAppDir(), "app.log").getAbsolutePath();
         FileAppender fileAppender = new FileAppender();
         fileAppender.setContext(loggerContext);
         fileAppender.setName("file");

@@ -14,4 +14,6 @@ public interface AppVersionService {
     List<AppVersion> list();
 
     List<AppVersion> lastVersionList();
+
+    AppVersion queryLastVersion(String platform);
 }

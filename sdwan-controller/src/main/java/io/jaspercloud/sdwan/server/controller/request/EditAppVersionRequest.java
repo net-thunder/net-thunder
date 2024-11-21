@@ -20,5 +20,5 @@ public class EditAppVersionRequest {
     @NotNull(groups = {ValidGroup.Add.class, ValidGroup.Update.class})
     private String path;
     @NotEmpty(groups = {ValidGroup.Add.class, ValidGroup.Update.class})
-    private List<String> osList;
+    private List<String> platformList;
 }

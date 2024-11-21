@@ -59,6 +59,10 @@ public class SpringMvcConfig implements WebMvcConfigurer {
                                             StpUtil.checkRole(UserRole.Root.name());
                                         });
                             })
+                            .match("/api/file/**")
+                            .check(() -> {
+                                StpUtil.checkRole(UserRole.Root.name());
+                            })
                             .match("/api/**")
                             .check(() -> StpUtil.checkRoleOr(
                                     UserRole.Root.name(),
@@ -66,12 +70,17 @@ public class SpringMvcConfig implements WebMvcConfigurer {
                             ));
                 }))
                 .addPathPatterns("/api/**")
+                .excludePathPatterns("/api/storage/**")
+                //web
                 .excludePathPatterns(
                         "/api/account/login",
                         "/api/appVersion/lastVersion"
                 )
-                .excludePathPatterns("/api/file/**")
-                .excludePathPatterns("/api/storage/**");
+                //app
+                .excludePathPatterns(
+                        "/config/controllerConfig",
+                        "/appVersion/check"
+                );
     }
 
     private static class SaTenantInterceptor extends SaInterceptor {
