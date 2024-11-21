@@ -149,7 +149,7 @@ public class VirtualRouter {
     }
 
     public String routeOut(IpLayerPacket packet) {
-        for (RouteRulePredicate predicate : routeInRuleList) {
+        for (RouteRulePredicate predicate : routeOutRuleList) {
             if (!predicate.test(packet.getDstIP())) {
                 return null;
             }
