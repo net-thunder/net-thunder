@@ -16,7 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/vnat")
-public class VNATController {
+public class VNATController extends BaseController {
 
     @Resource
     private VNATService vnatService;
@@ -28,12 +28,14 @@ public class VNATController {
     public void add(@Validated(ValidGroup.Add.class) @RequestBody EditVNATRequest request) {
         request.check();
         vnatService.add(request);
+        reloadClientList();
     }
 
     @PostMapping("/edit")
     public void edit(@Validated(ValidGroup.Update.class) @RequestBody EditVNATRequest request) {
         request.check();
         vnatService.edit(request);
+        reloadClientList();
     }
 
     @PostMapping("/del")

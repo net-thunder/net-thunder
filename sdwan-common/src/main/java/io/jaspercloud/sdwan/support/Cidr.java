@@ -18,7 +18,7 @@ public class Cidr {
     private String broadcastAddress;
     private String gatewayAddress;
     private int maskBits;
-    private int count;
+    private long count;
 
     private Cidr() {
     }
@@ -37,7 +37,7 @@ public class Cidr {
 
     public static Cidr parseCidr(String text) {
         String[] split = text.split("/");
-        int address = IPUtil.ip2int(split[0]);
+        long address = IPUtil.ip2long(split[0]);
         int maskBits = Integer.parseInt(split[1]);
         address = parseIdentifierAddress(address, maskBits);
         String maskAddress = parseMaskAddress(maskBits);
@@ -50,13 +50,13 @@ public class Cidr {
         cidr.setMaskAddress(maskAddress);
         cidr.setBroadcastAddress(broadcastAddress);
         cidr.setGatewayAddress(gatewayAddress);
-        int count = (int) Math.pow(2, 32 - maskBits);
+        long count = calcCount(maskBits);
         cidr.setCount(count);
         return cidr;
     }
 
     public List<String> allIpList() {
-        int address = parseIdentifierAddress(IPUtil.ip2int(networkIdentifier), maskBits);
+        long address = parseIdentifierAddress(IPUtil.ip2long(networkIdentifier), maskBits);
         List<String> ipList = parseIpList(address, maskBits);
         return ipList;
     }
@@ -71,18 +71,18 @@ public class Cidr {
     }
 
     public static String parseCidr(String vip, int maskBits) {
-        int address = IPUtil.ip2int(vip);
+        long address = IPUtil.ip2long(vip);
         address = parseIdentifierAddress(address, maskBits);
         String identifier = IPUtil.int2ip(address);
         String result = String.format("%s/%d", identifier, maskBits);
         return result;
     }
 
-    private static List<String> parseIpList(int address, int maskBits) {
+    private static List<String> parseIpList(long address, int maskBits) {
         address = parseIdentifierAddress(address, maskBits);
-        int count = (int) Math.pow(2, 32 - maskBits);
+        long count = calcCount(maskBits);
         List<String> list = new ArrayList<>();
-        int s = address;
+        long s = address;
         for (int n = 0; n < count; n++) {
             String ip = IPUtil.int2ip(s);
             list.add(ip);
@@ -91,27 +91,27 @@ public class Cidr {
         return list;
     }
 
-    private static int parseIdentifierAddress(int address, int maskBits) {
+    private static long parseIdentifierAddress(long address, int maskBits) {
         address = (address >> (32 - maskBits)) << (32 - maskBits);
         return address;
     }
 
-    private static String parseIp(int address, int maskBits, int index) {
+    private static String parseIp(long address, int maskBits, int index) {
         address = parseIdentifierAddress(address, maskBits);
         String ip = IPUtil.int2ip(address + index);
         return ip;
     }
 
-    private static String parseNetworkIdentifier(int address, int maskBits) {
+    private static String parseNetworkIdentifier(long address, int maskBits) {
         address = parseIdentifierAddress(address, maskBits);
         String ip = IPUtil.int2ip(address);
         return ip;
     }
 
-    private static String parseBroadcastAddress(int address, int maskBits) {
+    private static String parseBroadcastAddress(long address, int maskBits) {
         address = parseIdentifierAddress(address, maskBits);
-        int count = (int) Math.pow(2, 32 - maskBits) - 1;
-        int s = address + count;
+        long count = calcCount(maskBits);
+        long s = calcMaxAddr(address, count);
         String ip = IPUtil.int2ip(s);
         return ip;
     }
@@ -125,7 +125,7 @@ public class Cidr {
     public static boolean isBroadcastAddress(String cidr, String ip) {
         check(cidr);
         String[] split = cidr.split("/");
-        int address = IPUtil.ip2int(split[0]);
+        long address = IPUtil.ip2long(split[0]);
         int maskBits = Integer.parseInt(split[1]);
         String broadcastAddress = parseBroadcastAddress(address, maskBits);
         boolean equals = StringUtils.equals(ip, broadcastAddress);
@@ -135,33 +135,33 @@ public class Cidr {
     public static boolean contains(String cidr, String ip) {
         check(cidr);
         String[] split = cidr.split("/");
-        int address = IPUtil.ip2int(split[0]);
+        long address = IPUtil.ip2long(split[0]);
         int maskBits = Integer.parseInt(split[1]);
         address = parseIdentifierAddress(address, maskBits);
-        int count = (int) Math.pow(2, 32 - maskBits) - 1;
-        int maxAddr = address + count;
-        int checkAddr = IPUtil.ip2int(ip);
+        long count = calcCount(maskBits);
+        long maxAddr = calcMaxAddr(address, count);
+        long checkAddr = IPUtil.ip2long(ip);
         boolean contains = checkAddr >= address && checkAddr <= maxAddr;
         return contains;
     }
 
-    private boolean contains(String ip) {
-        int address = parseIdentifierAddress(IPUtil.ip2int(networkIdentifier), maskBits);
-        int count = (int) Math.pow(2, 32 - maskBits) - 1;
-        int maxAddr = address + count;
-        int checkAddr = IPUtil.ip2int(ip);
+    public boolean contains(String ip) {
+        long address = parseIdentifierAddress(IPUtil.ip2long(networkIdentifier), maskBits);
+        long count = calcCount(maskBits);
+        long maxAddr = calcMaxAddr(address, count);
+        long checkAddr = IPUtil.ip2long(ip);
         boolean contains = checkAddr >= address && checkAddr <= maxAddr;
         return contains;
     }
 
-    private int getIdx(String ip) {
-        int address = parseIdentifierAddress(IPUtil.ip2int(networkIdentifier), maskBits);
-        int checkAddr = IPUtil.ip2int(ip);
+    private long getIdx(String ip) {
+        long address = parseIdentifierAddress(IPUtil.ip2long(networkIdentifier), maskBits);
+        long checkAddr = IPUtil.ip2long(ip);
         return checkAddr - address;
     }
 
-    public String genIpByIdx(int idx) {
-        int address = parseIdentifierAddress(IPUtil.ip2int(networkIdentifier), maskBits);
+    public String genIpByIdx(long idx) {
+        long address = parseIdentifierAddress(IPUtil.ip2long(networkIdentifier), maskBits);
         String ip = IPUtil.int2ip(address + idx);
         return ip;
     }
@@ -189,9 +189,19 @@ public class Cidr {
         if (!Objects.equals(src.getMaskBits(), target.getMaskBits())) {
             throw new ProcessException("maskBits equals failed");
         }
-        int idx = src.getIdx(ip);
+        long idx = src.getIdx(ip);
         String result = target.genIpByIdx(idx);
         return result;
+    }
+
+    private static long calcCount(int maskBits) {
+        long count = (long) Math.pow(2, 32 - maskBits);
+        return count;
+    }
+
+    private static long calcMaxAddr(long address, long count) {
+        //address占一个
+        return address + count - 1;
     }
 
     @Override

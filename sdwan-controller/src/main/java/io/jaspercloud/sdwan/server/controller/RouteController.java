@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/route")
-public class RouteController {
+public class RouteController extends BaseController {
 
     @Resource
     private RouteService routeService;
@@ -45,6 +45,7 @@ public class RouteController {
             }
         }
         routeService.add(request);
+        reloadClientList();
     }
 
     @PostMapping("/edit")
@@ -59,6 +60,7 @@ public class RouteController {
             }
         }
         routeService.edit(request);
+        reloadClientList();
     }
 
     @PostMapping("/del")

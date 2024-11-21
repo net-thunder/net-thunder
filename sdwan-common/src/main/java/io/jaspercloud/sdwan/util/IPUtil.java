@@ -6,23 +6,23 @@ public class IPUtil {
 
     private static final Pattern PATTERN = Pattern.compile("^((25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)$");
 
-    public static int ip2int(String ip) {
+    public static long ip2long(String ip) {
         String[] split = ip.split("\\.");
-        int s = 0;
-        int bit = 24;
+        long s = 0;
+        long bit = 24;
         for (String sp : split) {
-            int n = Integer.parseInt(sp) << bit;
+            long n = Long.parseLong(sp) << bit;
             s |= n;
             bit -= 8;
         }
         return s;
     }
 
-    public static String int2ip(int s) {
-        int d1 = s >> 24 & 0b11111111;
-        int d2 = s >> 16 & 0b11111111;
-        int d3 = s >> 8 & 0b11111111;
-        int d4 = s & 0b11111111;
+    public static String int2ip(long s) {
+        long d1 = s >> 24 & 0b11111111;
+        long d2 = s >> 16 & 0b11111111;
+        long d3 = s >> 8 & 0b11111111;
+        long d4 = s & 0b11111111;
         String ip = String.format("%s.%s.%s.%s", d1, d2, d3, d4);
         return ip;
     }

@@ -13,8 +13,10 @@ public class RouteRulePO extends BaseTenantPO<RouteRulePO> {
 
     private String name;
     private String description;
+    private String strategy;
     private String direction;
     @TableField("rule_list")
     private String ruleList;
+    private Integer level;
     private Boolean enable;
 }

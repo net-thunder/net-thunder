@@ -1,12 +1,13 @@
 package io.jaspercloud.sdwan.server.repository;
 
 import cn.hutool.json.JSONUtil;
-import io.jaspercloud.sdwan.server.enums.DirectionEnum;
 import io.jaspercloud.sdwan.server.entity.RouteRule;
 import io.jaspercloud.sdwan.server.repository.base.BaseRepositoryImpl;
 import io.jaspercloud.sdwan.server.repository.mapper.RouteRuleMapper;
 import io.jaspercloud.sdwan.server.repository.po.RouteRulePO;
 import io.jaspercloud.sdwan.server.support.BeanTransformer;
+import io.jaspercloud.sdwan.route.rule.RouteRuleDirectionEnum;
+import io.jaspercloud.sdwan.route.rule.RouteRuleStrategyEnum;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -15,10 +16,15 @@ public class RouteRuleRepository extends BaseRepositoryImpl<RouteRule, RouteRule
     @Override
     protected BeanTransformer.Builder<RouteRule, RouteRulePO> transformerBuilder() {
         return super.transformerBuilder()
+                .addFieldMapping(RouteRule::getStrategy, RouteRulePO::getStrategy, e -> {
+                    return e.name();
+                }, e -> {
+                    return RouteRuleStrategyEnum.valueOf(e);
+                })
                 .addFieldMapping(RouteRule::getDirection, RouteRulePO::getDirection, e -> {
                     return e.name();
                 }, e -> {
-                    return DirectionEnum.valueOf(e);
+                    return RouteRuleDirectionEnum.valueOf(e);
                 })
                 .addFieldMapping(RouteRule::getRuleList, RouteRulePO::getRuleList, e -> {
                     return JSONUtil.toJsonStr(e);

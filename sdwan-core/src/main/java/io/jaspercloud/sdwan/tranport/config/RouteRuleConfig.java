@@ -1,5 +1,7 @@
 package io.jaspercloud.sdwan.tranport.config;
 
+import io.jaspercloud.sdwan.route.rule.RouteRuleDirectionEnum;
+import io.jaspercloud.sdwan.route.rule.RouteRuleStrategyEnum;
 import lombok.*;
 
 import java.util.List;
@@ -11,6 +13,8 @@ import java.util.List;
 @Setter
 public class RouteRuleConfig {
 
-    private DirectionEnum direction;
+    private RouteRuleStrategyEnum strategy;
+    private RouteRuleDirectionEnum direction;
     private List<String> ruleList;
+    private Integer level;
 }

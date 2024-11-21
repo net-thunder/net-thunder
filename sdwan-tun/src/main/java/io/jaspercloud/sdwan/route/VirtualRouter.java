@@ -2,10 +2,13 @@ package io.jaspercloud.sdwan.route;
 
 import com.google.protobuf.ProtocolStringList;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
+import io.jaspercloud.sdwan.route.rule.RouteRuleDirectionEnum;
+import io.jaspercloud.sdwan.route.rule.RouteRulePredicate;
 import io.jaspercloud.sdwan.support.Cidr;
 import io.jaspercloud.sdwan.tun.IpLayerPacket;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +17,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author jasper
@@ -26,6 +30,8 @@ public class VirtualRouter {
     private ReadWriteLock lock = new ReentrantReadWriteLock();
     private Map<Integer, Consumer<List<SDWanProtos.Route>>> listenerMap = new ConcurrentHashMap<>();
     private List<SDWanProtos.Route> routeList = Collections.emptyList();
+    private List<RouteRulePredicate> routeInRuleList = Collections.emptyList();
+    private List<RouteRulePredicate> routeOutRuleList = Collections.emptyList();
     private Map<String, SDWanProtos.VNAT> vnatInMap = Collections.emptyMap();
     private Map<String, SDWanProtos.VNAT> vnatOutMap = Collections.emptyMap();
 
@@ -68,6 +74,24 @@ public class VirtualRouter {
         }
     }
 
+    public List<RouteRulePredicate> getRouteInRuleList() {
+        lock.readLock().lock();
+        try {
+            return routeInRuleList;
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    public List<RouteRulePredicate> getRouteOutRuleList() {
+        lock.readLock().lock();
+        try {
+            return routeOutRuleList;
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
     public void updateRoutes(List<SDWanProtos.Route> list) {
         lock.writeLock().lock();
         try {
@@ -76,6 +100,20 @@ public class VirtualRouter {
             lock.writeLock().unlock();
         }
         listenerMap.forEach((k, v) -> v.accept(routeList));
+    }
+
+    public void updateRouteRules(List<RouteRulePredicate> list) {
+        lock.writeLock().lock();
+        try {
+            routeInRuleList = list.stream()
+                    .filter(e -> Arrays.asList(RouteRuleDirectionEnum.All, RouteRuleDirectionEnum.Input).contains(e.direction()))
+                    .collect(Collectors.toList());
+            routeOutRuleList = list.stream()
+                    .filter(e -> Arrays.asList(RouteRuleDirectionEnum.All, RouteRuleDirectionEnum.Output).contains(e.direction()))
+                    .collect(Collectors.toList());
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     public void updateVNATs(List<SDWanProtos.VNAT> vnatList) {
@@ -96,6 +134,11 @@ public class VirtualRouter {
     }
 
     public IpLayerPacket routeIn(IpLayerPacket packet) {
+        for (RouteRulePredicate predicate : routeInRuleList) {
+            if (!predicate.test(packet.getDstIP())) {
+                return null;
+            }
+        }
         SDWanProtos.VNAT vnat = findVNAT(getVnatInMap(), packet, IpLayerPacket::getDstIP);
         if (null == vnat) {
             return packet;
@@ -106,6 +149,11 @@ public class VirtualRouter {
     }
 
     public String routeOut(IpLayerPacket packet) {
+        for (RouteRulePredicate predicate : routeInRuleList) {
+            if (!predicate.test(packet.getDstIP())) {
+                return null;
+            }
+        }
         String dstIP = packet.getDstIP();
         SDWanProtos.VNAT vnat = findVNAT(getVnatOutMap(), packet, IpLayerPacket::getSrcIP);
         if (null != vnat) {

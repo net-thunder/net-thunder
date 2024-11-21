@@ -10,6 +10,24 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class CidrTest {
 
     @Test
+    public void contains() {
+        {
+            Cidr cidr = Cidr.parseCidr("0.0.0.0/0");
+            boolean contains = cidr.contains("192.222.0.1");
+            String networkIdentifier = cidr.getNetworkIdentifier();
+            String gatewayAddress = cidr.getGatewayAddress();
+            String broadcastAddress = cidr.getBroadcastAddress();
+            System.out.println();
+        }
+        {
+            Cidr cidr = Cidr.parseCidr("15.5.0.2/32");
+            boolean contains1 = cidr.contains("15.5.0.2");
+            boolean contains2 = cidr.contains("15.5.0.3");
+            System.out.println();
+        }
+    }
+
+    @Test
     public void transform() {
         Cidr cidr = Cidr.parseCidr("10.5.0.0/16");
         cidr.allIpList();
@@ -23,7 +41,7 @@ public class CidrTest {
     public void genVip() {
         AtomicInteger gen = new AtomicInteger();
         Cidr cidr = Cidr.parseCidr("192.168.1.0/24");
-        int total = cidr.getCount();
+        long total = cidr.getCount();
         List<String> list = new ArrayList<>();
         for (int i = 0; i < 300; i++) {
             int ct = 0;
