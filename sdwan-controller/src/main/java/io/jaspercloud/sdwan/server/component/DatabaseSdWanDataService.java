@@ -89,10 +89,16 @@ public class DatabaseSdWanDataService implements SdWanDataService {
             }
             if (CollectionUtil.isNotEmpty(detailResponse.getVnatList())) {
                 List<VNATConfig> collect = detailResponse.getVnatList().stream()
-                        .map(e -> {
+                        .map(vnat -> {
                             VNATConfig config = new VNATConfig();
-                            config.setSrcCidr(e.getSrcCidr());
-                            config.setDstCidr(e.getDstCidr());
+                            config.setSrcCidr(vnat.getSrcCidr());
+                            config.setDstCidr(vnat.getDstCidr());
+                            List<String> vipList = nodeService.queryByIdList(vnat.getNodeIdList())
+                                    .stream()
+                                    .map(e -> e.getVip())
+                                    .filter(e -> null != e)
+                                    .collect(Collectors.toList());
+                            config.setVipList(vipList);
                             return config;
                         }).collect(Collectors.toList());
                 nodeConfig.setVnatConfigList(collect);

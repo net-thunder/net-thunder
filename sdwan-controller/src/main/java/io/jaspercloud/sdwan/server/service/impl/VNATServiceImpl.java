@@ -5,9 +5,11 @@ import cn.hutool.core.collection.CollectionUtil;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.server.controller.request.EditVNATRequest;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
-import io.jaspercloud.sdwan.server.controller.response.VNATResponse;
 import io.jaspercloud.sdwan.server.entity.VNAT;
+import io.jaspercloud.sdwan.server.entity.VNATNodeItem;
+import io.jaspercloud.sdwan.server.repository.VNATNodeItemRepository;
 import io.jaspercloud.sdwan.server.repository.VNATRepository;
+import io.jaspercloud.sdwan.server.repository.po.VNATNodeItemPO;
 import io.jaspercloud.sdwan.server.repository.po.VNATPO;
 import io.jaspercloud.sdwan.server.service.GroupConfigService;
 import io.jaspercloud.sdwan.server.service.VNATService;
@@ -27,6 +29,9 @@ public class VNATServiceImpl implements VNATService {
     private VNATRepository vnatRepository;
 
     @Resource
+    private VNATNodeItemRepository vnatNodeItemRepository;
+
+    @Resource
     private GroupConfigService groupConfigService;
 
     @Override
@@ -35,9 +40,8 @@ public class VNATServiceImpl implements VNATService {
         VNATPO vnat = BeanUtil.toBean(request, VNATPO.class);
         vnat.setId(null);
         vnat.insert();
-        if (CollectionUtil.isNotEmpty(request.getGroupIdList())) {
-            groupConfigService.updateGroupVNAT(vnat.getId(), request.getGroupIdList());
-        }
+        updateVNATItemList(vnat.getId(), request.getNodeIdList());
+        groupConfigService.updateGroupVNAT(vnat.getId(), request.getGroupIdList());
     }
 
     @Override
@@ -45,8 +49,19 @@ public class VNATServiceImpl implements VNATService {
         checkUnique(request.getId(), request.getName());
         VNATPO vnat = BeanUtil.toBean(request, VNATPO.class);
         vnat.updateById();
-        if (null != request.getGroupIdList()) {
-            groupConfigService.updateGroupVNAT(vnat.getId(), request.getGroupIdList());
+        updateVNATItemList(vnat.getId(), request.getNodeIdList());
+        groupConfigService.updateGroupVNAT(vnat.getId(), request.getGroupIdList());
+    }
+
+    private void updateVNATItemList(Long id, List<Long> nodeIdList) {
+        vnatNodeItemRepository.delete()
+                .eq(VNATNodeItem::getVnatId, id)
+                .delete();
+        for (Long nodeId : nodeIdList) {
+            VNATNodeItemPO itemPO = new VNATNodeItemPO();
+            itemPO.setVnatId(id);
+            itemPO.setNodeId(nodeId);
+            itemPO.insert();
         }
     }
 
@@ -69,24 +84,32 @@ public class VNATServiceImpl implements VNATService {
     }
 
     @Override
-    public List<VNATResponse> list() {
+    public List<VNAT> list() {
         List<VNAT> list = vnatRepository.query().list();
-        List<VNATResponse> collect = list.stream().map(e -> {
-            VNATResponse vnatResponse = BeanUtil.toBean(e, VNATResponse.class);
-            return vnatResponse;
+        List<VNAT> collect = list.stream().map(item -> {
+            List<Long> nodeIdList = vnatNodeItemRepository.query()
+                    .eq(VNATNodeItem::getVnatId, item.getId())
+                    .list()
+                    .stream().map(e -> e.getNodeId()).collect(Collectors.toList());
+            item.setNodeIdList(nodeIdList);
+            return item;
         }).collect(Collectors.toList());
         return collect;
     }
 
     @Override
-    public PageResponse<VNATResponse> page() {
+    public PageResponse<VNAT> page() {
         Long total = vnatRepository.query().count();
         List<VNAT> list = vnatRepository.query().list();
-        List<VNATResponse> collect = list.stream().map(e -> {
-            VNATResponse vnatResponse = BeanUtil.toBean(e, VNATResponse.class);
-            return vnatResponse;
+        List<VNAT> collect = list.stream().map(item -> {
+            List<Long> nodeIdList = vnatNodeItemRepository.query()
+                    .eq(VNATNodeItem::getVnatId, item.getId())
+                    .list()
+                    .stream().map(e -> e.getNodeId()).collect(Collectors.toList());
+            item.setNodeIdList(nodeIdList);
+            return item;
         }).collect(Collectors.toList());
-        PageResponse<VNATResponse> response = PageResponse.build(collect, total, 0L, 0L);
+        PageResponse<VNAT> response = PageResponse.build(collect, total, 0L, 0L);
         return response;
     }
 
@@ -113,8 +136,21 @@ public class VNATServiceImpl implements VNATService {
         if (null == vnat) {
             return null;
         }
-        List<Long> list = groupConfigService.queryGroupVNATList(id);
-        vnat.setGroupIdList(list);
+        List<Long> nodeIdList = vnatNodeItemRepository.query()
+                .eq(VNATNodeItem::getVnatId, id)
+                .list()
+                .stream().map(e -> e.getNodeId()).collect(Collectors.toList());
+        vnat.setNodeIdList(nodeIdList);
+        List<Long> groupIdList = groupConfigService.queryGroupVNATList(id);
+        vnat.setGroupIdList(groupIdList);
         return vnat;
+    }
+
+    @Override
+    public boolean usedNode(Long nodeId) {
+        Long count = vnatNodeItemRepository.query()
+                .eq(VNATNodeItem::getNodeId, nodeId)
+                .count();
+        return count > 0;
     }
 }
