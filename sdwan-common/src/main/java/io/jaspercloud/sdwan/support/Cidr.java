@@ -70,14 +70,6 @@ public class Cidr {
         return availableIpList;
     }
 
-    public static String parseCidr(String vip, int maskBits) {
-        long address = IPUtil.ip2long(vip);
-        address = parseIdentifierAddress(address, maskBits);
-        String identifier = IPUtil.int2ip(address);
-        String result = String.format("%s/%d", identifier, maskBits);
-        return result;
-    }
-
     private static List<String> parseIpList(long address, int maskBits) {
         address = parseIdentifierAddress(address, maskBits);
         long count = calcCount(maskBits);

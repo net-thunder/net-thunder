@@ -335,7 +335,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         iceClient.registIceInfo();
         localVip = regResp.getVip();
         maskBits = regResp.getMaskBits();
-        vipCidr = Cidr.parseCidr(regResp.getVip(), maskBits);
+        vipCidr = regResp.getCidr();
         regResp.getNodeList().getNodeInfoList().forEach(e -> {
             nodeInfoMap.put(e.getVip(), e);
         });

@@ -80,6 +80,7 @@ message RegistResp {
   optional RouteList routeList = 5;
   optional VNATList vnatList = 6;
   optional RouteRuleList routeRuleList = 7;
+  optional string cidr = 8;
 }
 
 message NodeInfoReq {
