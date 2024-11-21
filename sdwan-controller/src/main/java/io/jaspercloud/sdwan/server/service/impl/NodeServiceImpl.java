@@ -142,6 +142,9 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
         if (routeService.usedNode(request.getId())) {
             throw new ProcessException("被路由使用");
         }
+        if (vnatService.usedNode(request.getId())) {
+            throw new ProcessException("被地址转换使用");
+        }
         Node node = nodeRepository.selectById(request.getId());
         if (null != node.getVip()) {
             new LambdaUpdateChainWrapper<>(vipPoolMapper)

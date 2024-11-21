@@ -119,6 +119,7 @@ message VNAT {
   required string vip = 1;
   required string src = 2;
   required string dst = 3;
+  repeated string vipList = 4;
 }
 
 message VNATList {

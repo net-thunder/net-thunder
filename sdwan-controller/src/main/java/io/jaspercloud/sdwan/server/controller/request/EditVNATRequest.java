@@ -26,6 +26,8 @@ public class EditVNATRequest implements ValidCheck {
     @NotEmpty(groups = {ValidGroup.Add.class, ValidGroup.Update.class})
     private String dstCidr;
     @NotNull(groups = {ValidGroup.Add.class, ValidGroup.Update.class})
+    private List<Long> nodeIdList;
+    @NotNull(groups = {ValidGroup.Add.class, ValidGroup.Update.class})
     private List<Long> groupIdList;
     @NotNull(groups = {ValidGroup.Add.class, ValidGroup.Update.class})
     private Boolean enable;

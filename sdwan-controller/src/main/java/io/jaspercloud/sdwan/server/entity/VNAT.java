@@ -13,6 +13,7 @@ public class VNAT extends BaseEntity {
     private String description;
     private String srcCidr;
     private String dstCidr;
+    private List<Long> nodeIdList;
     private List<Long> groupIdList;
     private Boolean enable;
 }

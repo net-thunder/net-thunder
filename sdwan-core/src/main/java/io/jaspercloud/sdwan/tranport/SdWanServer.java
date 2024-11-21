@@ -1,5 +1,6 @@
 package io.jaspercloud.sdwan.tranport;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.google.protobuf.AbstractMessageLite;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.exception.ProcessCodeException;
@@ -245,7 +246,7 @@ public class SdWanServer implements Lifecycle, Runnable {
                             .addAllRoute(buildRouteList(thisNodeConfig.getRouteConfigList()))
                             .build())
                     .setVnatList(SDWanProtos.VNATList.newBuilder()
-                            .addAllVnat(buildVNATList(vip, thisNodeConfig.getVnatConfigList()))
+                            .addAllVnat(buildVNATList(thisNodeConfig.getVnatConfigList()))
                             .build())
                     .setRouteRuleList(SDWanProtos.RouteRuleList.newBuilder()
                             .addAllRouteRule(buildRouteRuleList(thisNodeConfig.getRouteRuleConfigList()))
@@ -283,12 +284,20 @@ public class SdWanServer implements Lifecycle, Runnable {
         return collect;
     }
 
-    private List<SDWanProtos.VNAT> buildVNATList(String vip, List<VNATConfig> list) {
+    private List<SDWanProtos.VNAT> buildVNATList(List<VNATConfig> list) {
         List<SDWanProtos.VNAT> collect = list.stream().map(e -> {
+            List<String> vipList = e.getVipList();
+            String vip;
+            if (CollectionUtil.isNotEmpty(vipList)) {
+                vip = vipList.get(0);
+            } else {
+                vip = "";
+            }
             return SDWanProtos.VNAT.newBuilder()
                     .setVip(vip)
                     .setSrc(e.getSrcCidr())
                     .setDst(e.getDstCidr())
+                    .addAllVipList(vipList)
                     .build();
         }).collect(Collectors.toList());
         return collect;

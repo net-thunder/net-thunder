@@ -120,7 +120,7 @@ public class VirtualRouter {
         Map<String, SDWanProtos.VNAT> inMap = new ConcurrentHashMap();
         Map<String, SDWanProtos.VNAT> outMap = new ConcurrentHashMap();
         vnatList.forEach(e -> {
-            log.info("addVNAT: src={}, dst={}, vip={}", e.getSrc(), e.getDst(), e.getVip());
+            log.info("addVNAT: src={}, dst={}, vipList={}", e.getSrc(), e.getDst(), e.getVipListList());
             inMap.put(e.getSrc(), e);
             outMap.put(e.getDst(), e);
         });
@@ -134,7 +134,7 @@ public class VirtualRouter {
     }
 
     public IpLayerPacket routeIn(IpLayerPacket packet) {
-        for (RouteRulePredicate predicate : routeInRuleList) {
+        for (RouteRulePredicate predicate : getRouteInRuleList()) {
             if (!predicate.test(packet.getDstIP())) {
                 return null;
             }
@@ -149,7 +149,7 @@ public class VirtualRouter {
     }
 
     public String routeOut(IpLayerPacket packet) {
-        for (RouteRulePredicate predicate : routeOutRuleList) {
+        for (RouteRulePredicate predicate : getRouteOutRuleList()) {
             if (!predicate.test(packet.getDstIP())) {
                 return null;
             }
