@@ -12,6 +12,7 @@ public class AppVersion extends BaseEntity {
     private String name;
     private String description;
     private String path;
-    private String os;
+    private String md5;
+    private String platform;
     private Date createTime;
 }

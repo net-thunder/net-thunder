@@ -4,7 +4,9 @@ import com.sun.jna.WString;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.Win32Exception;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public final class WinShell {
 
@@ -26,6 +28,14 @@ public final class WinShell {
     public static final int SW_RESTORE = 9;
     public static final int SW_SHOWDEFAULT = 10;
     public static final int SW_FORCEMINIMIZE = 11;
+
+    public static void start(String path, String[] args) throws Exception {
+        List<String> list = new ArrayList<>(Arrays.asList("cmd", "/c"));
+        list.add("start");
+        list.add(path);
+        list.addAll(Arrays.asList(args));
+        new ProcessBuilder(list).start();
+    }
 
     public static void ShellExecuteW(String lpFile, String lpParameters, String lpDirectory, int nShowCmd) {
         WinShellNativeApi.INSTANCE.ShellExecuteW(

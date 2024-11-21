@@ -17,20 +17,27 @@
                 <RowConstraints/>
                 <RowConstraints/>
                 <RowConstraints/>
+                <RowConstraints/>
             </rowConstraints>
             <Label text="当前状态:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="0"/>
             <Label fx:id="statusLab" text="已断开" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
             <Label text="本地虚拟IP:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="1"/>
-            <Label fx:id="vipLab" text="-" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+            <TextField fx:id="vipText" editable="false" style="-fx-background-color: transparent;" text="-"
+                       GridPane.columnIndex="1" GridPane.rowIndex="1" focusTraversable="false"/>
             <Label text="出口IP:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="2"/>
-            <ChoiceBox fx:id="netSelect" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-            <Button fx:id="refreshBtn" text="刷新" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
+            <ChoiceBox fx:id="netSelect" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="2"
+                       focusTraversable="false"/>
+            <Button fx:id="refreshBtn" text="刷新" GridPane.columnIndex="2" GridPane.rowIndex="2"
+                    focusTraversable="false"/>
+            <Label text="MAC地址:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="3"/>
+            <TextField fx:id="macText" editable="false" style="-fx-background-color: transparent;" text="-"
+                       GridPane.columnIndex="1" GridPane.rowIndex="3" focusTraversable="false"/>
         </GridPane>
-        <Button fx:id="startBtn" prefHeight="30" prefWidth="120" text="启动">
+        <Button fx:id="startBtn" prefHeight="30" prefWidth="120" text="启动" focusTraversable="false">
         </Button>
-        <Button fx:id="stopBtn" prefHeight="30" prefWidth="120" text="停止">
+        <Button fx:id="stopBtn" prefHeight="30" prefWidth="120" text="停止" focusTraversable="false">
         </Button>
-        <Button fx:id="settingBtn" prefHeight="30" prefWidth="120" text="接入配置">
+        <Button fx:id="settingBtn" prefHeight="30" prefWidth="120" text="接入配置" focusTraversable="false">
         </Button>
         <FlowPane.margin>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>

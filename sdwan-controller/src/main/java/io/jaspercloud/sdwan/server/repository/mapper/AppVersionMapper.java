@@ -13,7 +13,7 @@ public interface AppVersionMapper extends BaseMapper<AppVersionPO> {
     @Select("select * from biz_app_version\n" +
             "where id in (\n" +
             "    select max(id) from biz_app_version\n" +
-            "    group by os\n" +
+            "    group by platform\n" +
             ")")
     List<AppVersionPO> lastVersionList();
 }

@@ -24,7 +24,7 @@ public class ConfigSystem {
     }
 
     public static String getConfigText() throws Exception {
-        File file = new File(PathApi.getExecutableParent(), "application.yaml");
+        File file = new File(PathApi.getAppDir(), "application.yaml");
         if (!file.exists()) {
             return null;
         }
@@ -33,12 +33,12 @@ public class ConfigSystem {
     }
 
     public static void saveConfig(String configText) {
-        File file = new File(PathApi.getExecutableParent(), "application.yaml");
+        File file = new File(PathApi.getAppDir(), "application.yaml");
         FileUtil.writeUtf8String(configText, file);
     }
 
     public SdWanNodeConfig initUserDir(String configFile) throws Exception {
-        File file = new File(PathApi.getExecutableParent(), configFile);
+        File file = new File(PathApi.getAppDir(), configFile);
         try (InputStream in = new FileInputStream(file)) {
             return YamlUtil.load(in, SdWanNodeConfig.class);
         }

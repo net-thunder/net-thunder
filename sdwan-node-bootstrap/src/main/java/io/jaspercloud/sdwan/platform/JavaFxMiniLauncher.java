@@ -1,6 +1,15 @@
 package io.jaspercloud.sdwan.platform;
 
+import cn.hutool.crypto.digest.DigestUtil;
+import cn.hutool.json.JSONObject;
+import io.jaspercloud.sdwan.node.ConfigSystem;
+import io.jaspercloud.sdwan.node.SdWanNodeConfig;
+import io.jaspercloud.sdwan.node.support.PathApi;
 import io.jaspercloud.sdwan.platform.ui2.MainWindowController;
+import io.jaspercloud.sdwan.support.HttpApi;
+import io.jaspercloud.sdwan.util.AppFile;
+import io.jaspercloud.sdwan.util.PlatformUtil;
+import io.netty.util.internal.PlatformDependent;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
@@ -19,6 +28,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
 
 public class JavaFxMiniLauncher extends Application {
 
@@ -38,7 +48,41 @@ public class JavaFxMiniLauncher extends Application {
     }
 
     private void run(CommandLine cmd) throws Exception {
+        logger.info("appDir: {}", PathApi.getAppDir());
+        if (updateVersion()) {
+            return;
+        }
         Application.launch(JavaFxMiniLauncher.class, new String[0]);
+    }
+
+    private boolean updateVersion() throws Exception {
+        SdWanNodeConfig config = new ConfigSystem().initUserDir();
+        if (!config.getAutoUpdateVersion()) {
+            return false;
+        }
+        File jarFile = AppFile.getLauncherJar();
+        String md5Hex = DigestUtil.md5Hex(jarFile);
+        String platform;
+        if (PlatformDependent.isWindows()) {
+            platform = PlatformUtil.WINDOWS;
+        } else if (PlatformDependent.isOsx()) {
+            platform = PlatformUtil.MACOS;
+        } else {
+            throw new UnsupportedOperationException();
+        }
+        JSONObject result = HttpApi.checkVersion(config, platform, md5Hex);
+        Integer code = result.getByPath("code", Integer.class);
+        if (200 == code) {
+            String path = result.getByPath("data.path", String.class);
+            String md5 = result.getByPath("data.md5", String.class);
+            String url = String.format("http://%s%s", config.getHttpServer(), path);
+            Application.launch(UpdateVersionLauncher.class, new String[]{
+                    String.format("--url=%s", url),
+                    String.format("--md5=%s", md5)
+            });
+            return true;
+        }
+        return false;
     }
 
     @Override

@@ -1,13 +1,14 @@
 package io.jaspercloud.sdwan.platform.ui2;
 
+import io.jaspercloud.sdwan.core.proto.SDWanProtos;
+import io.jaspercloud.sdwan.exception.ProcessCodeException;
 import io.jaspercloud.sdwan.node.ConfigSystem;
 import io.jaspercloud.sdwan.node.EventListener;
 import io.jaspercloud.sdwan.node.SdWanNodeConfig;
 import io.jaspercloud.sdwan.node.TunSdWanNode;
+import io.jaspercloud.sdwan.support.HttpApi;
 import io.jaspercloud.sdwan.support.OsxShell;
-import io.jaspercloud.sdwan.util.CheckAdmin;
-import io.jaspercloud.sdwan.util.Jpackage;
-import io.jaspercloud.sdwan.util.NetworkInterfaceUtil;
+import io.jaspercloud.sdwan.util.*;
 import io.netty.util.internal.PlatformDependent;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -18,9 +19,13 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import javafx.util.StringConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.List;
 import java.util.concurrent.SynchronousQueue;
 import java.util.stream.Collectors;
@@ -32,10 +37,13 @@ public class MainWindowController implements EventHandler<ActionEvent> {
     private Label statusLab;
 
     @FXML
-    private Label vipLab;
+    private TextField vipText;
 
     @FXML
-    private ChoiceBox<String> netSelect;
+    private TextField macText;
+
+    @FXML
+    private ChoiceBox<NetworkInterfaceInfo> netSelect;
 
     @FXML
     private Button refreshBtn;
@@ -62,10 +70,31 @@ public class MainWindowController implements EventHandler<ActionEvent> {
         stopBtn.setDisable(true);
         refreshBtn.setOnAction(this);
         settingBtn.setOnAction(this);
-        netSelect.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+        netSelect.setConverter(new StringConverter<NetworkInterfaceInfo>() {
             @Override
-            public void changed(ObservableValue<? extends String> observableValue, String oldValue, String newValue) {
-                localIp = observableValue.getValue();
+            public String toString(NetworkInterfaceInfo interfaceInfo) {
+                if (null == interfaceInfo) {
+                    return null;
+                }
+                return interfaceInfo.getIp();
+            }
+
+            @Override
+            public NetworkInterfaceInfo fromString(String s) {
+                return null;
+            }
+        });
+        netSelect.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<NetworkInterfaceInfo>() {
+            @Override
+            public void changed(ObservableValue<? extends NetworkInterfaceInfo> observableValue, NetworkInterfaceInfo oldValue, NetworkInterfaceInfo newValue) {
+                NetworkInterfaceInfo interfaceInfo = observableValue.getValue();
+                if (null != interfaceInfo) {
+                    localIp = interfaceInfo.getIp();
+                    macText.setText(interfaceInfo.getHardwareAddress());
+                } else {
+                    localIp = null;
+                    macText.setText("-");
+                }
             }
         });
         refreshNetList();
@@ -84,11 +113,11 @@ public class MainWindowController implements EventHandler<ActionEvent> {
 
     private void refreshNetList() {
         try {
-            List<String> netList = NetworkInterfaceUtil.findIpv4NetworkInterfaceInfo(true)
+            List<NetworkInterfaceInfo> netList = NetworkInterfaceUtil.findIpv4NetworkInterfaceInfo(true)
                     .stream()
                     .filter(e -> StringUtils.isNotEmpty(e.getHardwareAddress()))
-                    .map(e -> e.getIp())
                     .collect(Collectors.toList());
+            netList = testNetList(netList);
             netSelect.getItems().clear();
             netSelect.getItems().addAll(netList);
             if (!netList.isEmpty()) {
@@ -97,6 +126,29 @@ public class MainWindowController implements EventHandler<ActionEvent> {
         } catch (Throwable e) {
             log.error(e.getMessage(), e);
         }
+    }
+
+    private List<NetworkInterfaceInfo> testNetList(List<NetworkInterfaceInfo> netList) throws Exception {
+        SdWanNodeConfig config = new ConfigSystem().initUserDir();
+        String httpServer = config.getHttpServer();
+        InetSocketAddress httpAddress = SocketAddressUtil.parse(httpServer);
+        List<NetworkInterfaceInfo> collect = netList.parallelStream().filter(interfaceInfo -> {
+            Socket socket = new Socket();
+            try {
+                socket.bind(new InetSocketAddress(interfaceInfo.getIp(), 0));
+                socket.connect(httpAddress, 1000);
+                return true;
+            } catch (Exception e) {
+                return false;
+            } finally {
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+        }).collect(Collectors.toList());
+        return collect;
     }
 
     private void runService() throws Exception {
@@ -124,13 +176,15 @@ public class MainWindowController implements EventHandler<ActionEvent> {
                 });
                 return;
             }
-            tunSdWanNode = new TunSdWanNode(config);
+            String controllerServer = HttpApi.getControllerServer(config);
+            config.setControllerServer(controllerServer);
             config.setLocalAddress(localIp);
+            tunSdWanNode = new TunSdWanNode(config);
             tunSdWanNode.addEventListener(new EventListener() {
                 @Override
                 public void onConnected() {
                     Platform.runLater(() -> {
-                        vipLab.setText(tunSdWanNode.getLocalVip());
+                        vipText.setText(tunSdWanNode.getLocalVip());
                     });
                 }
 
@@ -165,6 +219,20 @@ public class MainWindowController implements EventHandler<ActionEvent> {
                     statusLab.setText("已连接");
                     stopBtn.setDisable(false);
                 });
+            } catch (ProcessCodeException e) {
+                Platform.runLater(() -> {
+                    if (SDWanProtos.MessageCode.NotGrant.getNumber() == e.getCode()) {
+                        statusLab.setText("未授权");
+                    } else {
+                        statusLab.setText("连接异常");
+                    }
+                    startBtn.setDisable(false);
+                    stopBtn.setDisable(true);
+                    netSelect.setDisable(false);
+                    refreshBtn.setDisable(false);
+                    settingBtn.setDisable(false);
+                });
+                throw e;
             } catch (Exception e) {
                 Platform.runLater(() -> {
                     statusLab.setText("连接异常");
@@ -188,7 +256,7 @@ public class MainWindowController implements EventHandler<ActionEvent> {
                 netSelect.setDisable(false);
                 refreshBtn.setDisable(false);
                 settingBtn.setDisable(false);
-                vipLab.setText("-");
+                vipText.setText("-");
             });
         }
     }
@@ -221,7 +289,7 @@ public class MainWindowController implements EventHandler<ActionEvent> {
                     alert.getButtonTypes().setAll(new ButtonType("是"));
                     alert.showAndWait();
                     String path = Jpackage.getAppPath();
-                    OsxShell.executeRoot(path, new String[0]);
+                    OsxShell.executeScriptRoot(path, new String[0]);
                     System.exit(0);
                     return;
                 }

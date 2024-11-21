@@ -17,7 +17,9 @@ sa-token:
 spring:
   servlet:
     multipart:
+      enabled: true
       max-file-size: 1GB
+      max-request-size: 1GB
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true

@@ -16,7 +16,8 @@ public class AppVersionPO extends BasePO<AppVersionPO> {
     private String name;
     private String description;
     private String path;
-    private String os;
+    private String md5;
+    private String platform;
     @TableField("create_time")
     private Date createTime;
 }
