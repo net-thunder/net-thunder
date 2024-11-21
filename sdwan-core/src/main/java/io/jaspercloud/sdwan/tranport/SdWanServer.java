@@ -241,6 +241,7 @@ public class SdWanServer implements Lifecycle, Runnable {
                     .setCode(SDWanProtos.MessageCode.Success)
                     .setVip(vip)
                     .setMaskBits(ipPool.getMaskBits())
+                    .setCidr(String.format("%s/%s", ipPool.getNetworkIdentifier(), ipPool.getMaskBits()))
                     .setNodeList(nodeInfoList)
                     .setRouteList(SDWanProtos.RouteList.newBuilder()
                             .addAllRoute(buildRouteList(thisNodeConfig.getRouteConfigList()))
