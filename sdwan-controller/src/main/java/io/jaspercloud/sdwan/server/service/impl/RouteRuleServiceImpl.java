@@ -33,7 +33,7 @@ public class RouteRuleServiceImpl implements RouteRuleService {
     public void add(EditRouteRuleRequest request) {
         checkUnique(request.getId(), request.getName());
         RouteRule routeRule = BeanUtil.toBean(request, RouteRule.class);
-        RouteRulePO rulePO = RouteRule.Transformer.build(routeRule);
+        RouteRulePO rulePO = routeRuleRepository.getTransformer().build(routeRule);
         rulePO.setId(null);
         rulePO.insert();
         if (CollectionUtil.isNotEmpty(request.getGroupIdList())) {
@@ -45,7 +45,7 @@ public class RouteRuleServiceImpl implements RouteRuleService {
     public void edit(EditRouteRuleRequest request) {
         checkUnique(request.getId(), request.getName());
         RouteRule routeRule = BeanUtil.toBean(request, RouteRule.class);
-        RouteRulePO rulePO = RouteRule.Transformer.build(routeRule);
+        RouteRulePO rulePO = routeRuleRepository.getTransformer().build(routeRule);
         rulePO.updateById();
         if (null != request.getGroupIdList()) {
             groupConfigService.updateGroupRouteRule(rulePO.getId(), request.getGroupIdList());

@@ -281,11 +281,14 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
             List<Long> groupIdList = groupService.queryGroupIdListByMemberId(node.getId());
             List<Group> groupList = groupService.queryDetailList(groupIdList);
             List<Route> routeList = routeService.queryDetailByIdList(groupList.stream()
-                    .flatMap(e -> e.getRouteIdList().stream()).distinct().collect(Collectors.toList()));
+                            .flatMap(e -> e.getRouteIdList().stream()).distinct().collect(Collectors.toList()))
+                    .stream().filter(e -> e.getEnable()).collect(Collectors.toList());
             List<RouteRule> routeRuleList = routeRuleService.queryByIdList(groupList.stream()
-                    .flatMap(e -> e.getRouteRuleIdList().stream()).distinct().collect(Collectors.toList()));
+                            .flatMap(e -> e.getRouteRuleIdList().stream()).distinct().collect(Collectors.toList()))
+                    .stream().filter(e -> e.getEnable()).collect(Collectors.toList());
             List<VNAT> vnatList = vnatService.queryIdList(groupList.stream()
-                    .flatMap(e -> e.getVnatIdList().stream()).distinct().collect(Collectors.toList()));
+                            .flatMap(e -> e.getVnatIdList().stream()).distinct().collect(Collectors.toList()))
+                    .stream().filter(e -> e.getEnable()).collect(Collectors.toList());
             nodeDetail.setRouteList(routeList);
             nodeDetail.setRouteRuleList(routeRuleList);
             nodeDetail.setVnatList(vnatList);

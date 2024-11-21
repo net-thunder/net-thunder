@@ -5,7 +5,9 @@ import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.exception.ProcessCodeException;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.node.event.UpdateNodeInfoEvent;
+import io.jaspercloud.sdwan.node.rule.CidrRouteRulePredicate;
 import io.jaspercloud.sdwan.route.VirtualRouter;
+import io.jaspercloud.sdwan.route.rule.RouteRulePredicate;
 import io.jaspercloud.sdwan.stun.NatAddress;
 import io.jaspercloud.sdwan.support.AddressUri;
 import io.jaspercloud.sdwan.support.AsyncTask;
@@ -138,6 +140,11 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                             case SDWanProtos.MessageTypeCode.RouteListType_VALUE: {
                                 SDWanProtos.RouteList routeList = SDWanProtos.RouteList.parseFrom(msg.getData());
                                 virtualRouter.updateRoutes(routeList.getRouteList());
+                                break;
+                            }
+                            case SDWanProtos.MessageTypeCode.RouteRuleListType_VALUE: {
+                                SDWanProtos.RouteRuleList routeRuleList = SDWanProtos.RouteRuleList.parseFrom(msg.getData());
+                                virtualRouter.updateRouteRules(buildRouteRuleList(routeRuleList.getRouteRuleList()));
                                 break;
                             }
                             case SDWanProtos.MessageTypeCode.VNATListType_VALUE: {
@@ -334,9 +341,17 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         });
         virtualRouter.updateCidr(vipCidr);
         virtualRouter.updateRoutes(regResp.getRouteList().getRouteList());
+        virtualRouter.updateRouteRules(buildRouteRuleList(regResp.getRouteRuleList().getRouteRuleList()));
         virtualRouter.updateVNATs(regResp.getVnatList().getVnatList());
         log.info("SdWanNode installed");
         fireEvent(EventListener::onConnected);
+    }
+
+    private List<RouteRulePredicate> buildRouteRuleList(List<SDWanProtos.RouteRule> routeRuleList) {
+        List<RouteRulePredicate> collect = routeRuleList.stream()
+                .map(e -> new CidrRouteRulePredicate(e))
+                .collect(Collectors.toList());
+        return collect;
     }
 
     protected void uninstall() throws Exception {

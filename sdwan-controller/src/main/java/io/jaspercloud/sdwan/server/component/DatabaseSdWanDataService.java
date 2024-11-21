@@ -77,7 +77,9 @@ public class DatabaseSdWanDataService implements SdWanDataService {
                 List<RouteRuleConfig> collect = detailResponse.getRouteRuleList().stream()
                         .map(rule -> {
                             RouteRuleConfig routeRuleConfig = new RouteRuleConfig();
-                            routeRuleConfig.setDirection(DirectionEnum.valueOf(rule.getDirection().name()));
+                            routeRuleConfig.setStrategy(rule.getStrategy());
+                            routeRuleConfig.setDirection(rule.getDirection());
+                            routeRuleConfig.setLevel(rule.getLevel());
                             routeRuleConfig.setRuleList(rule.getRuleList());
                             return routeRuleConfig;
                         }).collect(Collectors.toList());

@@ -17,7 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/group")
-public class GroupController {
+public class GroupController extends BaseController {
 
     @Resource
     private GroupService groupService;
@@ -61,6 +61,7 @@ public class GroupController {
             }
         }
         groupService.updateMemberList(request.getGroupId(), request.getMemberIdList());
+        reloadClientList();
     }
 
     @GetMapping("/memberList/{id}")

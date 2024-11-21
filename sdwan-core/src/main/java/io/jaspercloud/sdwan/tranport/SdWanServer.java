@@ -72,6 +72,28 @@ public class SdWanServer implements Lifecycle, Runnable {
         this.handler = handler;
     }
 
+    public void offlineChannel(String tenantCode, String vip) {
+        ChannelSpace channelSpace = channelSpaceMap.get(tenantCode);
+        if (null == channelSpace) {
+            return;
+        }
+        Channel channel = channelSpace.getChannel(vip);
+        if (null == channel) {
+            return;
+        }
+        channel.close();
+    }
+
+    public void offlineChannelList(String tenantCode) {
+        ChannelSpace channelSpace = channelSpaceMap.get(tenantCode);
+        if (null == channelSpace) {
+            return;
+        }
+        for (Channel channel : channelSpace.getChannelList()) {
+            channel.close();
+        }
+    }
+
     private void processMsg(ChannelHandlerContext ctx, SDWanProtos.Message msg) {
         switch (msg.getType().getNumber()) {
             case SDWanProtos.MessageTypeCode.HeartType_VALUE: {
@@ -273,12 +295,16 @@ public class SdWanServer implements Lifecycle, Runnable {
     }
 
     private List<SDWanProtos.RouteRule> buildRouteRuleList(List<RouteRuleConfig> list) {
-        List<SDWanProtos.RouteRule> collect = list.stream().map(e -> {
-            return SDWanProtos.RouteRule.newBuilder()
-                    .setDirection(e.getDirection().name())
-                    .addAllRuleList(e.getRuleList())
-                    .build();
-        }).collect(Collectors.toList());
+        list.sort((o1, o2) -> Integer.compare(o1.getLevel(), o2.getLevel()));
+        List<SDWanProtos.RouteRule> collect = list.stream()
+                .map(e -> {
+                    return SDWanProtos.RouteRule.newBuilder()
+                            .setStrategy(e.getStrategy().name())
+                            .setDirection(e.getDirection().name())
+                            .setLevel(e.getLevel())
+                            .addAllRuleList(e.getRuleList())
+                            .build();
+                }).collect(Collectors.toList());
         return collect;
     }
 

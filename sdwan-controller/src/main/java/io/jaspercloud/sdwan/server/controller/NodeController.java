@@ -5,6 +5,7 @@ import io.jaspercloud.sdwan.server.controller.request.EditNodeRequest;
 import io.jaspercloud.sdwan.server.controller.response.NodeDetailResponse;
 import io.jaspercloud.sdwan.server.controller.response.NodeResponse;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
+import io.jaspercloud.sdwan.server.entity.Node;
 import io.jaspercloud.sdwan.server.entity.Tenant;
 import io.jaspercloud.sdwan.server.service.NodeService;
 import io.jaspercloud.sdwan.server.service.TenantService;
@@ -20,7 +21,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/node")
-public class NodeController {
+public class NodeController extends BaseController {
 
     @Resource
     private NodeService nodeService;
@@ -39,6 +40,11 @@ public class NodeController {
     @PostMapping("/edit")
     public void edit(@Validated(ValidGroup.Update.class) @RequestBody EditNodeRequest request) {
         nodeService.edit(request);
+        Node node = nodeService.queryById(request.getId());
+        if (null == node.getVip()) {
+            return;
+        }
+        reloadClient(node.getVip());
     }
 
     @PostMapping("/del")

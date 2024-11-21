@@ -9,7 +9,7 @@ public final class Multicast {
     }
 
     public static boolean isMulticastIp(String ip) {
-        int addr = IPUtil.ip2int(ip);
+        long addr = IPUtil.ip2long(ip);
         if (-1 == addr) {
             // 255.255.255.255
             return true;

@@ -16,7 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/route-rule")
-public class RouteRuleController {
+public class RouteRuleController extends BaseController {
 
     @Resource
     private RouteRuleService routeRuleService;
@@ -28,12 +28,14 @@ public class RouteRuleController {
     public void add(@Validated(ValidGroup.Add.class) @RequestBody EditRouteRuleRequest request) {
         request.check();
         routeRuleService.add(request);
+        reloadClientList();
     }
 
     @PostMapping("/edit")
     public void edit(@Validated(ValidGroup.Update.class) @RequestBody EditRouteRuleRequest request) {
         request.check();
         routeRuleService.edit(request);
+        reloadClientList();
     }
 
     @PostMapping("/del")

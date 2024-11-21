@@ -32,6 +32,7 @@ enum MessageTypeCode {
   VNATListType = 203;
   NodeOnlineType = 205;
   NodeOfflineType = 206;
+  RouteRuleListType = 207;
   //
   HeartType = 301;
   //oneWay
@@ -104,8 +105,10 @@ message RouteList {
 }
 
 message RouteRule {
-  required string direction = 1;
-  repeated string ruleList = 2;
+  required string strategy = 1;
+  required string direction = 2;
+  required int32 level = 3;
+  repeated string ruleList = 4;
 }
 
 message RouteRuleList {
