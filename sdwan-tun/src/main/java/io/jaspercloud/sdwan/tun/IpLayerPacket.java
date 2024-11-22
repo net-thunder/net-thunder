@@ -1,12 +1,13 @@
 package io.jaspercloud.sdwan.tun;
 
-import io.jaspercloud.sdwan.support.Referenced;
 import io.jaspercloud.sdwan.util.ByteBufUtil;
 import io.jaspercloud.sdwan.util.IPUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.util.ReferenceCounted;
 
-public class IpLayerPacket implements Referenced {
+import java.util.Arrays;
+
+public class IpLayerPacket implements IpPacket {
 
     private ByteBuf byteBuf;
     private boolean update = false;
@@ -25,20 +26,69 @@ public class IpLayerPacket implements Referenced {
         update = true;
     }
 
-    public String getSrcIP() {
-        return readIp(12);
+    @Override
+    public short getVersion() {
+        try {
+            byteBuf.markReaderIndex();
+            byteBuf.readerIndex(9);
+            short protocol = byteBuf.readUnsignedByte();
+            return protocol;
+        } finally {
+            byteBuf.resetReaderIndex();
+        }
     }
 
-    public String getDstIP() {
-        return readIp(16);
-    }
-
+    @Override
     public int getProtocol() {
         try {
             byteBuf.markReaderIndex();
             byteBuf.readerIndex(9);
             int protocol = byteBuf.readUnsignedByte();
             return protocol;
+        } finally {
+            byteBuf.resetReaderIndex();
+        }
+    }
+
+    @Override
+    public String getSrcIP() {
+        return readIp(12);
+    }
+
+    @Override
+    public String getDstIP() {
+        return readIp(16);
+    }
+
+    public int getSrcPort() {
+        return readPort(20);
+    }
+
+    public int getDstPort() {
+        return readPort(22);
+    }
+
+    public String getIpQuadruplet() {
+        if (!Arrays.asList(IpPacket.Tcp, IpPacket.Udp).contains(getProtocol())) {
+            throw new UnsupportedOperationException();
+        }
+        String srcIP = getSrcIP();
+        String dstIP = getDstIP();
+        int srcPort = getSrcPort();
+        int dstPort = getDstPort();
+        String key = String.format("%s:%d->%s:%d", srcIP, srcPort, dstIP, dstPort);
+        return key;
+    }
+
+    public int getIdentifier() {
+        if (IpPacket.Icmp != getProtocol()) {
+            throw new UnsupportedOperationException();
+        }
+        byteBuf.markReaderIndex();
+        try {
+            byteBuf.readerIndex(24);
+            int identifier = byteBuf.readUnsignedShort();
+            return identifier;
         } finally {
             byteBuf.resetReaderIndex();
         }
@@ -81,6 +131,17 @@ public class IpLayerPacket implements Referenced {
             byte[] bytes = new byte[4];
             byteBuf.readBytes(bytes);
             return IPUtil.bytes2ip(bytes);
+        } finally {
+            byteBuf.resetReaderIndex();
+        }
+    }
+
+    private int readPort(int index) {
+        byteBuf.markReaderIndex();
+        try {
+            byteBuf.readerIndex(index);
+            int port = byteBuf.readUnsignedShort();
+            return port;
         } finally {
             byteBuf.resetReaderIndex();
         }
