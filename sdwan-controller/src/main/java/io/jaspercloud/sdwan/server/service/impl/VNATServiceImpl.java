@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -127,6 +128,13 @@ public class VNATServiceImpl implements VNATService {
         List<VNAT> list = vnatRepository.query()
                 .in(VNAT::getId, idList)
                 .list();
+        Map<Long, List<Long>> map = vnatNodeItemRepository.query()
+                .in(VNATNodeItem::getVnatId, list.stream().map(e -> e.getId()).collect(Collectors.toList()))
+                .list().stream().collect(Collectors.groupingBy(e -> e.getVnatId(), Collectors.mapping(e -> e.getNodeId(), Collectors.toList())));
+        list.forEach(e -> {
+            List<Long> itemList = map.getOrDefault(e.getId(), Collections.emptyList());
+            e.setNodeIdList(itemList);
+        });
         return list;
     }
 

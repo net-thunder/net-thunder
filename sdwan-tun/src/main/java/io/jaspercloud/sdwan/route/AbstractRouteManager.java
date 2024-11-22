@@ -38,16 +38,7 @@ public abstract class AbstractRouteManager implements RouteManager, Consumer<Lis
         try {
             status.set(true);
             virtualRouter.addListener(this);
-            TunAddress tunAddress = (TunAddress) tunChannel.localAddress();
-            List<SDWanProtos.Route> apply = new ArrayList<>();
-            for (SDWanProtos.Route route : virtualRouter.getRouteList()) {
-                if (route.getNexthopList().contains(tunAddress.getIp())) {
-                    continue;
-                }
-                addRoute(tunChannel, route);
-                apply.add(route);
-            }
-            cache.set(apply);
+            accept(virtualRouter.getRouteList());
         } finally {
             lock.unlock();
         }
@@ -88,14 +79,20 @@ public abstract class AbstractRouteManager implements RouteManager, Consumer<Lis
                     log.error(e.getMessage(), e);
                 }
             }
+            TunAddress tunAddress = (TunAddress) tunChannel.localAddress();
+            List<SDWanProtos.Route> applyList = new ArrayList<>();
             for (SDWanProtos.Route route : routes) {
+                if (route.getNexthopList().contains(tunAddress.getIp())) {
+                    continue;
+                }
                 try {
                     addRoute(tunChannel, route);
+                    applyList.add(route);
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);
                 }
             }
-            cache.set(routes);
+            cache.set(applyList);
         } finally {
             lock.unlock();
         }
