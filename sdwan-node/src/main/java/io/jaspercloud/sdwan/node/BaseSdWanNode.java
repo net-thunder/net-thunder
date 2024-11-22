@@ -340,11 +340,25 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
             nodeInfoMap.put(e.getVip(), e);
         });
         virtualRouter.updateCidr(vipCidr);
-        virtualRouter.updateRoutes(regResp.getRouteList().getRouteList());
+        virtualRouter.updateRoutes(mergeRouteList(regResp.getRouteList().getRouteList(), regResp.getVnatList().getVnatList()));
         virtualRouter.updateRouteRules(buildRouteRuleList(regResp.getRouteRuleList().getRouteRuleList()));
         virtualRouter.updateVNATs(regResp.getVnatList().getVnatList());
         log.info("SdWanNode installed");
         fireEvent(EventListener::onConnected);
+    }
+
+    private List<SDWanProtos.Route> mergeRouteList(List<SDWanProtos.Route> routeList, List<SDWanProtos.VNAT> vnatList) {
+        List<SDWanProtos.Route> list = new ArrayList<>();
+        list.addAll(routeList);
+        List<SDWanProtos.Route> collect = vnatList.stream().map(e -> {
+            SDWanProtos.Route route = SDWanProtos.Route.newBuilder()
+                    .setDestination(e.getSrc())
+                    .addAllNexthop(e.getVipListList())
+                    .build();
+            return route;
+        }).collect(Collectors.toList());
+        list.addAll(collect);
+        return list;
     }
 
     private List<RouteRulePredicate> buildRouteRuleList(List<SDWanProtos.RouteRule> routeRuleList) {
