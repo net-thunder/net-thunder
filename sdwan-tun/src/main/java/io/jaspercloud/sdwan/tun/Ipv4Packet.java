@@ -9,10 +9,6 @@ import lombok.Setter;
 
 public class Ipv4Packet implements IpPacket {
 
-    public static final int Icmp = 1;
-    public static final int Tcp = 6;
-    public static final int Udp = 17;
-
     private short version;
     //IPV4+(TCP/UDP)
     private short headerLen;
@@ -27,6 +23,7 @@ public class Ipv4Packet implements IpPacket {
     private String dstIP;
     private ByteBuf payload;
 
+    @Override
     public short getVersion() {
         return version;
     }
@@ -83,6 +80,7 @@ public class Ipv4Packet implements IpPacket {
         this.liveTime = liveTime;
     }
 
+    @Override
     public int getProtocol() {
         return protocol;
     }
@@ -99,6 +97,7 @@ public class Ipv4Packet implements IpPacket {
         this.checksum = checksum;
     }
 
+    @Override
     public String getSrcIP() {
         return srcIP;
     }
@@ -107,6 +106,7 @@ public class Ipv4Packet implements IpPacket {
         this.srcIP = srcIP;
     }
 
+    @Override
     public String getDstIP() {
         return dstIP;
     }
