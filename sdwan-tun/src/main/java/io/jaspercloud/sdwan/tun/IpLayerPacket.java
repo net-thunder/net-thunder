@@ -68,29 +68,30 @@ public class IpLayerPacket implements IpPacket {
         return readPort(22);
     }
 
-    public String getIpQuadruplet() {
-        if (!Arrays.asList(IpPacket.Tcp, IpPacket.Udp).contains(getProtocol())) {
+    public String getIdentifier() {
+        int protocol = getProtocol();
+        if (IpPacket.Icmp == protocol) {
+            String srcIP = getSrcIP();
+            String dstIP = getDstIP();
+            int identifier;
+            byteBuf.markReaderIndex();
+            try {
+                byteBuf.readerIndex(24);
+                identifier = byteBuf.readUnsignedShort();
+            } finally {
+                byteBuf.resetReaderIndex();
+            }
+            String key = String.format("%s:%s %s->%s", protocol, identifier, srcIP, dstIP);
+            return key;
+        } else if (Arrays.asList(IpPacket.Tcp, IpPacket.Udp).contains(protocol)) {
+            String srcIP = getSrcIP();
+            String dstIP = getDstIP();
+            int srcPort = getSrcPort();
+            int dstPort = getDstPort();
+            String key = String.format("%s: %s:%d->%s:%d", protocol, srcIP, srcPort, dstIP, dstPort);
+            return key;
+        } else {
             throw new UnsupportedOperationException();
-        }
-        String srcIP = getSrcIP();
-        String dstIP = getDstIP();
-        int srcPort = getSrcPort();
-        int dstPort = getDstPort();
-        String key = String.format("%s:%d->%s:%d", srcIP, srcPort, dstIP, dstPort);
-        return key;
-    }
-
-    public int getIdentifier() {
-        if (IpPacket.Icmp != getProtocol()) {
-            throw new UnsupportedOperationException();
-        }
-        byteBuf.markReaderIndex();
-        try {
-            byteBuf.readerIndex(24);
-            int identifier = byteBuf.readUnsignedShort();
-            return identifier;
-        } finally {
-            byteBuf.resetReaderIndex();
         }
     }
 

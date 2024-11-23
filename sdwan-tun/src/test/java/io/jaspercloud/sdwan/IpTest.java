@@ -44,7 +44,7 @@ public class IpTest {
         String dstIP = ipLayerPacket.getDstIP();
         int srcPort = ipLayerPacket.getSrcPort();
         int dstPort = ipLayerPacket.getDstPort();
-        String ipQuadruplet = ipLayerPacket.getIpQuadruplet();
+        String identifier = ipLayerPacket.getIdentifier();
         System.out.println();
     }
 
@@ -55,16 +55,16 @@ public class IpTest {
                     "e04818eb3551118f000000008002faf0a4f90000020405b40103030801010402";
             ByteBuf byteBuf = ByteBufUtil.toByteBuf(ByteBufUtil.toBytes(send));
             IpLayerPacket ipLayerPacket = new IpLayerPacket(byteBuf);
-            String ipQuadruplet = ipLayerPacket.getIpQuadruplet();
-            System.out.println("send: " + ipQuadruplet);
+            String identifier = ipLayerPacket.getIdentifier();
+            System.out.println("send: " + identifier);
         }
         {
             String recv = "45000034000040003c06afb2c0a80d49c0de0042" +
                     "18ebe048f64e23ba355111908012a564e0680000020405b4010104020103030b";
             ByteBuf byteBuf = ByteBufUtil.toByteBuf(ByteBufUtil.toBytes(recv));
             IpLayerPacket ipLayerPacket = new IpLayerPacket(byteBuf);
-            String ipQuadruplet = ipLayerPacket.getIpQuadruplet();
-            System.out.println("recv: " + ipQuadruplet);
+            String identifier = ipLayerPacket.getIdentifier();
+            System.out.println("recv: " + identifier);
         }
         System.out.println();
     }
@@ -76,7 +76,7 @@ public class IpTest {
                     "0000107530b000006740551e0004177508090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f3031323334353637";
             ByteBuf byteBuf = ByteBufUtil.toByteBuf(ByteBufUtil.toBytes(hex));
             IpLayerPacket ipLayerPacket = new IpLayerPacket(byteBuf);
-            int identifier = ipLayerPacket.getIdentifier();
+            String identifier = ipLayerPacket.getIdentifier();
             System.out.println("hex: " + identifier);
         }
         {
@@ -84,7 +84,7 @@ public class IpTest {
                     "08004b200100013c6162636465666768696a6b6c6d6e6f7071727374757677616263646566676869";
             ByteBuf byteBuf = ByteBufUtil.toByteBuf(ByteBufUtil.toBytes(send));
             IpLayerPacket ipLayerPacket = new IpLayerPacket(byteBuf);
-            int identifier = ipLayerPacket.getIdentifier();
+            String identifier = ipLayerPacket.getIdentifier();
             System.out.println("send: " + identifier);
         }
         {
@@ -92,7 +92,7 @@ public class IpTest {
                     "000053200100013c6162636465666768696a6b6c6d6e6f7071727374757677616263646566676869";
             ByteBuf byteBuf = ByteBufUtil.toByteBuf(ByteBufUtil.toBytes(recv));
             IpLayerPacket ipLayerPacket = new IpLayerPacket(byteBuf);
-            int identifier = ipLayerPacket.getIdentifier();
+            String identifier = ipLayerPacket.getIdentifier();
             System.out.println("recv: " + identifier);
         }
         System.out.println();
