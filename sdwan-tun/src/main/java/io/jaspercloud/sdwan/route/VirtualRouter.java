@@ -1,5 +1,7 @@
 package io.jaspercloud.sdwan.route;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.protobuf.ProtocolStringList;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.route.rule.RouteRuleDirectionEnum;
@@ -13,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
@@ -32,25 +35,21 @@ public class VirtualRouter {
     private List<SDWanProtos.Route> routeList = Collections.emptyList();
     private List<RouteRulePredicate> routeInRuleList = Collections.emptyList();
     private List<RouteRulePredicate> routeOutRuleList = Collections.emptyList();
-    private Map<String, SDWanProtos.VNAT> vnatInMap = Collections.emptyMap();
-    private Map<String, SDWanProtos.VNAT> vnatOutMap = Collections.emptyMap();
+    private Map<String, SDWanProtos.VNAT> vnatMap = Collections.emptyMap();
+    private Cache<String, String> vnatMappingCache = Caffeine.newBuilder()
+            .expireAfterWrite(30, TimeUnit.MINUTES)
+            .build();
 
-    private Map<String, SDWanProtos.VNAT> getVnatInMap() {
+    private Map<String, SDWanProtos.VNAT> getVnatMap() {
         lock.readLock().lock();
         try {
-            return vnatInMap;
+            return vnatMap;
         } finally {
             lock.readLock().unlock();
         }
     }
 
-    private Map<String, SDWanProtos.VNAT> getVnatOutMap() {
-        lock.readLock().lock();
-        try {
-            return vnatOutMap;
-        } finally {
-            lock.readLock().unlock();
-        }
+    public VirtualRouter() {
     }
 
     public void addListener(Consumer<List<SDWanProtos.Route>> listener) {
@@ -117,17 +116,14 @@ public class VirtualRouter {
     }
 
     public void updateVNATs(List<SDWanProtos.VNAT> vnatList) {
-        Map<String, SDWanProtos.VNAT> inMap = new ConcurrentHashMap();
-        Map<String, SDWanProtos.VNAT> outMap = new ConcurrentHashMap();
+        Map<String, SDWanProtos.VNAT> map = new ConcurrentHashMap();
         vnatList.forEach(e -> {
             log.info("addVNAT: src={}, dst={}, vipList={}", e.getSrc(), e.getDst(), e.getVipListList());
-            inMap.put(e.getSrc(), e);
-            outMap.put(e.getDst(), e);
+            map.put(e.getSrc(), e);
         });
         lock.writeLock().lock();
         try {
-            vnatInMap = inMap;
-            vnatOutMap = outMap;
+            vnatMap = map;
         } finally {
             lock.writeLock().unlock();
         }
@@ -139,12 +135,15 @@ public class VirtualRouter {
                 return null;
             }
         }
-        SDWanProtos.VNAT vnat = findVNAT(getVnatInMap(), packet, IpLayerPacket::getDstIP);
+        SDWanProtos.VNAT vnat = findVNAT(getVnatMap(), packet, IpLayerPacket::getDstIP);
         if (null == vnat) {
             return packet;
         }
-        String natIp = natInIp(vnat, packet.getDstIP());
+        String dstIP = packet.getDstIP();
+        String natIp = natIp(vnat, dstIP);
         packet.setDstIP(natIp);
+        String identifier = packet.getIdentifier(true);
+        vnatMappingCache.put(identifier, dstIP);
         return packet;
     }
 
@@ -154,12 +153,11 @@ public class VirtualRouter {
                 return null;
             }
         }
-        String dstIP = packet.getDstIP();
-        SDWanProtos.VNAT vnat = findVNAT(getVnatOutMap(), packet, IpLayerPacket::getSrcIP);
-        if (null != vnat) {
-            String natIp = natOutIp(vnat, packet.getSrcIP());
-            packet.setSrcIP(natIp);
+        String originalIp = vnatMappingCache.getIfPresent(packet.getIdentifier());
+        if (null != originalIp) {
+            packet.setSrcIP(originalIp);
         }
+        String dstIP = packet.getDstIP();
         if (Cidr.contains(cidr, dstIP)) {
             return dstIP;
         }
@@ -167,16 +165,9 @@ public class VirtualRouter {
         return dstIP;
     }
 
-    private String natInIp(SDWanProtos.VNAT vnat, String ip) {
+    private String natIp(SDWanProtos.VNAT vnat, String ip) {
         Cidr from = Cidr.parseCidr(vnat.getSrc());
         Cidr to = Cidr.parseCidr(vnat.getDst());
-        String natIp = Cidr.transform(ip, from, to);
-        return natIp;
-    }
-
-    private String natOutIp(SDWanProtos.VNAT vnat, String ip) {
-        Cidr from = Cidr.parseCidr(vnat.getDst());
-        Cidr to = Cidr.parseCidr(vnat.getSrc());
         String natIp = Cidr.transform(ip, from, to);
         return natIp;
     }
