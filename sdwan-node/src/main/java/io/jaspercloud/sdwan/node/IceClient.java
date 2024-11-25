@@ -247,7 +247,7 @@ public class IceClient implements TransportLifecycle, Runnable {
                         Map<AttrType, Attr> attrs = packet.content().getAttrs();
                         AddressAttr mappedAddressAttr = (AddressAttr) attrs.get(AttrType.MappedAddress);
                         InetSocketAddress natAddress = mappedAddressAttr.getAddress();
-                        log.info("connect stunServer success: address={}, publicAddress={}", address, natAddress);
+                        log.info("connect stunServer success: address={}, publicAddress={}", address, SocketAddressUtil.toAddress(natAddress));
                         Map<String, String> params = new HashMap<>();
                         params.put("server", address);
                         AddressUri addressUri = AddressUri.builder()
