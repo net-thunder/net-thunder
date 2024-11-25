@@ -247,7 +247,9 @@ public class IceClient implements TransportLifecycle, Runnable {
                         Map<AttrType, Attr> attrs = packet.content().getAttrs();
                         AddressAttr mappedAddressAttr = (AddressAttr) attrs.get(AttrType.MappedAddress);
                         InetSocketAddress natAddress = mappedAddressAttr.getAddress();
-                        log.info("connect stunServer success: address={}, publicAddress={}", address, SocketAddressUtil.toAddress(natAddress));
+                        if (log.isDebugEnabled()) {
+                            log.info("connect stunServer success: address={}, publicAddress={}", address, SocketAddressUtil.toAddress(natAddress));
+                        }
                         Map<String, String> params = new HashMap<>();
                         params.put("server", address);
                         AddressUri addressUri = AddressUri.builder()
@@ -278,7 +280,9 @@ public class IceClient implements TransportLifecycle, Runnable {
                         StunMessage stunMessage = packet.content();
                         StringAttr attr = stunMessage.getAttr(AttrType.RelayToken);
                         String token = attr.getData();
-                        log.info("connect relayServer success: address={}, token={}", address, token);
+                        if (log.isDebugEnabled()) {
+                            log.info("connect relayServer success: address={}, token={}", address, token);
+                        }
                         Map<String, String> params = new HashMap<>();
                         params.put("server", address);
                         params.put("token", token);

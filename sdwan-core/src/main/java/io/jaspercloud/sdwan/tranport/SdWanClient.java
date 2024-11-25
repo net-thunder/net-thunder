@@ -84,7 +84,9 @@ public class SdWanClient implements TransportLifecycle, Runnable {
     }
 
     public void updateNodeInfo(List<String> list) {
-        log.info("updateNodeInfo: {}", StringUtils.join(list));
+        if (log.isDebugEnabled()) {
+            log.info("updateNodeInfo: {}", StringUtils.join(list));
+        }
         SDWanProtos.NodeInfoReq nodeInfoReq = SDWanProtos.NodeInfoReq.newBuilder()
                 .addAllAddressUri(list)
                 .build();
