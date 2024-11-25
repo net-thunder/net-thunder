@@ -43,16 +43,12 @@ public class ChaosNodeTest {
             while (true) {
                 try {
                     String address = InetAddress.getLocalHost().getHostAddress();
-                    TunSdWanNode sdWanNode = new TunSdWanNode(SdWanNodeConfig.builder()
-                            .controllerServer(address + ":1800")
-                            .relayServerList(Arrays.asList(address + ":2478"))
-                            .stunServerList(Arrays.asList(address + ":3478"))
-                            .connectTimeout(3 * 1000)
-                            .heartTime(15 * 1000)
-                            .p2pHeartTime(10 * 1000)
-                            .tunName(tun)
-                            .mtu(1440)
-                            .build()) {
+                    SdWanNodeConfig nodeConfig = new SdWanNodeConfig();
+                    nodeConfig.setTunName(tun);
+                    nodeConfig.setControllerServer(address + ":1800");
+                    nodeConfig.setRelayServerList(Arrays.asList(address + ":2478"));
+                    nodeConfig.setStunServerList(Arrays.asList(address + ":3478"));
+                    TunSdWanNode sdWanNode = new TunSdWanNode(nodeConfig) {
                         @Override
                         protected String processMacAddress(String hardwareAddress) {
                             return mac;

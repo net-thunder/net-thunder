@@ -41,7 +41,7 @@ public class P2pClientTest {
         p2pClient1.start();
         P2pClient p2pClient2 = new P2pClient(1002, () -> new ChannelInboundHandlerAdapter());
         p2pClient2.start();
-        p2pClient2.transfer("127.0.0.1", new InetSocketAddress("127.0.0.1", 1001), "test".getBytes());
+        p2pClient2.transfer("127.0.0.1", "p2p", new InetSocketAddress("127.0.0.1", 1001), "test".getBytes());
         StunPacket stunPacket = future.get();
         BytesAttr attr = stunPacket.content().getAttr(AttrType.Data);
         byte[] data = attr.getData();
