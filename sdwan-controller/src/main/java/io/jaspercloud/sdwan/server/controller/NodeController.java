@@ -14,6 +14,7 @@ import io.jaspercloud.sdwan.server.service.TenantService;
 import io.jaspercloud.sdwan.support.AddressUri;
 import io.jaspercloud.sdwan.support.ChannelAttributes;
 import io.jaspercloud.sdwan.tranport.SdWanServer;
+import io.jaspercloud.sdwan.util.AddressType;
 import io.netty.channel.Channel;
 import jakarta.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -77,8 +78,12 @@ public class NodeController extends BaseController {
                         AddressUri addressUri = AddressUri.parse(e);
                         ICEAddress address = new ICEAddress();
                         address.setType(addressUri.getScheme());
-                        address.setAddress(String.format("%s:%d", addressUri.getHost(), addressUri.getPort()));
-                        address.setServer(addressUri.getParams().get("server"));
+                        if (AddressType.RELAY.equals(addressUri.getScheme())) {
+                            address.setInfo(addressUri.getParams().get("token"));
+                        } else {
+                            address.setInfo(String.format("%s:%d", addressUri.getHost(), addressUri.getPort()));
+                        }
+                        address.setProvider(addressUri.getParams().get("server"));
                         return address;
                     }).collect(Collectors.toList());
                     nodeResponse.setAddressList(collect);

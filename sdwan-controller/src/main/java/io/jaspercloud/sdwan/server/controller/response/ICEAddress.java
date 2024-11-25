@@ -8,6 +8,6 @@ import lombok.Setter;
 public class ICEAddress {
 
     private String type;
-    private String address;
-    private String server;
+    private String info;
+    private String provider;
 }
