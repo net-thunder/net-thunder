@@ -32,14 +32,14 @@ public class P2pClientTest {
     @Test
     public void transfer() throws Exception {
         CompletableFuture<StunPacket> future = new CompletableFuture<>();
-        P2pClient p2pClient1 = new P2pClient(1001, 5000, 3000, () -> new SimpleChannelInboundHandler<StunPacket>() {
+        P2pClient p2pClient1 = new P2pClient(1001, () -> new SimpleChannelInboundHandler<StunPacket>() {
             @Override
             protected void channelRead0(ChannelHandlerContext ctx, StunPacket msg) throws Exception {
                 future.complete(msg);
             }
         });
         p2pClient1.start();
-        P2pClient p2pClient2 = new P2pClient(1002, 5000, 3000, () -> new ChannelInboundHandlerAdapter());
+        P2pClient p2pClient2 = new P2pClient(1002, () -> new ChannelInboundHandlerAdapter());
         p2pClient2.start();
         p2pClient2.transfer("127.0.0.1", new InetSocketAddress("127.0.0.1", 1001), "test".getBytes());
         StunPacket stunPacket = future.get();
@@ -51,14 +51,14 @@ public class P2pClientTest {
 
     @Test
     public void ping() throws Exception {
-        P2pClient p2pClient1 = new P2pClient(1001, 5000, 3000, () -> new SimpleChannelInboundHandler<StunPacket>() {
+        P2pClient p2pClient1 = new P2pClient(1001, () -> new SimpleChannelInboundHandler<StunPacket>() {
             @Override
             protected void channelRead0(ChannelHandlerContext ctx, StunPacket msg) throws Exception {
                 System.out.println();
             }
         });
         p2pClient1.start();
-        P2pClient p2pClient2 = new P2pClient(1002, 5000, 3000, () -> new SimpleChannelInboundHandler<StunPacket>() {
+        P2pClient p2pClient2 = new P2pClient(1002, () -> new SimpleChannelInboundHandler<StunPacket>() {
             @Override
             protected void channelRead0(ChannelHandlerContext ctx, StunPacket packet) throws Exception {
                 StunMessage message = packet.content();

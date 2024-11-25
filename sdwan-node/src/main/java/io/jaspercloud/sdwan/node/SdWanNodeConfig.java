@@ -32,8 +32,8 @@ public class SdWanNodeConfig {
     private int relayPort = 0;
 
     private long electionTimeout = 15 * 1000;
-    private long iceHeartTime = 1000;
-    private long iceTimeout = 15 * 1000;
+    private long iceCheckTime = 15 * 1000;
+    private long iceCheckTimeout = 1500;
     private long p2pHeartTime = 1000;
     private long p2pTimeout = 15 * 1000;
 

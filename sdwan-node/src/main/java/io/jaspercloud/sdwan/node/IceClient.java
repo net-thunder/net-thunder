@@ -2,19 +2,23 @@ package io.jaspercloud.sdwan.node;
 
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.exception.ProcessException;
-import io.jaspercloud.sdwan.node.event.UpdateNodeInfoEvent;
 import io.jaspercloud.sdwan.stun.*;
 import io.jaspercloud.sdwan.support.AddressUri;
+import io.jaspercloud.sdwan.support.AsyncTask;
 import io.jaspercloud.sdwan.support.Ecdh;
 import io.jaspercloud.sdwan.tranport.*;
-import io.jaspercloud.sdwan.tranport.event.UpdateAddressUriEvent;
+import io.jaspercloud.sdwan.util.AddressType;
+import io.jaspercloud.sdwan.util.SocketAddressUtil;
 import io.netty.channel.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
 import java.security.KeyPair;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.Map;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
@@ -24,7 +28,7 @@ import java.util.function.Supplier;
  * @create 2024/7/5
  */
 @Slf4j
-public class IceClient implements TransportLifecycle {
+public class IceClient implements TransportLifecycle, Runnable {
 
     private SdWanNodeConfig config;
     private BaseSdWanNode sdWanNode;
@@ -36,6 +40,7 @@ public class IceClient implements TransportLifecycle {
     private P2pTransportManager p2pTransportManager;
     private ElectionProtocol electionProtocol;
     private AtomicBoolean status = new AtomicBoolean(false);
+    private ScheduledExecutorService scheduledExecutorService;
 
     public P2pClient getP2pClient() {
         return p2pClient;
@@ -133,21 +138,6 @@ public class IceClient implements TransportLifecycle {
                         super.channelInactive(ctx);
                     }
                 });
-                pipeline.addLast(new ChannelInboundHandlerAdapter() {
-                    @Override
-                    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-                        if (evt instanceof UpdateAddressUriEvent) {
-                            List<AddressUri> p2pAddressList = p2pClient.getNatAddressUriList();
-                            List<AddressUri> relayAddressList = relayClient.getNatAddressUriList();
-                            UpdateNodeInfoEvent event = new UpdateNodeInfoEvent();
-                            event.setP2pAddressList(p2pAddressList);
-                            event.setRelayAddressList(relayAddressList);
-                            ctx.fireUserEventTriggered(event);
-                        } else {
-                            super.userEventTriggered(ctx, evt);
-                        }
-                    }
-                });
                 pipeline.addLast(handler.get());
             }
         };
@@ -161,10 +151,8 @@ public class IceClient implements TransportLifecycle {
     @Override
     public void start() throws Exception {
         encryptionKeyPair = Ecdh.generateKeyPair();
-        p2pClient = new P2pClient(config.getP2pPort(), config.getIceHeartTime(), config.getIceTimeout(),
-                () -> createStunPacketHandler("p2pClient"));
-        relayClient = new RelayClient(config.getRelayPort(), config.getIceHeartTime(), config.getIceTimeout(),
-                () -> createStunPacketHandler("relayClient"));
+        p2pClient = new P2pClient(config.getP2pPort(), () -> createStunPacketHandler("p2pClient"));
+        relayClient = new RelayClient(config.getRelayPort(), () -> createStunPacketHandler("relayClient"));
         electionProtocol = new ElectionProtocol(config.getTenantId(), p2pClient, relayClient, encryptionKeyPair,
                 config.getElectionTimeout(), config.getP2pTimeout()) {
             @Override
@@ -193,11 +181,8 @@ public class IceClient implements TransportLifecycle {
         relayClient.start();
         log.info("IceClient started");
         status.set(true);
-    }
-
-    public void registIceInfo() {
-        p2pClient.addAddressList(config.getStunServerList());
-        relayClient.addAddressList(config.getRelayServerList());
+        scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+        scheduledExecutorService.scheduleAtFixedRate(this, 0, config.getIceCheckTime(), TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -205,6 +190,9 @@ public class IceClient implements TransportLifecycle {
         log.info("IceClient stopping");
         if (null != p2pTransportManager) {
             p2pTransportManager.stop();
+        }
+        if (null != scheduledExecutorService) {
+            scheduledExecutorService.shutdown();
         }
         if (null != p2pClient) {
             p2pClient.stop();
@@ -214,5 +202,97 @@ public class IceClient implements TransportLifecycle {
         }
         log.info("IceClient stopped");
         status.set(false);
+    }
+
+    @Override
+    public void run() {
+        try {
+            heart();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    private void heart() throws Exception {
+        List<String> stunServerList = config.getStunServerList();
+        List<String> relayServerList = config.getRelayServerList();
+        BlockingQueue<AddressUri> queue = new LinkedBlockingQueue<>();
+        CountDownLatch countDownLatch = new CountDownLatch(stunServerList.size() + relayServerList.size());
+        for (String address : stunServerList) {
+            checkStun(countDownLatch, address, queue);
+        }
+        for (String address : relayServerList) {
+            checkRelay(countDownLatch, address, queue);
+        }
+        try {
+            countDownLatch.await(config.getIceCheckTimeout(), TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+        }
+        List<AddressUri> addressUriList = new ArrayList<>();
+        queue.drainTo(addressUriList);
+        sdWanNode.registNodeInfo(addressUriList);
+    }
+
+    private void checkStun(CountDownLatch countDownLatch, String address, BlockingQueue<AddressUri> queue) {
+        InetSocketAddress socketAddress = SocketAddressUtil.parse(address);
+        String tranId = StunMessage.genTranId();
+        AsyncTask.waitTask(tranId, config.getIceCheckTimeout())
+                .whenComplete((response, ex) -> {
+                    try {
+                        if (null != ex) {
+                            log.error("ping stunServer timeout: {}", address);
+                            return;
+                        }
+                        StunPacket packet = (StunPacket) response;
+                        Map<AttrType, Attr> attrs = packet.content().getAttrs();
+                        AddressAttr mappedAddressAttr = (AddressAttr) attrs.get(AttrType.MappedAddress);
+                        InetSocketAddress natAddress = mappedAddressAttr.getAddress();
+                        log.info("connect stunServer success: address={}, publicAddress={}", address, natAddress);
+                        Map<String, String> params = new HashMap<>();
+                        params.put("server", address);
+                        AddressUri addressUri = AddressUri.builder()
+                                .scheme(AddressType.SRFLX)
+                                .host(natAddress.getHostString())
+                                .port(natAddress.getPort())
+                                .params(params)
+                                .build();
+                        queue.add(addressUri);
+                    } finally {
+                        countDownLatch.countDown();
+                    }
+                });
+        p2pClient.sendBindOneWay(socketAddress, tranId);
+    }
+
+    private void checkRelay(CountDownLatch countDownLatch, String address, BlockingQueue<AddressUri> queue) {
+        InetSocketAddress socketAddress = SocketAddressUtil.parse(address);
+        String tranId = StunMessage.genTranId();
+        AsyncTask.waitTask(tranId, config.getIceCheckTimeout())
+                .whenComplete((response, ex) -> {
+                    try {
+                        if (null != ex) {
+                            log.error("ping relayServer timeout: {}", address);
+                            return;
+                        }
+                        StunPacket packet = (StunPacket) response;
+                        StunMessage stunMessage = packet.content();
+                        StringAttr attr = stunMessage.getAttr(AttrType.RelayToken);
+                        String token = attr.getData();
+                        log.info("connect relayServer success: address={}, token={}", address, token);
+                        Map<String, String> params = new HashMap<>();
+                        params.put("server", address);
+                        params.put("token", token);
+                        AddressUri addressUri = AddressUri.builder()
+                                .scheme(AddressType.RELAY)
+                                .host(socketAddress.getHostString())
+                                .port(socketAddress.getPort())
+                                .params(params)
+                                .build();
+                        queue.add(addressUri);
+                    } finally {
+                        countDownLatch.countDown();
+                    }
+                });
+        relayClient.sendBindOneWay(socketAddress, tranId);
     }
 }

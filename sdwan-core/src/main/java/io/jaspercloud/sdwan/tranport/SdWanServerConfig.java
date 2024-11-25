@@ -1,5 +1,7 @@
 package io.jaspercloud.sdwan.tranport;
 
+import io.jaspercloud.sdwan.route.rule.RouteRuleDirectionEnum;
+import io.jaspercloud.sdwan.route.rule.RouteRuleStrategyEnum;
 import lombok.*;
 
 import java.util.Collections;
@@ -33,6 +35,7 @@ public class SdWanServerConfig {
         private String vipCidr = "10.1.0.0/24";
         private List<FixVip> fixedVipList = Collections.emptyList();
         private List<Route> routeList = Collections.emptyList();
+        private List<RouteRule> routeRuleList = Collections.emptyList();
         private List<VNAT> vnatList = Collections.emptyList();
     }
 
@@ -56,6 +59,19 @@ public class SdWanServerConfig {
 
         private String destination;
         private List<String> nexthop;
+    }
+
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
+    @Setter
+    public static class RouteRule {
+
+        private RouteRuleStrategyEnum strategy;
+        private RouteRuleDirectionEnum direction;
+        private List<String> ruleList;
+        private Integer level;
     }
 
     @Builder
