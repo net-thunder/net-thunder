@@ -57,30 +57,26 @@ public class TunRouteTest {
                 .bindPort(3478)
                 .build(), () -> new ChannelInboundHandlerAdapter());
         stunServer.start();
-        TestTunSdWanNode sdWanNode1 = new TestTunSdWanNode(SdWanNodeConfig.builder()
-                .controllerServer(address + ":1800")
-                .relayServerList(Arrays.asList(address + ":2478"))
-                .stunServerList(Arrays.asList("127.0.0.1:3478"))
-                .p2pPort(1001)
-                .heartTime(15 * 1000)
-                .p2pHeartTime(10 * 1000)
-                .tunName("tun")
-                .mtu(1440)
-                .build()) {
+        SdWanNodeConfig nodeConfig1 = new SdWanNodeConfig();
+        nodeConfig1.setControllerServer(address + ":1800");
+        nodeConfig1.setRelayServerList(Arrays.asList(address + ":2478"));
+        nodeConfig1.setStunServerList(Arrays.asList("127.0.0.1:3478"));
+        nodeConfig1.setP2pPort(1001);
+        nodeConfig1.setTunName("tun1");
+        TestTunSdWanNode sdWanNode1 = new TestTunSdWanNode(nodeConfig1) {
             @Override
             protected String processMacAddress(String hardwareAddress) {
                 return "x1:x:x:x:x:x";
             }
         };
         sdWanNode1.start();
-        TestSdWanNode sdWanNode2 = new TestSdWanNode(SdWanNodeConfig.builder()
-                .controllerServer(address + ":1800")
-                .relayServerList(Arrays.asList(address + ":2478"))
-                .stunServerList(Arrays.asList("127.0.0.1:3478"))
-                .p2pPort(1002)
-                .heartTime(15 * 1000)
-                .p2pHeartTime(10 * 1000)
-                .build()) {
+        SdWanNodeConfig nodeConfig2 = new SdWanNodeConfig();
+        nodeConfig2.setControllerServer(address + ":1800");
+        nodeConfig2.setRelayServerList(Arrays.asList(address + ":2478"));
+        nodeConfig2.setStunServerList(Arrays.asList("127.0.0.1:3478"));
+        nodeConfig2.setP2pPort(1002);
+        nodeConfig2.setTunName("tun2");
+        TestSdWanNode sdWanNode2 = new TestSdWanNode(nodeConfig2) {
             @Override
             protected String processMacAddress(String hardwareAddress) {
                 return "x2:x:x:x:x:x";

@@ -19,25 +19,21 @@ public class TransferSignallingTest {
     @Test
     public void test() throws Exception {
         String localAddress = InetAddress.getLocalHost().getHostAddress();
-        TestSdWanNode sdWanNode1 = new TestSdWanNode(SdWanNodeConfig.builder()
-                .controllerServer("127.0.0.1:1800")
-                .relayServerList(Arrays.asList("127.0.0.1:2478"))
-                .stunServerList(Arrays.asList("127.0.0.1:3478"))
-                .localAddress(localAddress)
-                .p2pPort(1001)
-                .heartTime(15 * 1000)
-                .p2pHeartTime(10 * 1000)
-                .build());
+        SdWanNodeConfig nodeConfig1 = new SdWanNodeConfig();
+        nodeConfig1.setControllerServer("127.0.0.1:1800");
+        nodeConfig1.setRelayServerList(Arrays.asList("127.0.0.1:2478"));
+        nodeConfig1.setStunServerList(Arrays.asList("127.0.0.1:3478"));
+        nodeConfig1.setLocalAddress(localAddress);
+        nodeConfig1.setP2pPort(1001);
+        TestSdWanNode sdWanNode1 = new TestSdWanNode(nodeConfig1);
         sdWanNode1.start();
-        TestSdWanNode sdWanNode2 = new TestSdWanNode(SdWanNodeConfig.builder()
-                .controllerServer("127.0.0.1:1800")
-                .relayServerList(Arrays.asList("127.0.0.1:2478"))
-                .stunServerList(Arrays.asList("127.0.0.1:3478"))
-                .localAddress(localAddress)
-                .p2pPort(1002)
-                .heartTime(15 * 1000)
-                .p2pHeartTime(10 * 1000)
-                .build());
+        SdWanNodeConfig nodeConfig2 = new SdWanNodeConfig();
+        nodeConfig2.setControllerServer("127.0.0.1:1800");
+        nodeConfig2.setRelayServerList(Arrays.asList("127.0.0.1:2478"));
+        nodeConfig2.setStunServerList(Arrays.asList("127.0.0.1:3478"));
+        nodeConfig2.setLocalAddress(localAddress);
+        nodeConfig2.setP2pPort(1002);
+        TestSdWanNode sdWanNode2 = new TestSdWanNode(nodeConfig2);
         sdWanNode2.start();
         new Thread(() -> {
             while (true) {
