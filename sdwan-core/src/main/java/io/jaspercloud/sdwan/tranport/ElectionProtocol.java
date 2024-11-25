@@ -125,7 +125,9 @@ public abstract class ElectionProtocol {
         pingRequestList.forEach(req -> {
             req.execute().thenAccept(pingResp -> {
                 AddressUri uri = req.getAddressUri();
-                log.info("pong: uri={}", uri.toString());
+                if (log.isDebugEnabled()) {
+                    log.info("pong: uri={}", uri.toString());
+                }
                 if (AddressType.RELAY.equals(uri.getScheme())) {
                     long order = System.currentTimeMillis() - ((LongAttr) pingResp.content().getAttr(AttrType.Time)).getData();
                     DataTransport dataTransport = new RelayTransport(uri, relayClient, order);
@@ -165,22 +167,10 @@ public abstract class ElectionProtocol {
         });
     }
 
-//    private DataTransport selectDataTransport(String srcVip, String dstVip, List<DataTransport> transportList) {
-//        if (transportList.isEmpty()) {
-//            throw new ProcessException("not found transport");
-//        }
-//        Collections.sort(transportList, (o1, o2) -> NumberUtils.compare(o2.order(), o1.order()));
-//        Optional<DataTransport> optional = transportList.stream().filter(e -> e instanceof P2pTransport).findFirst();
-//        if (!optional.isPresent()) {
-//            optional = transportList.stream().filter(e -> e instanceof RelayTransport).findFirst();
-//        }
-//        DataTransport transport = optional.get();
-//        log.info("selectDataTransport: {} -> {}, uri={}", srcVip, dstVip, transport.addressUri().toString());
-//        return transport;
-//    }
-
     private PingRequest parseP2pPing(AddressUri uri, long timeout) {
-        log.info("ping uri: {}", uri.toString());
+        if (log.isDebugEnabled()) {
+            log.info("ping uri: {}", uri.toString());
+        }
         InetSocketAddress addr = new InetSocketAddress(uri.getHost(), uri.getPort());
         PingRequest pingRequest = new PingRequest();
         pingRequest.setSupplier(() -> p2pClient.ping(addr, timeout));
@@ -189,7 +179,9 @@ public abstract class ElectionProtocol {
     }
 
     private PingRequest parseRelayPing(AddressUri uri, long timeout) {
-        log.info("ping uri: {}", uri.toString());
+        if (log.isDebugEnabled()) {
+            log.info("ping uri: {}", uri.toString());
+        }
         InetSocketAddress socketAddress = new InetSocketAddress(uri.getHost(), uri.getPort());
         String token = uri.getParams().get("token");
         PingRequest pingRequest = new PingRequest();
