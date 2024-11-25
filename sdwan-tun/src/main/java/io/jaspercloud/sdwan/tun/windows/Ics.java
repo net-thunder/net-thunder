@@ -22,7 +22,7 @@ public final class Ics {
         String privateGuid = getGuid(hostName, privateIp);
         File wscript = new File("C:/Windows/System32/wscript.exe");
         String cmd = String.format("%s %s \"%s\" \"%s\" %s", wscript.getAbsoluteFile(), vbs.getAbsoluteFile(), publicGuid, privateGuid, status);
-        log.debug("cmd: {}", cmd);
+        log.info("enableICS: {}", cmd);
         int code = ProcessUtil.exec(cmd);
         CheckInvoke.check(code, 0);
     }
