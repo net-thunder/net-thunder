@@ -162,6 +162,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                             case SDWanProtos.MessageTypeCode.NodeOfflineType_VALUE: {
                                 SDWanProtos.NodeInfo nodeInfo = SDWanProtos.NodeInfo.parseFrom(msg.getData());
                                 nodeInfoMap.remove(nodeInfo.getVip());
+                                iceClient.offlineTransport(nodeInfo.getVip());
                                 if (log.isDebugEnabled()) {
                                     log.info("offlineNode: vip={}", nodeInfo.getVip());
                                 }
