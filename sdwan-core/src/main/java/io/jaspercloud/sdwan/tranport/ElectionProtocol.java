@@ -145,7 +145,7 @@ public abstract class ElectionProtocol {
         });
         return future.thenApply(transport -> {
             try {
-                log.info("selectDataTransport: {} -> {}, uri={}", p2pOffer.getSrcVIP(), p2pOffer.getDstVIP(), transport.addressUri().toString());
+                log.info("selectDataTransport: {} -> {}, uri={}", p2pOffer.getDstVIP(), p2pOffer.getSrcVIP(), transport.addressUri().toString());
                 byte[] publicKey = p2pOffer.getPublicKey().toByteArray();
                 SecretKey secretKey = Ecdh.generateAESKey(encryptionKeyPair.getPrivate(), publicKey);
                 transport.setSecretKey(secretKey);
