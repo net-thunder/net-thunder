@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -186,6 +187,20 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         status.set(true);
     }
 
+    @Override
+    public synchronized void stop() throws Exception {
+        if (!status.get()) {
+            return;
+        }
+        log.info("SdWanNode stopping");
+        loopStatus.set(false);
+        loopThread.interrupt();
+        status.set(false);
+        virtualRouter.stop();
+        uninstall();
+        log.info("SdWanNode stopped");
+    }
+
     public void registNodeInfo(List<AddressUri> addressUriList) throws Exception {
         List<AddressUri> list = new ArrayList<>();
         if (config.isOnlyRelayTransport()) {
@@ -215,20 +230,6 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         }
         localAddressUriList = list.stream().map(e -> e.toString()).collect(Collectors.toList());
         sdWanClient.updateNodeInfo(localAddressUriList);
-    }
-
-    @Override
-    public synchronized void stop() throws Exception {
-        if (!status.get()) {
-            return;
-        }
-        log.info("SdWanNode stopping");
-        status.set(false);
-        loopStatus.set(false);
-        loopThread.interrupt();
-        virtualRouter.stop();
-        uninstall();
-        log.info("SdWanNode stopped");
     }
 
     public void sendIpLayerPacket(IpLayerPacket packet) {
@@ -325,6 +326,12 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         fireEvent(EventListener::onConnected);
     }
 
+    protected void uninstall() throws Exception {
+        log.info("SdWanNode uninstalling");
+        iceClient.stop();
+        sdWanClient.stop();
+    }
+
     private List<SDWanProtos.Route> mergeRouteList(List<SDWanProtos.Route> routeList, List<SDWanProtos.VNAT> vnatList) {
         List<SDWanProtos.Route> list = new ArrayList<>();
         list.addAll(routeList);
@@ -346,12 +353,6 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         return collect;
     }
 
-    protected void uninstall() throws Exception {
-        log.info("SdWanNode uninstalling");
-        iceClient.stop();
-        sdWanClient.stop();
-    }
-
     protected ChannelHandler getProcessHandler() {
         return new ChannelInboundHandlerAdapter();
     }
@@ -364,7 +365,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         return hardwareAddress;
     }
 
-    public void signalAll() throws Exception {
+    public void signalAll() {
         lock.lock();
         try {
             condition.signalAll();
@@ -373,10 +374,11 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         }
     }
 
-    public void await() throws Exception {
+    public void await(long time) {
         lock.lock();
         try {
-            condition.await();
+            condition.await(time, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
         } finally {
             lock.unlock();
         }
@@ -390,16 +392,19 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
 
     @Override
     public void run() {
-        boolean status = true;
+        boolean up = true;
         while (loopStatus.get()) {
             try {
-                if (status) {
-                    await();
-                    status = false;
+                if (up) {
+                    await(3000);
+                    up = sdWanClient.isRunning();
+                    if (up) {
+                        continue;
+                    }
                 }
                 uninstall();
                 install();
-                status = true;
+                up = sdWanClient.isRunning();
             } catch (InterruptedException e) {
             } catch (ProcessException e) {
                 log.error(e.getMessage());
