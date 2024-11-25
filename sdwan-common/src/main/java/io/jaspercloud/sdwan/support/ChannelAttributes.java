@@ -5,6 +5,7 @@ import io.netty.util.AttributeKey;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -22,7 +23,7 @@ public class ChannelAttributes {
     private String macAddress;
     private String os;
     private String osVersion;
-    private List<String> addressUriList;
+    private List<String> addressUriList = Collections.emptyList();
 
     private ChannelAttributes() {
 

@@ -22,6 +22,7 @@ import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -140,6 +141,10 @@ public class SdWanServer implements Lifecycle, Runnable {
         } catch (Exception e) {
             SDWanProtos.ServerConfigResp resp = SDWanProtos.ServerConfigResp.newBuilder()
                     .setCode(SDWanProtos.MessageCode.SysError)
+                    .setStunServer("")
+                    .setRelayServer("")
+                    .addAllStunServers(Collections.emptyList())
+                    .addAllRelayServers(Collections.emptyList())
                     .build();
             SdWanServer.reply(ctx.channel(), msg, SDWanProtos.MessageTypeCode.ConfigRespTpe, resp);
         }
