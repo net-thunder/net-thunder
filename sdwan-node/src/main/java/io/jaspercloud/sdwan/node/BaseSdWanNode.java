@@ -155,7 +155,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                                 SDWanProtos.NodeInfo nodeInfo = SDWanProtos.NodeInfo.parseFrom(msg.getData());
                                 nodeInfoMap.put(nodeInfo.getVip(), nodeInfo);
                                 if (log.isDebugEnabled()) {
-                                    log.debug("onlineNode: vip={}", nodeInfo.getVip());
+                                    log.info("onlineNode: vip={}", nodeInfo.getVip());
                                 }
                                 break;
                             }
@@ -163,7 +163,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                                 SDWanProtos.NodeInfo nodeInfo = SDWanProtos.NodeInfo.parseFrom(msg.getData());
                                 nodeInfoMap.remove(nodeInfo.getVip());
                                 if (log.isDebugEnabled()) {
-                                    log.debug("offlineNode: vip={}", nodeInfo.getVip());
+                                    log.info("offlineNode: vip={}", nodeInfo.getVip());
                                 }
                                 break;
                             }
@@ -305,6 +305,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                 .setTenantId(config.getTenantId())
                 .setNodeType(SDWanProtos.NodeTypeCode.SimpleType)
                 .setMacAddress(macAddress)
+                .addAllAddressUri(localAddressUriList)
                 .setOs(PlatformUtil.normalizedOs())
                 .setOsVersion(System.getProperty("os.name"));
         SDWanProtos.RegistReq registReq = builder.build();

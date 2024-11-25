@@ -134,8 +134,9 @@ public class SdWanServer implements Lifecycle, Runnable {
             Channel channel = ctx.channel();
             ChannelAttributes attr = ChannelAttributes.attr(channel);
             SDWanProtos.NodeInfoReq req = SDWanProtos.NodeInfoReq.parseFrom(msg.getData());
-            attr.setAddressUriList(req.getAddressUriList().stream().collect(Collectors.toList()));
-            sendAllChannelNodeOnline(channel);
+            List<String> addressList = req.getAddressUriList().stream().collect(Collectors.toList());
+            attr.setAddressUriList(addressList);
+            updateNodeInfoToAllChannel(channel);
         } catch (Exception e) {
             SDWanProtos.ServerConfigResp resp = SDWanProtos.ServerConfigResp.newBuilder()
                     .setCode(SDWanProtos.MessageCode.SysError)
@@ -254,7 +255,7 @@ public class SdWanServer implements Lifecycle, Runnable {
                             .build())
                     .build();
             SdWanServer.reply(channel, msg, SDWanProtos.MessageTypeCode.RegistRespType, regResp);
-            sendAllChannelNodeOnline(channel);
+            updateNodeInfoToAllChannel(channel);
             channel.closeFuture().addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture future) throws Exception {
@@ -318,7 +319,7 @@ public class SdWanServer implements Lifecycle, Runnable {
         return collect;
     }
 
-    private void sendAllChannelNodeOnline(Channel channel) {
+    private void updateNodeInfoToAllChannel(Channel channel) {
         ChannelAttributes attr = ChannelAttributes.attr(channel);
         SDWanProtos.NodeInfo nodeInfo = SDWanProtos.NodeInfo.newBuilder()
                 .setVip(attr.getVip())
