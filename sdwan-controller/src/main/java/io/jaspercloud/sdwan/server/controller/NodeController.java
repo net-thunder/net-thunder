@@ -1,7 +1,9 @@
 package io.jaspercloud.sdwan.server.controller;
 
+import cn.hutool.core.collection.CollectionUtil;
 import io.jaspercloud.sdwan.server.controller.common.ValidGroup;
 import io.jaspercloud.sdwan.server.controller.request.EditNodeRequest;
+import io.jaspercloud.sdwan.server.controller.response.ICEAddress;
 import io.jaspercloud.sdwan.server.controller.response.NodeDetailResponse;
 import io.jaspercloud.sdwan.server.controller.response.NodeResponse;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
@@ -9,6 +11,7 @@ import io.jaspercloud.sdwan.server.entity.Node;
 import io.jaspercloud.sdwan.server.entity.Tenant;
 import io.jaspercloud.sdwan.server.service.NodeService;
 import io.jaspercloud.sdwan.server.service.TenantService;
+import io.jaspercloud.sdwan.support.AddressUri;
 import io.jaspercloud.sdwan.support.ChannelAttributes;
 import io.jaspercloud.sdwan.tranport.SdWanServer;
 import io.netty.channel.Channel;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.InetSocketAddress;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/node")
@@ -67,6 +71,18 @@ public class NodeController extends BaseController {
                 nodeResponse.setIp(remotedAddress.getHostString());
                 nodeResponse.setOs(attr.getOs());
                 nodeResponse.setOsVersion(attr.getOsVersion());
+                List<String> addressUriList = attr.getAddressUriList();
+                if (CollectionUtil.isNotEmpty(addressUriList)) {
+                    List<ICEAddress> collect = addressUriList.stream().map(e -> {
+                        AddressUri addressUri = AddressUri.parse(e);
+                        ICEAddress address = new ICEAddress();
+                        address.setType(addressUri.getScheme());
+                        address.setAddress(String.format("%s:%d", addressUri.getHost(), addressUri.getPort()));
+                        address.setServer(addressUri.getParams().get("server"));
+                        return address;
+                    }).collect(Collectors.toList());
+                    nodeResponse.setAddressList(collect);
+                }
             }
             nodeResponse.setOnline(null != channel);
         }
