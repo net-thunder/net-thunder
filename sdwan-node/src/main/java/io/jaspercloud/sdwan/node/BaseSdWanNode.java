@@ -289,6 +289,9 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         nodeInfoMap.clear();
         sdWanClient.start();
         SDWanProtos.ServerConfigResp configResp = sdWanClient.getConfig(config.getConnectTimeout()).get();
+        if (!SDWanProtos.MessageCode.Success.equals(configResp.getCode())) {
+            throw new ProcessException("get config error");
+        }
         config.setStunServerList(configResp.getStunServersList());
         config.setRelayServerList(configResp.getRelayServersList());
         iceClient.start();
