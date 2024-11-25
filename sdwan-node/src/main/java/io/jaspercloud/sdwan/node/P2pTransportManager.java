@@ -20,8 +20,7 @@ import java.util.function.Consumer;
 @Slf4j
 public class P2pTransportManager implements Runnable {
 
-    private long heartTime;
-    private long timeout;
+    private SdWanNodeConfig config;
     private ScheduledExecutorService scheduledExecutorService;
     private Map<String, AtomicReference<DataTransport>> transportMap = new ConcurrentHashMap<>();
     private Map<String, String> heartMap = new ConcurrentHashMap<>();
@@ -58,9 +57,8 @@ public class P2pTransportManager implements Runnable {
         transportMap.remove(vip);
     }
 
-    public P2pTransportManager(long heartTime, long timeout) {
-        this.heartTime = heartTime;
-        this.timeout = timeout;
+    public P2pTransportManager(SdWanNodeConfig config) {
+        this.config = config;
     }
 
     @Override
@@ -74,7 +72,7 @@ public class P2pTransportManager implements Runnable {
                 String address = transport.addressUri().toString();
                 String id = heartMap.computeIfAbsent(address, key -> {
                     String tranId = StunMessage.genTranId();
-                    AsyncTask.waitTask(tranId, timeout)
+                    AsyncTask.waitTask(tranId, config.getP2pCheckTimeout())
                             .whenComplete((msg, ex) -> {
                                 try {
                                     if (null == ex) {
@@ -97,7 +95,7 @@ public class P2pTransportManager implements Runnable {
 
     public void start() {
         scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-        scheduledExecutorService.scheduleAtFixedRate(this, 0, heartTime, TimeUnit.MILLISECONDS);
+        scheduledExecutorService.scheduleAtFixedRate(this, 0, config.getP2pCheckTime(), TimeUnit.MILLISECONDS);
     }
 
     public void stop() {
