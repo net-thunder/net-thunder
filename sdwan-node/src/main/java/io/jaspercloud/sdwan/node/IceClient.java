@@ -295,4 +295,8 @@ public class IceClient implements TransportLifecycle, Runnable {
                 });
         relayClient.sendBindOneWay(socketAddress, tranId);
     }
+
+    public void offlineTransport(String vip) {
+        p2pTransportManager.deleteTransport(vip);
+    }
 }
