@@ -65,7 +65,9 @@ public abstract class ElectionProtocol {
         pingRequestList.forEach(e -> {
             e.execute().thenAccept(pingResp -> {
                 AddressUri uri = e.getAddressUri();
-                log.info("pong: uri={}", uri.toString());
+                if (log.isDebugEnabled()) {
+                    log.info("pong: uri={}", uri.toString());
+                }
                 if (AddressType.RELAY.equals(uri.getScheme())) {
                     long order = System.currentTimeMillis() - ((LongAttr) pingResp.content().getAttr(AttrType.Time)).getData();
                     DataTransport dataTransport = new RelayTransport(uri, relayClient, order);
