@@ -88,12 +88,12 @@ public class P2pClient implements TransportLifecycle {
         localChannel.writeAndFlush(request);
     }
 
-    public void transfer(String vip, InetSocketAddress toAddress, byte[] bytes) {
+    public void transfer(String vip, String type, InetSocketAddress toAddress, byte[] bytes) {
         if (log.isTraceEnabled()) {
-            log.trace("p2p send transfer: {}", SocketAddressUtil.toAddress(toAddress));
+            log.info("p2p send transfer: type={}, address={}", type, SocketAddressUtil.toAddress(toAddress));
         }
         StunMessage message = new StunMessage(MessageType.Transfer);
-        message.setAttr(AttrType.TransferType, new StringAttr("p2p"));
+        message.setAttr(AttrType.TransferType, new StringAttr(type));
         message.setAttr(AttrType.SrcVip, new StringAttr(vip));
         message.setAttr(AttrType.Data, new BytesAttr(bytes));
         StunPacket request = new StunPacket(message, toAddress);

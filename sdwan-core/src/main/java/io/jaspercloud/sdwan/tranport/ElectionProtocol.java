@@ -257,7 +257,7 @@ public abstract class ElectionProtocol {
         public void transfer(String vip, byte[] bytes) {
             try {
                 byte[] encodeData = Ecdh.encryptAES(bytes, secretKey);
-                p2pClient.transfer(vip, address, encodeData);
+                p2pClient.transfer(vip, addressUri.getScheme(), address, encodeData);
             } catch (Exception e) {
                 throw new ProcessException(e.getMessage(), e);
             }
@@ -315,7 +315,7 @@ public abstract class ElectionProtocol {
         public void transfer(String vip, byte[] bytes) {
             try {
                 byte[] encodeData = Ecdh.encryptAES(bytes, secretKey);
-                relayClient.transfer(vip, address, token, encodeData);
+                relayClient.transfer(vip, addressUri.getScheme(), address, token, encodeData);
             } catch (Exception e) {
                 throw new ProcessException(e.getMessage(), e);
             }

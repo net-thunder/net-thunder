@@ -154,7 +154,7 @@ public class IceClient implements TransportLifecycle, Runnable {
         p2pClient = new P2pClient(config.getP2pPort(), () -> createStunPacketHandler("p2pClient"));
         relayClient = new RelayClient(config.getRelayPort(), () -> createStunPacketHandler("relayClient"));
         electionProtocol = new ElectionProtocol(config.getTenantId(), p2pClient, relayClient, encryptionKeyPair,
-                config.getElectionTimeout(), config.getP2pTimeout()) {
+                config.getElectionTimeout(), config.getP2pCheckTimeout()) {
             @Override
             protected CompletableFuture<SDWanProtos.P2pAnswer> sendOffer(SDWanProtos.P2pOffer p2pOffer, long timeout) {
                 return sdWanNode.getSdWanClient().offer(p2pOffer, timeout);
@@ -175,7 +175,7 @@ public class IceClient implements TransportLifecycle, Runnable {
                 return sdWanNode.getLocalAddressUriList();
             }
         };
-        p2pTransportManager = new P2pTransportManager(config.getP2pHeartTime(), config.getP2pTimeout());
+        p2pTransportManager = new P2pTransportManager(config);
         p2pTransportManager.start();
         p2pClient.start();
         relayClient.start();
