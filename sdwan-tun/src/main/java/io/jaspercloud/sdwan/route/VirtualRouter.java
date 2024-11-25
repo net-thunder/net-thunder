@@ -7,6 +7,7 @@ import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.route.rule.RouteRuleDirectionEnum;
 import io.jaspercloud.sdwan.route.rule.RouteRulePredicate;
 import io.jaspercloud.sdwan.support.Cidr;
+import io.jaspercloud.sdwan.tranport.TransportLifecycle;
 import io.jaspercloud.sdwan.tun.IpLayerPacket;
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
@@ -27,7 +29,7 @@ import java.util.stream.Collectors;
  * @create 2024/7/15
  */
 @Slf4j
-public class VirtualRouter {
+public class VirtualRouter implements TransportLifecycle {
 
     private String cidr;
     private ReadWriteLock lock = new ReentrantReadWriteLock();
@@ -39,6 +41,7 @@ public class VirtualRouter {
     private Cache<String, String> vnatMappingCache = Caffeine.newBuilder()
             .expireAfterWrite(30, TimeUnit.MINUTES)
             .build();
+    private AtomicBoolean status = new AtomicBoolean(false);
 
     private Map<String, SDWanProtos.VNAT> getVnatMap() {
         lock.readLock().lock();
@@ -205,5 +208,21 @@ public class VirtualRouter {
             }
         }
         return null;
+    }
+
+    @Override
+    public void start() throws Exception {
+        status.set(true);
+    }
+
+    @Override
+    public void stop() throws Exception {
+        vnatMappingCache.cleanUp();
+        status.set(false);
+    }
+
+    @Override
+    public boolean isRunning() {
+        return status.get();
     }
 }
