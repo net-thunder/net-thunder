@@ -1,10 +1,7 @@
 package io.jaspercloud.sdwan.tranport;
 
 import io.jaspercloud.sdwan.stun.*;
-import io.jaspercloud.sdwan.support.AddressUri;
 import io.jaspercloud.sdwan.support.AsyncTask;
-import io.jaspercloud.sdwan.tranport.event.UpdateAddressUriEvent;
-import io.jaspercloud.sdwan.util.AddressType;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.UnpooledByteBufAllocator;
@@ -12,13 +9,9 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 
 import java.net.InetSocketAddress;
-import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 /**
@@ -26,59 +19,19 @@ import java.util.function.Supplier;
  * @create 2024/7/2
  */
 @Slf4j
-public class RelayClient implements TransportLifecycle, Runnable {
+public class RelayClient implements TransportLifecycle {
 
     private int localPort;
-    private long heartTime;
-    private long timeout;
     private Supplier<ChannelHandler> handler;
     private Channel localChannel;
-    private Map<String, AddressUri> natAddressMap = new ConcurrentHashMap<>();
-    private Map<String, String> heartMap = new ConcurrentHashMap<>();
 
-    public int getLocalPort() {
-        InetSocketAddress address = (InetSocketAddress) localChannel.localAddress();
-        return address.getPort();
+    public RelayClient(Supplier<ChannelHandler> handler) {
+        this(0, handler);
     }
 
-    public RelayClient(long heartTime, long timeout, Supplier<ChannelHandler> handler) {
-        this(0, heartTime, timeout, handler);
-    }
-
-    public RelayClient(int localPort, long heartTime, long timeout, Supplier<ChannelHandler> handler) {
+    public RelayClient(int localPort, Supplier<ChannelHandler> handler) {
         this.localPort = localPort;
-        this.heartTime = heartTime;
-        this.timeout = timeout;
         this.handler = handler;
-    }
-
-    public List<AddressUri> getNatAddressUriList() {
-        return Collections.unmodifiableList(new ArrayList<>(natAddressMap.values()));
-    }
-
-    public void addAddressList(List<String> addressList) {
-        for (String address : addressList) {
-            InetSocketAddress socketAddress = SocketAddressUtil.parse(address);
-            regist(socketAddress, timeout)
-                    .whenComplete((token, ex) -> {
-                        if (null != ex) {
-                            log.error("connect relayServer timeout: address={}", address);
-                            return;
-                        }
-                        log.info("connect relayServer success: address={}, token={}", address, token);
-                        Map<String, String> params = new HashMap<>();
-                        params.put("server", address);
-                        params.put("token", token);
-                        AddressUri addressUri = AddressUri.builder()
-                                .scheme(AddressType.RELAY)
-                                .host(socketAddress.getHostString())
-                                .port(socketAddress.getPort())
-                                .params(params)
-                                .build();
-                        natAddressMap.put(address, addressUri);
-                        localChannel.pipeline().fireUserEventTriggered(new UpdateAddressUriEvent());
-                    });
-        }
     }
 
     private CompletableFuture<StunPacket> invokeAsync(StunPacket request, long timeout) {
@@ -179,7 +132,6 @@ public class RelayClient implements TransportLifecycle, Runnable {
             localChannel = bootstrap.bind(new InetSocketAddress("0.0.0.0", localPort)).syncUninterruptibly().channel();
             InetSocketAddress localAddress = (InetSocketAddress) localChannel.localAddress();
             log.info("RelayClient started: port={}", localAddress.getPort());
-            bossGroup.scheduleAtFixedRate(this, 0, heartTime, TimeUnit.MILLISECONDS);
             localChannel.closeFuture().addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture future) throws Exception {
@@ -200,42 +152,5 @@ public class RelayClient implements TransportLifecycle, Runnable {
         }
         localChannel.close();
         log.info("RelayClient stopped");
-    }
-
-    @Override
-    public void run() {
-        for (Map.Entry<String, AddressUri> entry : natAddressMap.entrySet()) {
-            try {
-                String address = entry.getKey();
-                AddressUri addressUri = entry.getValue();
-                String id = heartMap.computeIfAbsent(address, key -> {
-                    String tranId = StunMessage.genTranId();
-                    AsyncTask.waitTask(tranId, timeout)
-                            .whenComplete((msg, ex) -> {
-                                try {
-                                    if (null == ex) {
-                                        StunPacket packet = (StunPacket) msg;
-                                        StunMessage stunMessage = packet.content();
-                                        StringAttr attr = stunMessage.getAttr(AttrType.RelayToken);
-                                        String token = attr.getData();
-                                        if (!StringUtils.equals(token, addressUri.getParams().get("token"))) {
-                                            localChannel.close();
-                                        }
-                                    } else {
-                                        log.error("ping relayServer timeout: {}", address);
-                                        localChannel.close();
-                                    }
-                                } finally {
-                                    heartMap.remove(key);
-                                }
-                            });
-                    return tranId;
-                });
-                InetSocketAddress socketAddress = SocketAddressUtil.parse(address);
-                sendBindOneWay(socketAddress, id);
-            } catch (Throwable e) {
-                log.error(e.getMessage(), e);
-            }
-        }
     }
 }

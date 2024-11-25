@@ -6,10 +6,7 @@ import io.jaspercloud.sdwan.exception.ProcessCodeException;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.support.Cidr;
 import io.jaspercloud.sdwan.tranport.SdWanServerConfig;
-import io.jaspercloud.sdwan.tranport.config.NodeConfig;
-import io.jaspercloud.sdwan.tranport.config.RouteConfig;
-import io.jaspercloud.sdwan.tranport.config.TenantConfig;
-import io.jaspercloud.sdwan.tranport.config.VNATConfig;
+import io.jaspercloud.sdwan.tranport.config.*;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -51,6 +48,18 @@ public class LocalConfigSdWanDataService implements SdWanDataService {
                                 return routeConfig;
                             }).collect(Collectors.toList());
                     tenantSpace.setRouteList(collect);
+                }
+                if (CollectionUtil.isNotEmpty(config.getRouteRuleList())) {
+                    List<RouteRuleConfig> collect = config.getRouteRuleList().stream()
+                            .map(e -> {
+                                RouteRuleConfig routeRuleConfig = new RouteRuleConfig();
+                                routeRuleConfig.setStrategy(e.getStrategy());
+                                routeRuleConfig.setDirection(e.getDirection());
+                                routeRuleConfig.setRuleList(e.getRuleList());
+                                routeRuleConfig.setLevel(e.getLevel());
+                                return routeRuleConfig;
+                            }).collect(Collectors.toList());
+                    tenantSpace.setRouteRuleList(collect);
                 }
                 if (CollectionUtil.isNotEmpty(config.getVnatList())) {
                     List<VNATConfig> collect = config.getVnatList().stream()
@@ -104,6 +113,7 @@ public class LocalConfigSdWanDataService implements SdWanDataService {
         nodeConfig.setMac(macAddress);
         nodeConfig.setVip(vip);
         nodeConfig.setRouteConfigList(tenantSpace.getRouteList());
+        nodeConfig.setRouteRuleConfigList(tenantSpace.getRouteRuleList());
         nodeConfig.setVnatConfigList(tenantSpace.getVnatList());
         return nodeConfig;
     }
@@ -167,6 +177,7 @@ public class LocalConfigSdWanDataService implements SdWanDataService {
         private Cidr ipPool;
         private Map<String, String> fixedVipMap = new ConcurrentHashMap<>();
         private List<RouteConfig> routeList = new ArrayList<>();
+        private List<RouteRuleConfig> routeRuleList = new ArrayList<>();
         private List<VNATConfig> vnatList = new ArrayList<>();
         private Map<String, AtomicReference<Channel>> bindIPMap = new ConcurrentHashMap<>();
     }

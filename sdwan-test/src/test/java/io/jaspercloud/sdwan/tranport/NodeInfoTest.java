@@ -1,22 +1,17 @@
 package io.jaspercloud.sdwan.tranport;
 
-import com.google.protobuf.ByteString;
-import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.node.SdWanNodeConfig;
+import io.jaspercloud.sdwan.node.TunSdWanNode;
 import io.jaspercloud.sdwan.tranport.service.LocalConfigSdWanDataService;
-import io.jaspercloud.sdwan.tranport.support.TestSdWanNode;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.junit.jupiter.api.Test;
 
 import java.net.InetAddress;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
-/**
- * @author jasper
- * @create 2024/7/2
- */
-public class TransferTest {
+public class NodeInfoTest {
 
     @Test
     public void test() throws Exception {
@@ -61,31 +56,16 @@ public class TransferTest {
         LocalConfigSdWanDataService dataService = new LocalConfigSdWanDataService(config);
         SdWanServer sdWanServer = new SdWanServer(config, dataService, () -> new ChannelInboundHandlerAdapter());
         sdWanServer.start();
-        SdWanNodeConfig nodeConfig1 = new SdWanNodeConfig();
-        nodeConfig1.setTunName("tun1");
-        TestSdWanNode sdWanNode1 = new TestSdWanNode(nodeConfig1) {
+        SdWanNodeConfig nodeConfig = new SdWanNodeConfig();
+        nodeConfig.setTunName("tun1");
+        TunSdWanNode sdWanNode1 = new TunSdWanNode(nodeConfig) {
             @Override
             protected String processMacAddress(String hardwareAddress) {
                 return "x1:x:x:x:x:x";
             }
         };
         sdWanNode1.start();
-        SdWanNodeConfig nodeConfig2 = new SdWanNodeConfig();
-        nodeConfig2.setTunName("tun2");
-        TestSdWanNode sdWanNode2 = new TestSdWanNode(nodeConfig2) {
-            @Override
-            protected String processMacAddress(String hardwareAddress) {
-                return "x2:x:x:x:x:x";
-            }
-        };
-        sdWanNode2.start();
-        while (true) {
-            sdWanNode1.sendIpPacket(SDWanProtos.IpPacket.newBuilder()
-                    .setSrcIP("10.5.0.11")
-                    .setDstIP("10.5.0.12")
-                    .setPayload(ByteString.copyFrom("hello".getBytes()))
-                    .build());
-            Thread.sleep(3 * 1000);
-        }
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        countDownLatch.await();
     }
 }

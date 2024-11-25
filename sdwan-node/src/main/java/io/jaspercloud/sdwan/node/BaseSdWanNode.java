@@ -4,7 +4,6 @@ import com.google.protobuf.ByteString;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.exception.ProcessCodeException;
 import io.jaspercloud.sdwan.exception.ProcessException;
-import io.jaspercloud.sdwan.node.event.UpdateNodeInfoEvent;
 import io.jaspercloud.sdwan.node.rule.CidrRouteRulePredicate;
 import io.jaspercloud.sdwan.route.VirtualRouter;
 import io.jaspercloud.sdwan.route.rule.RouteRulePredicate;
@@ -175,28 +174,6 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
             @Override
             protected void initChannel(Channel ch) throws Exception {
                 ChannelPipeline pipeline = ch.pipeline();
-                pipeline.addLast(new ChannelInboundHandlerAdapter() {
-                    @Override
-                    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-                        if (evt instanceof UpdateNodeInfoEvent) {
-                            UpdateNodeInfoEvent event = (UpdateNodeInfoEvent) evt;
-                            registNodeInfo(event);
-                        } else {
-                            super.userEventTriggered(ctx, evt);
-                        }
-                    }
-                });
-                pipeline.addLast(new ChannelInboundHandlerAdapter() {
-                    @Override
-                    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-                        log.info("iceClient channelInactive");
-                        if (getStatus() && !config.getAutoReconnect()) {
-                            fireEvent(EventListener::onErrorDisconnected);
-                        }
-                        signalAll();
-                        ctx.fireChannelInactive();
-                    }
-                });
                 pipeline.addLast(getProcessHandler());
             }
         });
@@ -211,10 +188,13 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         status.set(true);
     }
 
-    private void registNodeInfo(UpdateNodeInfoEvent event) throws Exception {
+    public void registNodeInfo(List<AddressUri> addressUriList) throws Exception {
         List<AddressUri> list = new ArrayList<>();
         if (config.isOnlyRelayTransport()) {
-            list.addAll(event.getRelayAddressList());
+            List<AddressUri> collect = addressUriList.stream()
+                    .filter(e -> AddressType.RELAY.equals(e.getScheme()))
+                    .collect(Collectors.toList());
+            list.addAll(collect);
         } else {
             List<NetworkInterfaceInfo> interfaceInfoList;
             if (null == config.getLocalAddress()) {
@@ -233,8 +213,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                         .build();
                 list.add(addressUri);
             });
-            list.addAll(event.getP2pAddressList());
-            list.addAll(event.getRelayAddressList());
+            list.addAll(addressUriList);
         }
         localAddressUriList = list.stream().map(e -> e.toString()).collect(Collectors.toList());
         sdWanClient.updateNodeInfo(localAddressUriList);
@@ -332,7 +311,6 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
             throw new ProcessCodeException(regResp.getCode().getNumber(), "registSdwan failed=" + regResp.getCode().name());
         }
         log.info("registSdwan: vip={}", regResp.getVip());
-        iceClient.registIceInfo();
         localVip = regResp.getVip();
         maskBits = regResp.getMaskBits();
         vipCidr = regResp.getCidr();
