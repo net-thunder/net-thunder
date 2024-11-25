@@ -2,6 +2,7 @@ package io.jaspercloud.sdwan.tun;
 
 import io.jaspercloud.sdwan.util.ByteBufUtil;
 import io.jaspercloud.sdwan.util.IPUtil;
+import io.jaspercloud.sdwan.util.ShortUUID;
 import io.netty.buffer.ByteBuf;
 import io.netty.util.ReferenceCounted;
 
@@ -69,6 +70,10 @@ public class IpLayerPacket implements IpPacket {
     }
 
     public String getIdentifier() {
+        return getIdentifier(false);
+    }
+
+    public String getIdentifier(boolean exchangeIp) {
         int protocol = getProtocol();
         if (IpPacket.Icmp == protocol) {
             String srcIP = getSrcIP();
@@ -81,17 +86,27 @@ public class IpLayerPacket implements IpPacket {
             } finally {
                 byteBuf.resetReaderIndex();
             }
-            String key = String.format("%s:%s %s->%s", protocol, identifier, srcIP, dstIP);
+            String key;
+            if (exchangeIp) {
+                key = String.format("%s:%s %s->%s", protocol, identifier, dstIP, srcIP);
+            } else {
+                key = String.format("%s:%s %s->%s", protocol, identifier, srcIP, dstIP);
+            }
             return key;
         } else if (Arrays.asList(IpPacket.Tcp, IpPacket.Udp).contains(protocol)) {
             String srcIP = getSrcIP();
             String dstIP = getDstIP();
             int srcPort = getSrcPort();
             int dstPort = getDstPort();
-            String key = String.format("%s: %s:%d->%s:%d", protocol, srcIP, srcPort, dstIP, dstPort);
+            String key;
+            if (exchangeIp) {
+                key = String.format("%s: %s:%d->%s:%d", protocol, dstIP, dstPort, srcIP, srcPort);
+            } else {
+                key = String.format("%s: %s:%d->%s:%d", protocol, srcIP, srcPort, dstIP, dstPort);
+            }
             return key;
         } else {
-            throw new UnsupportedOperationException();
+            return ShortUUID.gen();
         }
     }
 
