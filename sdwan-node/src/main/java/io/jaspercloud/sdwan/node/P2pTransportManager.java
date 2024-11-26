@@ -3,6 +3,7 @@ package io.jaspercloud.sdwan.node;
 import io.jaspercloud.sdwan.stun.StunMessage;
 import io.jaspercloud.sdwan.support.AsyncTask;
 import io.jaspercloud.sdwan.tranport.DataTransport;
+import io.jaspercloud.sdwan.tranport.TransportLifecycle;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
@@ -10,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -18,9 +20,10 @@ import java.util.function.Consumer;
  * @create 2024/7/2
  */
 @Slf4j
-public class P2pTransportManager implements Runnable {
+public class P2pTransportManager implements TransportLifecycle, Runnable {
 
     private SdWanNodeConfig config;
+    private AtomicBoolean status = new AtomicBoolean();
     private ScheduledExecutorService scheduledExecutorService;
     private Map<String, AtomicReference<DataTransport>> transportMap = new ConcurrentHashMap<>();
     private Map<String, String> heartMap = new ConcurrentHashMap<>();
@@ -63,9 +66,16 @@ public class P2pTransportManager implements Runnable {
 
     @Override
     public void run() {
+        if (!status.get()) {
+            return;
+        }
         try {
             for (String vip : transportMap.keySet()) {
-                DataTransport transport = transportMap.get(vip).get();
+                AtomicReference<DataTransport> reference = transportMap.get(vip);
+                if (null == reference) {
+                    continue;
+                }
+                DataTransport transport = reference.get();
                 if (null == transport) {
                     continue;
                 }
@@ -93,12 +103,21 @@ public class P2pTransportManager implements Runnable {
         }
     }
 
+    @Override
+    public boolean isRunning() {
+        return status.get();
+    }
+
+    @Override
     public void start() {
+        status.set(true);
         scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         scheduledExecutorService.scheduleAtFixedRate(this, 0, config.getP2pCheckTime(), TimeUnit.MILLISECONDS);
     }
 
+    @Override
     public void stop() {
+        status.set(false);
         scheduledExecutorService.shutdown();
     }
 }

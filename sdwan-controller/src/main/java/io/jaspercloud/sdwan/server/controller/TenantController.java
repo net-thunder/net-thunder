@@ -1,6 +1,8 @@
 package io.jaspercloud.sdwan.server.controller;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollectionUtil;
+import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.server.config.TenantContextHandler;
 import io.jaspercloud.sdwan.server.controller.common.ValidGroup;
 import io.jaspercloud.sdwan.server.controller.request.EditTenantRequest;
@@ -12,14 +14,20 @@ import io.jaspercloud.sdwan.server.entity.Tenant;
 import io.jaspercloud.sdwan.server.service.AccountService;
 import io.jaspercloud.sdwan.server.service.NodeService;
 import io.jaspercloud.sdwan.server.service.TenantService;
+import io.jaspercloud.sdwan.tranport.P2pClient;
+import io.jaspercloud.sdwan.tranport.RelayClient;
 import io.jaspercloud.sdwan.tranport.SdWanServer;
+import io.jaspercloud.sdwan.util.SocketAddressUtil;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/tenant")
 public class TenantController {
@@ -39,12 +47,14 @@ public class TenantController {
     @PostMapping("/add")
     public void add(@Validated(ValidGroup.Add.class) @RequestBody EditTenantRequest request) {
         request.check();
+        checkServerList(request.getStunServerList(), request.getRelayServerList());
         tenantService.add(request);
     }
 
     @PostMapping("/edit")
     public void edit(@Validated(ValidGroup.Update.class) @RequestBody EditTenantRequest request) {
         request.check();
+        checkServerList(request.getStunServerList(), request.getRelayServerList());
         tenantService.edit(request);
     }
 
@@ -112,5 +122,43 @@ public class TenantController {
         }).collect(Collectors.toList());
         PageResponse<TenantResponse> response = PageResponse.build(collect, pageResponse.getTotal(), pageResponse.getSize(), pageResponse.getCurrent());
         return response;
+    }
+
+    private void checkServerList(List<String> stunServerList, List<String> relayServerList) {
+        long timeout = 1500;
+        if (CollectionUtil.isNotEmpty(stunServerList)) {
+            P2pClient client = new P2pClient();
+            client.start();
+            try {
+                for (String server : stunServerList) {
+                    try {
+                        InetSocketAddress socketAddress = SocketAddressUtil.parse(server);
+                        client.sendBind(socketAddress, timeout).get();
+                    } catch (Exception e) {
+                        log.error(e.getMessage(), e);
+                        throw new ProcessException(String.format("检测%s失败", server));
+                    }
+                }
+            } finally {
+                client.stop();
+            }
+        }
+        if (CollectionUtil.isNotEmpty(relayServerList)) {
+            RelayClient client = new RelayClient();
+            client.start();
+            try {
+                for (String server : relayServerList) {
+                    try {
+                        InetSocketAddress socketAddress = SocketAddressUtil.parse(server);
+                        client.sendBind(socketAddress, timeout).get();
+                    } catch (Exception e) {
+                        log.error(e.getMessage(), e);
+                        throw new ProcessException(String.format("检测%s失败", server));
+                    }
+                }
+            } finally {
+                client.stop();
+            }
+        }
     }
 }

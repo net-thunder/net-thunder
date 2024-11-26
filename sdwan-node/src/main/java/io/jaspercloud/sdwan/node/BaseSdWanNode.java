@@ -8,7 +8,6 @@ import io.jaspercloud.sdwan.node.rule.CidrRouteRulePredicate;
 import io.jaspercloud.sdwan.route.VirtualRouter;
 import io.jaspercloud.sdwan.route.rule.RouteRulePredicate;
 import io.jaspercloud.sdwan.stun.NatAddress;
-import io.jaspercloud.sdwan.support.AddressUri;
 import io.jaspercloud.sdwan.support.AsyncTask;
 import io.jaspercloud.sdwan.support.Cidr;
 import io.jaspercloud.sdwan.support.Multicast;
@@ -18,16 +17,18 @@ import io.jaspercloud.sdwan.tranport.SdWanClientConfig;
 import io.jaspercloud.sdwan.tun.IpLayerPacket;
 import io.jaspercloud.sdwan.tun.Ipv4Packet;
 import io.jaspercloud.sdwan.tun.windows.Ics;
-import io.jaspercloud.sdwan.util.*;
+import io.jaspercloud.sdwan.util.ByteBufUtil;
+import io.jaspercloud.sdwan.util.CheckAdmin;
+import io.jaspercloud.sdwan.util.NetworkInterfaceUtil;
+import io.jaspercloud.sdwan.util.PlatformUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.util.internal.PlatformDependent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
-import java.net.InetAddress;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -58,16 +59,11 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
     private Thread loopThread;
     private ReentrantLock lock = new ReentrantLock();
     private Condition condition = lock.newCondition();
-    private List<String> localAddressUriList = new ArrayList<>();
     private List<EventListener> eventListenerList = new ArrayList<>();
     private Map<String, SDWanProtos.NodeInfo> nodeInfoMap = new ConcurrentHashMap<>();
 
     public boolean getStatus() {
         return status.get();
-    }
-
-    public List<String> getLocalAddressUriList() {
-        return localAddressUriList;
     }
 
     public String getLocalVip() {
@@ -172,7 +168,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                         }
                     }
                 });
-        iceClient = new IceClient(config, this, () -> new ChannelInitializer<Channel>() {
+        iceClient = new IceClient(config, sdWanClient, () -> new ChannelInitializer<Channel>() {
             @Override
             protected void initChannel(Channel ch) throws Exception {
                 ChannelPipeline pipeline = ch.pipeline();
@@ -191,6 +187,55 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         status.set(true);
     }
 
+    protected void install() throws Exception {
+        nodeInfoMap.clear();
+        sdWanClient.start();
+        SDWanProtos.ServerConfigResp configResp = sdWanClient.getConfig(config.getConnectTimeout()).get();
+        if (!SDWanProtos.MessageCode.Success.equals(configResp.getCode())) {
+            throw new ProcessException("get config error");
+        }
+        config.setStunServerList(configResp.getStunServersList());
+        config.setRelayServerList(configResp.getRelayServersList());
+        log.info("SdWanNode install");
+        String localAddress = config.getLocalAddress();
+        if (null == localAddress) {
+            localAddress = config.getHostAddress();
+        }
+        String macAddress = processMacAddress(NetworkInterfaceUtil.getHardwareAddress(localAddress));
+        log.info("parseMacAddress: {}", macAddress);
+        SDWanProtos.RegistReq.Builder builder = SDWanProtos.RegistReq.newBuilder()
+                .setTenantId(config.getTenantId())
+                .setNodeType(SDWanProtos.NodeTypeCode.SimpleType)
+                .setMacAddress(macAddress)
+                .addAllAddressUri(Collections.emptyList())
+                .setOs(PlatformUtil.normalizedOs())
+                .setOsVersion(System.getProperty("os.name"));
+        SDWanProtos.RegistReq registReq = builder.build();
+        SDWanProtos.RegistResp regResp = sdWanClient.regist(registReq, 3000).get();
+        if (!SDWanProtos.MessageCode.Success.equals(regResp.getCode())) {
+            throw new ProcessCodeException(regResp.getCode().getNumber(), "registSdwan failed=" + regResp.getCode().name());
+        }
+        log.info("registSdwan: vip={}", regResp.getVip());
+        localVip = regResp.getVip();
+        maskBits = regResp.getMaskBits();
+        vipCidr = regResp.getCidr();
+        updateNodeInfoList(regResp.getNodeList());
+        virtualRouter.updateCidr(vipCidr);
+        virtualRouter.updateRoutes(mergeRouteList(regResp.getRouteList().getRouteList(), regResp.getVnatList().getVnatList()));
+        virtualRouter.updateRouteRules(buildRouteRuleList(regResp.getRouteRuleList().getRouteRuleList()));
+        virtualRouter.updateVNATs(regResp.getVnatList().getVnatList());
+        iceClient.setLocalVip(localVip);
+        iceClient.start();
+        log.info("SdWanNode installed");
+        fireEvent(EventListener::onConnected);
+    }
+
+    protected void uninstall() throws Exception {
+        log.info("SdWanNode uninstalling");
+        iceClient.stop();
+        sdWanClient.stop();
+    }
+
     @Override
     public synchronized void stop() throws Exception {
         if (!status.get()) {
@@ -205,35 +250,10 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         log.info("SdWanNode stopped");
     }
 
-    public void registNodeInfo(List<AddressUri> addressUriList) throws Exception {
-        List<AddressUri> list = new ArrayList<>();
-        if (config.isOnlyRelayTransport()) {
-            List<AddressUri> collect = addressUriList.stream()
-                    .filter(e -> AddressType.RELAY.equals(e.getScheme()))
-                    .collect(Collectors.toList());
-            list.addAll(collect);
-        } else {
-            List<NetworkInterfaceInfo> interfaceInfoList;
-            if (null == config.getLocalAddress()) {
-                InetAddress[] inetAddresses = InetAddress.getAllByName(InetAddress.getLocalHost().getHostName());
-                interfaceInfoList = NetworkInterfaceUtil.parseInetAddress(inetAddresses);
-            } else {
-                NetworkInterfaceInfo networkInterfaceInfo = NetworkInterfaceUtil.findIp(config.getLocalAddress());
-                interfaceInfoList = Arrays.asList(networkInterfaceInfo);
-            }
-            interfaceInfoList.forEach(e -> {
-                String address = e.getInterfaceAddress().getAddress().getHostAddress();
-                AddressUri addressUri = AddressUri.builder()
-                        .scheme(AddressType.HOST)
-                        .host(address)
-                        .port(iceClient.getP2pClient().getLocalPort())
-                        .build();
-                list.add(addressUri);
-            });
-            list.addAll(addressUriList);
-        }
-        localAddressUriList = list.stream().map(e -> e.toString()).collect(Collectors.toList());
-        sdWanClient.updateNodeInfo(localAddressUriList);
+    private void updateNodeInfoList(SDWanProtos.NodeInfoList nodeList) {
+        nodeList.getNodeInfoList().forEach(e -> {
+            nodeInfoMap.put(e.getVip(), e);
+        });
     }
 
     public void sendIpLayerPacket(IpLayerPacket packet) {
@@ -287,56 +307,6 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         Ipv4Packet ipv4Packet = new Ipv4Packet(packet);
         IpLayerPacket ipLayerPacket = new IpLayerPacket(ipv4Packet.encode());
         sendIpLayerPacket(ipLayerPacket);
-    }
-
-    protected void install() throws Exception {
-        nodeInfoMap.clear();
-        sdWanClient.start();
-        SDWanProtos.ServerConfigResp configResp = sdWanClient.getConfig(config.getConnectTimeout()).get();
-        if (!SDWanProtos.MessageCode.Success.equals(configResp.getCode())) {
-            throw new ProcessException("get config error");
-        }
-        config.setStunServerList(configResp.getStunServersList());
-        config.setRelayServerList(configResp.getRelayServersList());
-        iceClient.start();
-        log.info("SdWanNode install");
-        String localAddress = config.getLocalAddress();
-        if (null == localAddress) {
-            localAddress = config.getHostAddress();
-        }
-        String macAddress = processMacAddress(NetworkInterfaceUtil.getHardwareAddress(localAddress));
-        log.info("parseMacAddress: {}", macAddress);
-        SDWanProtos.RegistReq.Builder builder = SDWanProtos.RegistReq.newBuilder()
-                .setTenantId(config.getTenantId())
-                .setNodeType(SDWanProtos.NodeTypeCode.SimpleType)
-                .setMacAddress(macAddress)
-                .addAllAddressUri(localAddressUriList)
-                .setOs(PlatformUtil.normalizedOs())
-                .setOsVersion(System.getProperty("os.name"));
-        SDWanProtos.RegistReq registReq = builder.build();
-        SDWanProtos.RegistResp regResp = sdWanClient.regist(registReq, 3000).get();
-        if (!SDWanProtos.MessageCode.Success.equals(regResp.getCode())) {
-            throw new ProcessCodeException(regResp.getCode().getNumber(), "registSdwan failed=" + regResp.getCode().name());
-        }
-        log.info("registSdwan: vip={}", regResp.getVip());
-        localVip = regResp.getVip();
-        maskBits = regResp.getMaskBits();
-        vipCidr = regResp.getCidr();
-        regResp.getNodeList().getNodeInfoList().forEach(e -> {
-            nodeInfoMap.put(e.getVip(), e);
-        });
-        virtualRouter.updateCidr(vipCidr);
-        virtualRouter.updateRoutes(mergeRouteList(regResp.getRouteList().getRouteList(), regResp.getVnatList().getVnatList()));
-        virtualRouter.updateRouteRules(buildRouteRuleList(regResp.getRouteRuleList().getRouteRuleList()));
-        virtualRouter.updateVNATs(regResp.getVnatList().getVnatList());
-        log.info("SdWanNode installed");
-        fireEvent(EventListener::onConnected);
-    }
-
-    protected void uninstall() throws Exception {
-        log.info("SdWanNode uninstalling");
-        iceClient.stop();
-        sdWanClient.stop();
     }
 
     private List<SDWanProtos.Route> mergeRouteList(List<SDWanProtos.Route> routeList, List<SDWanProtos.VNAT> vnatList) {
