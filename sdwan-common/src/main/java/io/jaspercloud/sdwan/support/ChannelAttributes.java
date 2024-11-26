@@ -23,6 +23,7 @@ public class ChannelAttributes {
     private String macAddress;
     private String os;
     private String osVersion;
+    private String nodeVersion;
     private List<String> addressUriList = Collections.emptyList();
 
     private ChannelAttributes() {

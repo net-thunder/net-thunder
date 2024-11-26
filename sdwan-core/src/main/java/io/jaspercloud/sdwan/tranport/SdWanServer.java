@@ -231,6 +231,7 @@ public class SdWanServer implements Lifecycle, Runnable {
             attr.setOs(registReq.getOs());
             attr.setOsVersion(registReq.getOsVersion());
             attr.setAddressUriList(registReq.getAddressUriList());
+            attr.setNodeVersion(registReq.getNodeVersion());
             SDWanProtos.NodeInfoList nodeInfoList = SDWanProtos.NodeInfoList.newBuilder()
                     .addAllNodeInfo(registChannelMap.keySet().stream()
                             .map(ch -> {

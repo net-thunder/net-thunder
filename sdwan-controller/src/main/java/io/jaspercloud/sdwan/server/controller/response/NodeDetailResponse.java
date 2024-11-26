@@ -16,6 +16,7 @@ public class NodeDetailResponse {
     private String mac;
     private String os;
     private String osVersion;
+    private String nodeVersion;
     private List<ICEAddress> addressList;
     private String ip;
     private String vip;
