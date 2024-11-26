@@ -37,7 +37,7 @@ public class RouteRuleServiceImpl implements RouteRuleService {
         rulePO.setId(null);
         rulePO.insert();
         if (CollectionUtil.isNotEmpty(request.getGroupIdList())) {
-            groupConfigService.updateGroupRoute(rulePO.getId(), request.getGroupIdList());
+            groupConfigService.updateGroupRouteRule(rulePO.getId(), request.getGroupIdList());
         }
     }
 
