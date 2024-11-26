@@ -46,6 +46,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class BaseSdWanNode implements Lifecycle, Runnable {
 
+    public static final String NodeVersion = "1.0.2";
+
     private SdWanNodeConfig config;
 
     private SdWanClient sdWanClient;
@@ -213,7 +215,8 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                 .setMacAddress(macAddress)
                 .addAllAddressUri(Collections.emptyList())
                 .setOs(PlatformUtil.normalizedOs())
-                .setOsVersion(System.getProperty("os.name"));
+                .setOsVersion(System.getProperty("os.name"))
+                .setNodeVersion(NodeVersion);
         SDWanProtos.RegistReq registReq = builder.build();
         //1.先regist
         SDWanProtos.RegistResp regResp = sdWanClient.regist(registReq, 3000).get();

@@ -70,6 +70,7 @@ message RegistReq {
   repeated string addressUri = 4;
   optional string os = 5;
   optional string osVersion = 6;
+  optional string nodeVersion = 7;
 }
 
 message RegistResp {
@@ -155,8 +156,8 @@ message ServerConfigReq {
 
 message ServerConfigResp {
   required MessageCode code = 1;
-  required string stunServer = 2;
-  required string relayServer = 3;
+  optional string stunServer = 2;
+  optional string relayServer = 3;
   repeated string stunServers = 4;
   repeated string relayServers = 5;
 }

@@ -72,6 +72,7 @@ public class NodeController extends BaseController {
                 nodeResponse.setIp(remotedAddress.getHostString());
                 nodeResponse.setOs(attr.getOs());
                 nodeResponse.setOsVersion(attr.getOsVersion());
+                nodeResponse.setNodeVersion(attr.getNodeVersion());
                 List<String> addressUriList = attr.getAddressUriList();
                 if (CollectionUtil.isNotEmpty(addressUriList)) {
                     List<ICEAddress> collect = addressUriList.stream().map(e -> {
@@ -110,6 +111,7 @@ public class NodeController extends BaseController {
                 e.setIp(remotedAddress.getHostString());
                 e.setOs(attr.getOs());
                 e.setOsVersion(attr.getOsVersion());
+                e.setNodeVersion(attr.getNodeVersion());
             }
             e.setOnline(null != channel);
         });
