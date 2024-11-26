@@ -240,7 +240,6 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
     @Override
     public List<Node> queryByTenantId(Long tenantId) {
         List<Node> list = nodeRepository.query()
-                .eq(Node::getTenantId, tenantId)
                 .list();
         return list;
     }
@@ -300,7 +299,7 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
     }
 
     private String applyIp(Tenant tenant) {
-        String vip = reuseIp(tenant);
+        String vip = reuseIp();
         if (null != vip) {
             return vip;
         }
@@ -321,19 +320,17 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
         return vip;
     }
 
-    private String reuseIp(Tenant tenant) {
+    private String reuseIp() {
         while (true) {
             VipPoolPO poolPO = new LambdaQueryChainWrapper<>(vipPoolMapper)
-                    .eq(VipPoolPO::getTenantId, tenant.getId())
                     .eq(VipPoolPO::getUsed, false)
-                    .last("limit 1")
+                    .last("fetch first 1 row only")
                     .one();
             if (null == poolPO) {
                 return null;
             }
             boolean update = new LambdaUpdateChainWrapper<>(vipPoolMapper)
                     .eq(VipPoolPO::getId, poolPO.getId())
-                    .eq(VipPoolPO::getTenantId, tenant.getId())
                     .eq(VipPoolPO::getUsed, false)
                     .set(VipPoolPO::getUsed, true)
                     .update();

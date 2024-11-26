@@ -1,23 +1,23 @@
 ### add
-POST http://localhost:11805/tenant/add
+POST http://localhost:11805/api/tenant/add
 Content-Type: application/json
 Access-Token: {{token}}
 
 {
-  "name": "test3",
-  "description": "test3",
-  "code": "test3",
-  "cidr": "10.5.0.0/24",
-  "username": "te111st2",
-  "password": "te111st",
+  "name": "default",
+  "description": "default",
+  "code": "default",
+  "username": "default",
+  "password": "12345678",
+  "cidr": "15.5.0.0/24",
   "stunServerList": [
-    "127.0.0.1:888"
+    "127.0.0.1:80"
   ],
   "relayServerList": [
-    "127.0.0.1:888"
+    "127.0.0.1:80"
   ],
-  "enable": true,
-  "nodeGrant": true
+  "nodeGrant": true,
+  "enable": true
 }
 
 ### edit
