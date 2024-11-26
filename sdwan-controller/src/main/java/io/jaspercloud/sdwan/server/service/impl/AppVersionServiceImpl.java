@@ -71,7 +71,7 @@ public class AppVersionServiceImpl implements AppVersionService {
         AppVersion appVersion = appVersionRepository.query()
                 .eq(AppVersion::getPlatform, platform)
                 .orderByDesc(AppVersion::getCreateTime)
-                .last("fetch first 1 row only")
+                .last("limit 1")
                 .one();
         return appVersion;
     }

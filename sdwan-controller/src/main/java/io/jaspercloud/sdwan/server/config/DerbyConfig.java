@@ -4,6 +4,7 @@ import com.alibaba.druid.pool.DruidDataSource;
 import com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration;
 import com.baomidou.mybatisplus.core.injector.ISqlInjector;
 import io.jaspercloud.sdwan.server.support.derby.DerbyISqlInjector;
+import io.jaspercloud.sdwan.server.support.derby.LimitInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,6 +41,11 @@ public class DerbyConfig {
     @Bean
     public ISqlInjector sqlInjector() {
         return new DerbyISqlInjector();
+    }
+
+    @Bean
+    public LimitInterceptor limitInterceptor() {
+        return new LimitInterceptor();
     }
 
     private void initDerby(DataSource dataSource, String path) throws Exception {
