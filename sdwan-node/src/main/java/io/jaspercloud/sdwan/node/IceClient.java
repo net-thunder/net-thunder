@@ -1,5 +1,7 @@
 package io.jaspercloud.sdwan.node;
 
+import cn.hutool.core.lang.Pair;
+import cn.hutool.crypto.digest.DigestUtil;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.stun.*;
@@ -13,6 +15,7 @@ import io.jaspercloud.sdwan.util.NetworkInterfaceUtil;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;
 import io.netty.channel.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -42,7 +45,7 @@ public class IceClient implements TransportLifecycle, Runnable {
     private P2pTransportManager p2pTransportManager;
     private ElectionProtocol electionProtocol;
     private AtomicBoolean status = new AtomicBoolean(false);
-    private AtomicReference<List<String>> localAddressUriListRef = new AtomicReference<>(Collections.emptyList());
+    private volatile Pair<String, List<String>> localAddressUriListRef = new Pair<>("", Collections.emptyList());
     private ScheduledExecutorService scheduledExecutorService;
 
     public P2pClient getP2pClient() {
@@ -179,7 +182,7 @@ public class IceClient implements TransportLifecycle, Runnable {
 
             @Override
             protected List<String> getLocalAddressUriList() {
-                return localAddressUriListRef.get();
+                return localAddressUriListRef.getValue();
             }
         };
         p2pTransportManager = new P2pTransportManager(config);
@@ -229,14 +232,22 @@ public class IceClient implements TransportLifecycle, Runnable {
         BlockingQueue<AddressUri> queue = new LinkedBlockingQueue<>();
         CountDownLatch countDownLatch = new CountDownLatch(stunServerList.size() + relayServerList.size());
         for (String address : stunServerList) {
-            checkStun(countDownLatch, address, queue);
+            try {
+                checkStun(countDownLatch, address, queue);
+            } catch (Throwable e) {
+                log.error(e.getMessage(), e);
+            }
         }
         for (String address : relayServerList) {
-            checkRelay(countDownLatch, address, queue);
+            try {
+                checkRelay(countDownLatch, address, queue);
+            } catch (Throwable e) {
+                log.error(e.getMessage(), e);
+            }
         }
         try {
             countDownLatch.await(config.getIceCheckTimeout(), TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
         }
         List<AddressUri> addressUriList = new ArrayList<>();
         queue.drainTo(addressUriList);
@@ -270,8 +281,13 @@ public class IceClient implements TransportLifecycle, Runnable {
             });
             list.addAll(addressUriList);
         }
-        List<String> collect = list.stream().map(e -> e.toString()).collect(Collectors.toList());
-        localAddressUriListRef.set(collect);
+        List<String> collect = list.stream().map(e -> e.toString()).sorted().collect(Collectors.toList());
+        String md5 = DigestUtil.md5Hex(StringUtils.join(collect));
+        String key = localAddressUriListRef.getKey();
+        if (StringUtils.equals(md5, key)) {
+            return;
+        }
+        localAddressUriListRef = new Pair<>(md5, collect);
         /**
          * ElectionProtocol.offer使用nodeInfo
          */
