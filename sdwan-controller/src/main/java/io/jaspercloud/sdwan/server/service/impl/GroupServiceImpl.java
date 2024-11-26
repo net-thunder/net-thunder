@@ -39,11 +39,12 @@ public class GroupServiceImpl implements GroupService {
     private GroupVNATRepository groupVNATRepository;
 
     @Override
-    public void addDefaultGroup(String name) {
+    public Long addDefaultGroup() {
         GroupPO group = new GroupPO();
-        group.setName(name);
+        group.setName("default");
         group.setDefaultGroup(true);
         group.insert();
+        return group.getId();
     }
 
     @Override
