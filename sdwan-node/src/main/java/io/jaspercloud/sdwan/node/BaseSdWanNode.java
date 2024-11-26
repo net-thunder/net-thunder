@@ -126,7 +126,9 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                         switch (msg.getType().getNumber()) {
                             case SDWanProtos.MessageTypeCode.P2pOfferType_VALUE: {
                                 SDWanProtos.P2pOffer p2pOffer = SDWanProtos.P2pOffer.parseFrom(msg.getData());
-                                iceClient.processOffer(msg.getReqId(), p2pOffer);
+                                if (iceClient.isRunning()) {
+                                    iceClient.processOffer(msg.getReqId(), p2pOffer);
+                                }
                                 break;
                             }
                             case SDWanProtos.MessageTypeCode.P2pAnswerType_VALUE: {
@@ -159,7 +161,9 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                             case SDWanProtos.MessageTypeCode.NodeOfflineType_VALUE: {
                                 SDWanProtos.NodeInfo nodeInfo = SDWanProtos.NodeInfo.parseFrom(msg.getData());
                                 nodeInfoMap.remove(nodeInfo.getVip());
-                                iceClient.offlineTransport(nodeInfo.getVip());
+                                if (iceClient.isRunning()) {
+                                    iceClient.offlineTransport(nodeInfo.getVip());
+                                }
                                 if (log.isDebugEnabled()) {
                                     log.info("offlineNode: vip={}", nodeInfo.getVip());
                                 }
@@ -211,6 +215,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                 .setOs(PlatformUtil.normalizedOs())
                 .setOsVersion(System.getProperty("os.name"));
         SDWanProtos.RegistReq registReq = builder.build();
+        //1.先regist
         SDWanProtos.RegistResp regResp = sdWanClient.regist(registReq, 3000).get();
         if (!SDWanProtos.MessageCode.Success.equals(regResp.getCode())) {
             throw new ProcessCodeException(regResp.getCode().getNumber(), "registSdwan failed=" + regResp.getCode().name());
@@ -224,6 +229,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         virtualRouter.updateRoutes(mergeRouteList(regResp.getRouteList().getRouteList(), regResp.getVnatList().getVnatList()));
         virtualRouter.updateRouteRules(buildRouteRuleList(regResp.getRouteRuleList().getRouteRuleList()));
         virtualRouter.updateVNATs(regResp.getVnatList().getVnatList());
+        //2.再start iceClient，不然updateNodeInfo上报不了
         iceClient.setLocalVip(localVip);
         iceClient.start();
         log.info("SdWanNode installed");
@@ -274,7 +280,9 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                 if (StringUtils.equals(nodeInfo.getVip(), localVip)) {
                     return;
                 }
-                iceClient.sendNode(localVip, nodeInfo, bytes);
+                if (iceClient.isRunning()) {
+                    iceClient.sendNode(localVip, nodeInfo, bytes);
+                }
             });
             return;
         }
@@ -293,7 +301,9 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                 .setDstIP(packet.getDstIP())
                 .setPayload(ByteString.copyFrom(ByteBufUtil.toBytes(byteBuf)))
                 .build().toByteArray();
-        iceClient.sendNode(localVip, nodeInfo, bytes);
+        if (iceClient.isRunning()) {
+            iceClient.sendNode(localVip, nodeInfo, bytes);
+        }
     }
 
     public void sendIpPacket(SDWanProtos.IpPacket ipPacket) {
