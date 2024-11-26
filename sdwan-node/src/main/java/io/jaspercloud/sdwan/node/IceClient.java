@@ -272,6 +272,9 @@ public class IceClient implements TransportLifecycle, Runnable {
         }
         List<String> collect = list.stream().map(e -> e.toString()).collect(Collectors.toList());
         localAddressUriListRef.set(collect);
+        /**
+         * ElectionProtocol.offer使用nodeInfo
+         */
         sdWanClient.updateNodeInfo(collect);
     }
 
