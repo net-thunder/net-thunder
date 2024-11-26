@@ -324,7 +324,7 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
         while (true) {
             VipPoolPO poolPO = new LambdaQueryChainWrapper<>(vipPoolMapper)
                     .eq(VipPoolPO::getUsed, false)
-                    .last("fetch first 1 row only")
+                    .last("limit 1")
                     .one();
             if (null == poolPO) {
                 return null;
