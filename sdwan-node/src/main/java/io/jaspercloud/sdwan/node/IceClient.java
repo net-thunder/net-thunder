@@ -272,6 +272,9 @@ public class IceClient implements TransportLifecycle, Runnable {
             }
             interfaceInfoList.forEach(e -> {
                 String address = e.getInterfaceAddress().getAddress().getHostAddress();
+                if (StringUtils.equals(address, localVip)) {
+                    return;
+                }
                 AddressUri addressUri = AddressUri.builder()
                         .scheme(AddressType.HOST)
                         .host(address)
