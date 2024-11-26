@@ -49,6 +49,7 @@ public class SdWanNodeConfig {
     private Boolean showTUNLog = false;
     private Boolean showICELog = false;
     private Boolean showElectionLog = false;
+    private Boolean showRouteRuleLog = false;
 
     private List<String> ifaceBlackList = Arrays.asList(
             "wt0",

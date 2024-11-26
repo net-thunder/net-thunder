@@ -72,7 +72,9 @@ public class RouteRuleServiceImpl implements RouteRuleService {
 
     @Override
     public List<RouteRuleResponse> list() {
-        List<RouteRule> list = routeRuleRepository.query().list();
+        List<RouteRule> list = routeRuleRepository.query()
+                .orderByAsc(RouteRule::getLevel)
+                .list();
         List<RouteRuleResponse> collect = list.stream().map(e -> {
             RouteRuleResponse routeRuleResponse = BeanUtil.toBean(e, RouteRuleResponse.class);
             return routeRuleResponse;
@@ -83,7 +85,9 @@ public class RouteRuleServiceImpl implements RouteRuleService {
     @Override
     public PageResponse<RouteRuleResponse> page() {
         Long total = routeRuleRepository.query().count();
-        List<RouteRule> list = routeRuleRepository.query().list();
+        List<RouteRule> list = routeRuleRepository.query()
+                .orderByAsc(RouteRule::getLevel)
+                .list();
         List<RouteRuleResponse> collect = list.stream().map(e -> {
             RouteRuleResponse routeRuleResponse = BeanUtil.toBean(e, RouteRuleResponse.class);
             return routeRuleResponse;

@@ -225,6 +225,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         maskBits = regResp.getMaskBits();
         vipCidr = regResp.getCidr();
         updateNodeInfoList(regResp.getNodeList());
+        virtualRouter.setShowRouteRuleLog(config.getShowRouteRuleLog());
         virtualRouter.updateCidr(vipCidr);
         virtualRouter.updateRoutes(mergeRouteList(regResp.getRouteList().getRouteList(), regResp.getVnatList().getVnatList()));
         virtualRouter.updateRouteRules(buildRouteRuleList(regResp.getRouteRuleList().getRouteRuleList()));
@@ -335,6 +336,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
 
     private List<RouteRulePredicate> buildRouteRuleList(List<SDWanProtos.RouteRule> routeRuleList) {
         List<RouteRulePredicate> collect = routeRuleList.stream()
+                .sorted(((o1, o2) -> Integer.compare(o1.getLevel(), o2.getLevel())))
                 .map(e -> new CidrRouteRulePredicate(e))
                 .collect(Collectors.toList());
         return collect;
