@@ -15,6 +15,7 @@ import io.jaspercloud.sdwan.server.repository.TenantRepository;
 import io.jaspercloud.sdwan.server.repository.po.AccountPO;
 import io.jaspercloud.sdwan.server.repository.po.TenantPO;
 import io.jaspercloud.sdwan.server.service.GroupService;
+import io.jaspercloud.sdwan.server.service.RouteRuleService;
 import io.jaspercloud.sdwan.server.service.TenantService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,9 @@ public class TenantServiceImpl implements TenantService {
     @Resource
     private GroupService groupService;
 
+    @Resource
+    private RouteRuleService routeRuleService;
+
     @Override
     public void add(EditTenantRequest request) {
         checkUnique(request.getId(), request.getUsername(), request.getName(), request.getCode());
@@ -52,7 +56,8 @@ public class TenantServiceImpl implements TenantService {
         tenant.setAccountId(accountPO.getId());
         tenant.insert();
         TenantContextHandler.setTenantId(tenant.getId());
-        groupService.addDefaultGroup("default");
+        Long groupId = groupService.addDefaultGroup();
+        routeRuleService.addDefaultRouteRule(groupId);
     }
 
     @Override

@@ -9,6 +9,8 @@ import java.util.List;
 
 public interface RouteRuleService {
 
+    void addDefaultRouteRule(Long groupId);
+
     void add(EditRouteRuleRequest request);
 
     void edit(EditRouteRuleRequest request);

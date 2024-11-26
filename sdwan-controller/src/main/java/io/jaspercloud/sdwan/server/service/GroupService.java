@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface GroupService {
 
-    void addDefaultGroup(String name);
+    Long addDefaultGroup();
 
     void add(EditGroupRequest request);
 

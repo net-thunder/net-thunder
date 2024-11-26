@@ -3,6 +3,8 @@ package io.jaspercloud.sdwan.server.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import io.jaspercloud.sdwan.exception.ProcessException;
+import io.jaspercloud.sdwan.route.rule.RouteRuleDirectionEnum;
+import io.jaspercloud.sdwan.route.rule.RouteRuleStrategyEnum;
 import io.jaspercloud.sdwan.server.controller.request.EditRouteRuleRequest;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.controller.response.RouteRuleResponse;
@@ -15,6 +17,7 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,6 +31,20 @@ public class RouteRuleServiceImpl implements RouteRuleService {
 
     @Resource
     private GroupConfigService groupConfigService;
+
+    @Override
+    public void addDefaultRouteRule(Long groupId) {
+        RouteRule rule = new RouteRule();
+        rule.setName("default");
+        rule.setEnable(true);
+        rule.setLevel(100);
+        rule.setStrategy(RouteRuleStrategyEnum.Allow);
+        rule.setDirection(RouteRuleDirectionEnum.All);
+        rule.setRuleList(Arrays.asList("0.0.0.0/0"));
+        RouteRulePO rulePO = routeRuleRepository.getTransformer().build(rule);
+        rulePO.insert();
+        groupConfigService.updateGroupRouteRule(rulePO.getId(), Arrays.asList(groupId));
+    }
 
     @Override
     public void add(EditRouteRuleRequest request) {
