@@ -12,14 +12,21 @@ import java.util.stream.Collectors;
 public class CidrRouteRulePredicate implements RouteRulePredicate {
 
     private SDWanProtos.RouteRule routeRule;
+    private RouteRuleStrategyEnum strategy;
     private RouteRuleDirectionEnum direction;
     private List<Cidr> cidrList;
 
     public CidrRouteRulePredicate(SDWanProtos.RouteRule routeRule) {
         this.routeRule = routeRule;
-        direction = RouteRuleDirectionEnum.valueOf(routeRule.getDirection());
-        cidrList = routeRule.getRuleListList().stream()
+        this.strategy = RouteRuleStrategyEnum.valueOf(routeRule.getStrategy());
+        this.direction = RouteRuleDirectionEnum.valueOf(routeRule.getDirection());
+        this.cidrList = routeRule.getRuleListList().stream()
                 .map(e -> Cidr.parseCidr(e)).collect(Collectors.toList());
+    }
+
+    @Override
+    public RouteRuleStrategyEnum strategy() {
+        return strategy;
     }
 
     @Override

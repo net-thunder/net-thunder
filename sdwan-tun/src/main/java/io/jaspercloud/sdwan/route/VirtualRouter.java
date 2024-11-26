@@ -6,6 +6,7 @@ import com.google.protobuf.ProtocolStringList;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.route.rule.RouteRuleDirectionEnum;
 import io.jaspercloud.sdwan.route.rule.RouteRulePredicate;
+import io.jaspercloud.sdwan.route.rule.RouteRulePredicateProcessor;
 import io.jaspercloud.sdwan.support.Cidr;
 import io.jaspercloud.sdwan.tranport.TransportLifecycle;
 import io.jaspercloud.sdwan.tun.IpLayerPacket;
@@ -31,13 +32,14 @@ import java.util.stream.Collectors;
 @Slf4j
 public class VirtualRouter implements TransportLifecycle {
 
-    private String cidr;
+    private volatile String cidr;
+    private volatile boolean showRouteRuleLog = false;
+    private volatile List<SDWanProtos.Route> routeList = Collections.emptyList();
+    private volatile RouteRulePredicateProcessor routeInRuleProcessor = new RouteRulePredicateProcessor();
+    private volatile RouteRulePredicateProcessor routeOutRuleProcessor = new RouteRulePredicateProcessor();
+    private volatile Map<String, SDWanProtos.VNAT> vnatMap = Collections.emptyMap();
     private ReadWriteLock lock = new ReentrantReadWriteLock();
     private Map<Integer, Consumer<List<SDWanProtos.Route>>> listenerMap = new ConcurrentHashMap<>();
-    private List<SDWanProtos.Route> routeList = Collections.emptyList();
-    private List<RouteRulePredicate> routeInRuleList = Collections.emptyList();
-    private List<RouteRulePredicate> routeOutRuleList = Collections.emptyList();
-    private Map<String, SDWanProtos.VNAT> vnatMap = Collections.emptyMap();
     private Cache<String, String> vnatMappingCache = Caffeine.newBuilder()
             .expireAfterWrite(30, TimeUnit.MINUTES)
             .build();
@@ -67,28 +69,14 @@ public class VirtualRouter implements TransportLifecycle {
         this.cidr = cidr;
     }
 
+    public void setShowRouteRuleLog(boolean showRouteRuleLog) {
+        this.showRouteRuleLog = showRouteRuleLog;
+    }
+
     public List<SDWanProtos.Route> getRouteList() {
         lock.readLock().lock();
         try {
             return routeList;
-        } finally {
-            lock.readLock().unlock();
-        }
-    }
-
-    public List<RouteRulePredicate> getRouteInRuleList() {
-        lock.readLock().lock();
-        try {
-            return routeInRuleList;
-        } finally {
-            lock.readLock().unlock();
-        }
-    }
-
-    public List<RouteRulePredicate> getRouteOutRuleList() {
-        lock.readLock().lock();
-        try {
-            return routeOutRuleList;
         } finally {
             lock.readLock().unlock();
         }
@@ -107,12 +95,14 @@ public class VirtualRouter implements TransportLifecycle {
     public void updateRouteRules(List<RouteRulePredicate> list) {
         lock.writeLock().lock();
         try {
-            routeInRuleList = list.stream()
+            List<RouteRulePredicate> routeInRuleList = list.stream()
                     .filter(e -> Arrays.asList(RouteRuleDirectionEnum.All, RouteRuleDirectionEnum.Input).contains(e.direction()))
                     .collect(Collectors.toList());
-            routeOutRuleList = list.stream()
+            List<RouteRulePredicate> routeOutRuleList = list.stream()
                     .filter(e -> Arrays.asList(RouteRuleDirectionEnum.All, RouteRuleDirectionEnum.Output).contains(e.direction()))
                     .collect(Collectors.toList());
+            routeInRuleProcessor = new RouteRulePredicateProcessor(routeInRuleList);
+            routeOutRuleProcessor = new RouteRulePredicateProcessor(routeOutRuleList);
         } finally {
             lock.writeLock().unlock();
         }
@@ -133,10 +123,11 @@ public class VirtualRouter implements TransportLifecycle {
     }
 
     public IpLayerPacket routeIn(IpLayerPacket packet) {
-        for (RouteRulePredicate predicate : getRouteInRuleList()) {
-            if (!predicate.test(packet.getDstIP())) {
-                return null;
+        if (!routeInRuleProcessor.test(packet.getDstIP())) {
+            if (showRouteRuleLog) {
+                log.info("reject routeIn: {}", packet);
             }
+            return null;
         }
         SDWanProtos.VNAT vnat = findVNAT(getVnatMap(), packet, IpLayerPacket::getDstIP);
         if (null == vnat) {
@@ -151,10 +142,11 @@ public class VirtualRouter implements TransportLifecycle {
     }
 
     public String routeOut(IpLayerPacket packet) {
-        for (RouteRulePredicate predicate : getRouteOutRuleList()) {
-            if (!predicate.test(packet.getDstIP())) {
-                return null;
+        if (!routeOutRuleProcessor.test(packet.getDstIP())) {
+            if (showRouteRuleLog) {
+                log.info("reject routeOut: {}", packet);
             }
+            return null;
         }
         String originalIp = vnatMappingCache.getIfPresent(packet.getIdentifier());
         if (null != originalIp) {
