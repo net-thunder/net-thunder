@@ -11,6 +11,8 @@ import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
@@ -24,7 +26,7 @@ import java.util.function.Supplier;
 @Slf4j
 public class P2pClient implements TransportLifecycle {
 
-    private int localPort;
+    private Config config;
     private Supplier<ChannelHandler> handler;
     private Channel localChannel;
 
@@ -40,11 +42,11 @@ public class P2pClient implements TransportLifecycle {
     }
 
     public P2pClient(Supplier<ChannelHandler> handler) {
-        this(0, handler);
+        this(new Config(), handler);
     }
 
-    public P2pClient(int localPort, Supplier<ChannelHandler> handler) {
-        this.localPort = localPort;
+    public P2pClient(Config config, Supplier<ChannelHandler> handler) {
+        this.config = config;
         this.handler = handler;
     }
 
@@ -96,7 +98,7 @@ public class P2pClient implements TransportLifecycle {
     }
 
     public void transfer(String vip, String type, InetSocketAddress toAddress, byte[] bytes) {
-        if (log.isTraceEnabled()) {
+        if (config.getShowICELog()) {
             log.info("p2p send transfer: type={}, address={}", type, SocketAddressUtil.toAddress(toAddress));
         }
         StunMessage message = new StunMessage(MessageType.Transfer);
@@ -205,7 +207,7 @@ public class P2pClient implements TransportLifecycle {
                     }
                 });
         try {
-            localChannel = bootstrap.bind(new InetSocketAddress("0.0.0.0", localPort)).sync().channel();
+            localChannel = bootstrap.bind(new InetSocketAddress("0.0.0.0", config.getLocalPort())).sync().channel();
             InetSocketAddress localAddress = (InetSocketAddress) localChannel.localAddress();
             log.info("P2pClient started: port={}", localAddress.getPort());
             localChannel.closeFuture().addListener(new ChannelFutureListener() {
@@ -228,5 +230,13 @@ public class P2pClient implements TransportLifecycle {
         }
         localChannel.close();
         log.info("P2pClient stopped");
+    }
+
+    @Getter
+    @Setter
+    public static class Config {
+
+        private int localPort = 0;
+        private Boolean showICELog = false;
     }
 }

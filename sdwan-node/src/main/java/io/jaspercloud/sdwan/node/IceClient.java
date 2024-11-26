@@ -161,10 +161,28 @@ public class IceClient implements TransportLifecycle, Runnable {
     @Override
     public void start() throws Exception {
         encryptionKeyPair = Ecdh.generateKeyPair();
-        p2pClient = new P2pClient(config.getP2pPort(), () -> createStunPacketHandler("p2pClient"));
-        relayClient = new RelayClient(config.getRelayPort(), () -> createStunPacketHandler("relayClient"));
-        electionProtocol = new ElectionProtocol(config.getTenantId(), p2pClient, relayClient, encryptionKeyPair,
-                config.getElectionTimeout(), config.getP2pCheckTimeout()) {
+        p2pClient = new P2pClient(new P2pClient.Config() {
+            {
+                setLocalPort(config.getP2pPort());
+                setShowICELog(config.getShowICELog());
+            }
+        }, () -> createStunPacketHandler("p2pClient"));
+        relayClient = new RelayClient(new RelayClient.Config() {
+            {
+                setLocalPort(config.getRelayPort());
+                setShowICELog(config.getShowICELog());
+            }
+        }, () -> createStunPacketHandler("relayClient"));
+        ElectionProtocol.Config electionConfig = new ElectionProtocol.Config() {
+            {
+                setTenantId(config.getTenantId());
+                setEncryptionKeyPair(encryptionKeyPair);
+                setElectionTimeout(config.getElectionTimeout());
+                setPingTimeout(config.getP2pCheckTimeout());
+                setShowElectionLog(config.getShowElectionLog());
+            }
+        };
+        electionProtocol = new ElectionProtocol(electionConfig, p2pClient, relayClient) {
             @Override
             protected CompletableFuture<SDWanProtos.P2pAnswer> sendOffer(SDWanProtos.P2pOffer p2pOffer, long timeout) {
                 return sdWanClient.offer(p2pOffer, timeout);
@@ -311,7 +329,7 @@ public class IceClient implements TransportLifecycle, Runnable {
                         Map<AttrType, Attr> attrs = packet.content().getAttrs();
                         AddressAttr mappedAddressAttr = (AddressAttr) attrs.get(AttrType.MappedAddress);
                         InetSocketAddress natAddress = mappedAddressAttr.getAddress();
-                        if (log.isDebugEnabled()) {
+                        if (config.getShowElectionLog()) {
                             log.info("connect stunServer success: address={}, publicAddress={}", address, SocketAddressUtil.toAddress(natAddress));
                         }
                         Map<String, String> params = new HashMap<>();
@@ -344,7 +362,7 @@ public class IceClient implements TransportLifecycle, Runnable {
                         StunMessage stunMessage = packet.content();
                         StringAttr attr = stunMessage.getAttr(AttrType.RelayToken);
                         String token = attr.getData();
-                        if (log.isDebugEnabled()) {
+                        if (config.getShowElectionLog()) {
                             log.info("connect relayServer success: address={}, token={}", address, token);
                         }
                         Map<String, String> params = new HashMap<>();

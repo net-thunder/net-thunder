@@ -20,7 +20,7 @@ public class RelayClientTest {
                 .build();
         RelayServer relayServer = new RelayServer(config, () -> new ChannelInboundHandlerAdapter());
         relayServer.start();
-        RelayClient relayClient = new RelayClient(1234, () -> new ChannelInboundHandlerAdapter());
+        RelayClient relayClient = new RelayClient(new RelayClient.Config(), () -> new ChannelInboundHandlerAdapter());
         relayClient.start();
         String token = relayClient.regist(new InetSocketAddress("127.0.0.1", 1300), 3000).get();
         System.out.println("token: " + token);

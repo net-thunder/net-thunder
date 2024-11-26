@@ -25,25 +25,16 @@ import java.util.stream.Collectors;
 @Slf4j
 public abstract class ElectionProtocol {
 
-    private String tenantId;
+    private Config config;
     private P2pClient p2pClient;
     private RelayClient relayClient;
-    private KeyPair encryptionKeyPair;
-    private long electionTimeout;
-    private long pingTimeout;
 
-    public ElectionProtocol(String tenantId,
+    public ElectionProtocol(Config config,
                             P2pClient p2pClient,
-                            RelayClient relayClient,
-                            KeyPair encryptionKeyPair,
-                            long electionTimeout,
-                            long pingTimeout) {
-        this.tenantId = tenantId;
+                            RelayClient relayClient) {
+        this.config = config;
         this.p2pClient = p2pClient;
         this.relayClient = relayClient;
-        this.encryptionKeyPair = encryptionKeyPair;
-        this.electionTimeout = electionTimeout;
-        this.pingTimeout = pingTimeout;
     }
 
     public CompletableFuture<DataTransport> offer(SDWanProtos.NodeInfo nodeInfo) {
@@ -53,9 +44,9 @@ public abstract class ElectionProtocol {
                 .collect(Collectors.toList());
         List<PingRequest> pingRequestList = uriList.stream().map(uri -> {
             if (AddressType.HOST.equals(uri.getScheme()) || AddressType.SRFLX.equals(uri.getScheme())) {
-                return parseP2pPing(uri, pingTimeout);
+                return parseP2pPing(uri, config.getPingTimeout());
             } else if (AddressType.RELAY.equals(uri.getScheme())) {
-                return parseRelayPing(uri, pingTimeout);
+                return parseRelayPing(uri, config.getPingTimeout());
             } else {
                 throw new UnsupportedOperationException();
             }
@@ -65,7 +56,7 @@ public abstract class ElectionProtocol {
         pingRequestList.forEach(e -> {
             e.execute().thenAccept(pingResp -> {
                 AddressUri uri = e.getAddressUri();
-                if (log.isDebugEnabled()) {
+                if (config.getShowElectionLog()) {
                     log.info("pong: uri={}", uri.toString());
                 }
                 if (AddressType.RELAY.equals(uri.getScheme())) {
@@ -82,14 +73,14 @@ public abstract class ElectionProtocol {
             });
         });
         SDWanProtos.P2pOffer p2pOffer = SDWanProtos.P2pOffer.newBuilder()
-                .setTenantId(tenantId)
+                .setTenantId(config.getTenantId())
                 .setSrcVIP(getLocalVip())
                 .setDstVIP(nodeInfo.getVip())
                 .addAllAddressUri(getLocalAddressUriList())
-                .setPublicKey(ByteString.copyFrom(encryptionKeyPair.getPublic().getEncoded()))
+                .setPublicKey(ByteString.copyFrom(config.getEncryptionKeyPair().getPublic().getEncoded()))
                 .build();
         //sendOffer = 3 * electionTimeout
-        return sendOffer(p2pOffer, 3 * electionTimeout)
+        return sendOffer(p2pOffer, 3 * config.getElectionTimeout())
                 .thenApply(resp -> {
                     try {
                         DataTransport transport = future.getNow(null);
@@ -98,7 +89,7 @@ public abstract class ElectionProtocol {
                         }
                         log.info("selectDataTransport: {} -> {}, uri={}", p2pOffer.getSrcVIP(), p2pOffer.getDstVIP(), transport.addressUri().toString());
                         byte[] publicKey = resp.getPublicKey().toByteArray();
-                        SecretKey secretKey = Ecdh.generateAESKey(encryptionKeyPair.getPrivate(), publicKey);
+                        SecretKey secretKey = Ecdh.generateAESKey(config.getEncryptionKeyPair().getPrivate(), publicKey);
                         transport.setSecretKey(secretKey);
                         return transport;
                     } catch (ProcessException e) {
@@ -115,19 +106,19 @@ public abstract class ElectionProtocol {
                 .collect(Collectors.toList());
         List<PingRequest> pingRequestList = uriList.stream().map(uri -> {
             if (AddressType.HOST.equals(uri.getScheme()) || AddressType.SRFLX.equals(uri.getScheme())) {
-                return parseP2pPing(uri, pingTimeout);
+                return parseP2pPing(uri, config.getPingTimeout());
             } else if (AddressType.RELAY.equals(uri.getScheme())) {
-                return parseRelayPing(uri, pingTimeout);
+                return parseRelayPing(uri, config.getPingTimeout());
             } else {
                 throw new UnsupportedOperationException();
             }
         }).collect(Collectors.toList());
         //wait ping resp
-        CompletableFuture<DataTransport> future = AsyncTask.create(electionTimeout);
+        CompletableFuture<DataTransport> future = AsyncTask.create(config.getElectionTimeout());
         pingRequestList.forEach(req -> {
             req.execute().thenAccept(pingResp -> {
                 AddressUri uri = req.getAddressUri();
-                if (log.isDebugEnabled()) {
+                if (config.getShowElectionLog()) {
                     log.info("pong: uri={}", uri.toString());
                 }
                 if (AddressType.RELAY.equals(uri.getScheme())) {
@@ -147,20 +138,20 @@ public abstract class ElectionProtocol {
             try {
                 log.info("selectDataTransport: {} -> {}, uri={}", p2pOffer.getDstVIP(), p2pOffer.getSrcVIP(), transport.addressUri().toString());
                 byte[] publicKey = p2pOffer.getPublicKey().toByteArray();
-                SecretKey secretKey = Ecdh.generateAESKey(encryptionKeyPair.getPrivate(), publicKey);
+                SecretKey secretKey = Ecdh.generateAESKey(config.getEncryptionKeyPair().getPrivate(), publicKey);
                 transport.setSecretKey(secretKey);
                 SDWanProtos.P2pAnswer p2pAnswer = SDWanProtos.P2pAnswer.newBuilder()
-                        .setTenantId(tenantId)
+                        .setTenantId(config.getTenantId())
                         .setCode(SDWanProtos.MessageCode.Success)
                         .setSrcVIP(p2pOffer.getDstVIP())
                         .setDstVIP(p2pOffer.getSrcVIP())
-                        .setPublicKey(ByteString.copyFrom(encryptionKeyPair.getPublic().getEncoded()))
+                        .setPublicKey(ByteString.copyFrom(config.getEncryptionKeyPair().getPublic().getEncoded()))
                         .build();
                 sendAnswer(reqId, p2pAnswer);
                 return transport;
             } catch (Exception e) {
                 SDWanProtos.P2pAnswer p2pAnswer = SDWanProtos.P2pAnswer.newBuilder()
-                        .setTenantId(tenantId)
+                        .setTenantId(config.getTenantId())
                         .setCode(SDWanProtos.MessageCode.SysError)
                         .build();
                 sendAnswer(reqId, p2pAnswer);
@@ -170,7 +161,7 @@ public abstract class ElectionProtocol {
     }
 
     private PingRequest parseP2pPing(AddressUri uri, long timeout) {
-        if (log.isDebugEnabled()) {
+        if (config.getShowElectionLog()) {
             log.info("ping uri: {}", uri.toString());
         }
         InetSocketAddress addr = new InetSocketAddress(uri.getHost(), uri.getPort());
@@ -181,7 +172,7 @@ public abstract class ElectionProtocol {
     }
 
     private PingRequest parseRelayPing(AddressUri uri, long timeout) {
-        if (log.isDebugEnabled()) {
+        if (config.getShowElectionLog()) {
             log.info("ping uri: {}", uri.toString());
         }
         InetSocketAddress socketAddress = new InetSocketAddress(uri.getHost(), uri.getPort());
@@ -324,5 +315,16 @@ public abstract class ElectionProtocol {
                 throw new ProcessException(e.getMessage(), e);
             }
         }
+    }
+
+    @Getter
+    @Setter
+    public static class Config {
+
+        private KeyPair encryptionKeyPair;
+        private String tenantId;
+        private long electionTimeout;
+        private long pingTimeout;
+        private Boolean showElectionLog = false;
     }
 }
