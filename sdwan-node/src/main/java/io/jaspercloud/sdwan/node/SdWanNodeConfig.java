@@ -46,6 +46,10 @@ public class SdWanNodeConfig {
     private Boolean autoReconnect = true;
     private Boolean autoUpdateVersion = true;
 
+    private Boolean showTUNLog = false;
+    private Boolean showICELog = false;
+    private Boolean showElectionLog = false;
+
     private List<String> ifaceBlackList = Arrays.asList(
             "wt0",
             "wt",

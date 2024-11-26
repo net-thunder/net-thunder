@@ -23,7 +23,11 @@ public class P2pClientTest {
                 .build();
         StunServer stunServer = new StunServer(config, () -> new ChannelInboundHandlerAdapter());
         stunServer.start();
-        P2pClient p2pClient = new P2pClient(3000, () -> new ChannelInboundHandlerAdapter());
+        P2pClient p2pClient = new P2pClient(new P2pClient.Config() {
+            {
+                setLocalPort(3000);
+            }
+        }, () -> new ChannelInboundHandlerAdapter());
         p2pClient.start();
         NatAddress natAddress = p2pClient.parseNatAddress(new InetSocketAddress("127.0.0.1", 3478), 3000);
         System.out.println();
@@ -32,14 +36,22 @@ public class P2pClientTest {
     @Test
     public void transfer() throws Exception {
         CompletableFuture<StunPacket> future = new CompletableFuture<>();
-        P2pClient p2pClient1 = new P2pClient(1001, () -> new SimpleChannelInboundHandler<StunPacket>() {
+        P2pClient p2pClient1 = new P2pClient(new P2pClient.Config() {
+            {
+                setLocalPort(1001);
+            }
+        }, () -> new SimpleChannelInboundHandler<StunPacket>() {
             @Override
             protected void channelRead0(ChannelHandlerContext ctx, StunPacket msg) throws Exception {
                 future.complete(msg);
             }
         });
         p2pClient1.start();
-        P2pClient p2pClient2 = new P2pClient(1002, () -> new ChannelInboundHandlerAdapter());
+        P2pClient p2pClient2 = new P2pClient(new P2pClient.Config() {
+            {
+                setLocalPort(1002);
+            }
+        }, () -> new ChannelInboundHandlerAdapter());
         p2pClient2.start();
         p2pClient2.transfer("127.0.0.1", "p2p", new InetSocketAddress("127.0.0.1", 1001), "test".getBytes());
         StunPacket stunPacket = future.get();
@@ -51,14 +63,22 @@ public class P2pClientTest {
 
     @Test
     public void ping() throws Exception {
-        P2pClient p2pClient1 = new P2pClient(1001, () -> new SimpleChannelInboundHandler<StunPacket>() {
+        P2pClient p2pClient1 = new P2pClient(new P2pClient.Config() {
+            {
+                setLocalPort(1001);
+            }
+        }, () -> new SimpleChannelInboundHandler<StunPacket>() {
             @Override
             protected void channelRead0(ChannelHandlerContext ctx, StunPacket msg) throws Exception {
                 System.out.println();
             }
         });
         p2pClient1.start();
-        P2pClient p2pClient2 = new P2pClient(1002, () -> new SimpleChannelInboundHandler<StunPacket>() {
+        P2pClient p2pClient2 = new P2pClient(new P2pClient.Config() {
+            {
+                setLocalPort(1002);
+            }
+        }, () -> new SimpleChannelInboundHandler<StunPacket>() {
             @Override
             protected void channelRead0(ChannelHandlerContext ctx, StunPacket packet) throws Exception {
                 StunMessage message = packet.content();

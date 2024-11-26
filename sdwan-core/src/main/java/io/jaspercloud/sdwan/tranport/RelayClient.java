@@ -9,6 +9,8 @@ import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
@@ -22,7 +24,7 @@ import java.util.function.Supplier;
 @Slf4j
 public class RelayClient implements TransportLifecycle {
 
-    private int localPort;
+    private Config config;
     private Supplier<ChannelHandler> handler;
     private Channel localChannel;
 
@@ -33,11 +35,11 @@ public class RelayClient implements TransportLifecycle {
     }
 
     public RelayClient(Supplier<ChannelHandler> handler) {
-        this(0, handler);
+        this(new Config(), handler);
     }
 
-    public RelayClient(int localPort, Supplier<ChannelHandler> handler) {
-        this.localPort = localPort;
+    public RelayClient(Config config, Supplier<ChannelHandler> handler) {
+        this.config = config;
         this.handler = handler;
     }
 
@@ -90,7 +92,7 @@ public class RelayClient implements TransportLifecycle {
     }
 
     public void transfer(String vip, String type, InetSocketAddress address, String token, byte[] bytes) {
-        if (log.isTraceEnabled()) {
+        if (config.getShowICELog()) {
             log.info("relay send transfer: type={}, address={}", type, SocketAddressUtil.toAddress(address));
         }
         StunMessage message = new StunMessage(MessageType.Transfer);
@@ -143,7 +145,7 @@ public class RelayClient implements TransportLifecycle {
                     }
                 });
         try {
-            localChannel = bootstrap.bind(new InetSocketAddress("0.0.0.0", localPort)).syncUninterruptibly().channel();
+            localChannel = bootstrap.bind(new InetSocketAddress("0.0.0.0", config.getLocalPort())).syncUninterruptibly().channel();
             InetSocketAddress localAddress = (InetSocketAddress) localChannel.localAddress();
             log.info("RelayClient started: port={}", localAddress.getPort());
             localChannel.closeFuture().addListener(new ChannelFutureListener() {
@@ -166,5 +168,13 @@ public class RelayClient implements TransportLifecycle {
         }
         localChannel.close();
         log.info("RelayClient stopped");
+    }
+
+    @Getter
+    @Setter
+    public static class Config {
+
+        private int localPort = 0;
+        private Boolean showICELog = false;
     }
 }
