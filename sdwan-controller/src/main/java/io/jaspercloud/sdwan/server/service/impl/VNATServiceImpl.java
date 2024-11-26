@@ -81,6 +81,9 @@ public class VNATServiceImpl implements VNATService {
     @Override
     public void del(EditVNATRequest request) {
         groupConfigService.deleteGroupVNAT(request.getId());
+        vnatNodeItemRepository.delete()
+                .eq(VNATNodeItem::getVnatId, request.getId())
+                .delete();
         vnatRepository.deleteById(request.getId());
     }
 

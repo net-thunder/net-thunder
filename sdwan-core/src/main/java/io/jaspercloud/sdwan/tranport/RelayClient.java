@@ -1,5 +1,6 @@
 package io.jaspercloud.sdwan.tranport;
 
+import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.stun.*;
 import io.jaspercloud.sdwan.support.AsyncTask;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;
@@ -24,6 +25,12 @@ public class RelayClient implements TransportLifecycle {
     private int localPort;
     private Supplier<ChannelHandler> handler;
     private Channel localChannel;
+
+    public RelayClient() {
+        this(() -> {
+            return new ChannelInboundHandlerAdapter();
+        });
+    }
 
     public RelayClient(Supplier<ChannelHandler> handler) {
         this(0, handler);
@@ -59,6 +66,13 @@ public class RelayClient implements TransportLifecycle {
             String token = attr.getData();
             return token;
         });
+    }
+
+    public CompletableFuture<StunPacket> sendBind(InetSocketAddress address, long timeout) {
+        StunMessage message = new StunMessage(MessageType.BindRelayRequest);
+        StunPacket request = new StunPacket(message, address);
+        CompletableFuture<StunPacket> future = invokeAsync(request, timeout);
+        return future;
     }
 
     public void sendBindOneWay(InetSocketAddress socketAddress, String tranId) {
@@ -97,7 +111,7 @@ public class RelayClient implements TransportLifecycle {
     }
 
     @Override
-    public void start() throws Exception {
+    public void start() {
         NioEventLoopGroup bossGroup = NioEventLoopFactory.createBossGroup();
         Bootstrap bootstrap = new Bootstrap()
                 .group(bossGroup)
@@ -140,12 +154,12 @@ public class RelayClient implements TransportLifecycle {
             });
         } catch (Exception e) {
             bossGroup.shutdownGracefully();
-            throw e;
+            throw new ProcessException(e.getMessage(), e);
         }
     }
 
     @Override
-    public void stop() throws Exception {
+    public void stop() {
         log.info("RelayClient stopping");
         if (null == localChannel) {
             return;

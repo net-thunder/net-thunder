@@ -8,20 +8,21 @@ import io.jaspercloud.sdwan.support.AsyncTask;
 import io.jaspercloud.sdwan.support.Ecdh;
 import io.jaspercloud.sdwan.tranport.*;
 import io.jaspercloud.sdwan.util.AddressType;
+import io.jaspercloud.sdwan.util.NetworkInterfaceInfo;
+import io.jaspercloud.sdwan.util.NetworkInterfaceUtil;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;
 import io.netty.channel.*;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.security.KeyPair;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * @author jasper
@@ -31,8 +32,9 @@ import java.util.function.Supplier;
 public class IceClient implements TransportLifecycle, Runnable {
 
     private SdWanNodeConfig config;
-    private BaseSdWanNode sdWanNode;
+    private SdWanClient sdWanClient;
     private Supplier<ChannelHandler> handler;
+    private String localVip;
 
     private KeyPair encryptionKeyPair;
     private P2pClient p2pClient;
@@ -40,6 +42,7 @@ public class IceClient implements TransportLifecycle, Runnable {
     private P2pTransportManager p2pTransportManager;
     private ElectionProtocol electionProtocol;
     private AtomicBoolean status = new AtomicBoolean(false);
+    private AtomicReference<List<String>> localAddressUriListRef = new AtomicReference<>(Collections.emptyList());
     private ScheduledExecutorService scheduledExecutorService;
 
     public P2pClient getP2pClient() {
@@ -54,9 +57,13 @@ public class IceClient implements TransportLifecycle, Runnable {
         return p2pTransportManager;
     }
 
-    public IceClient(SdWanNodeConfig config, BaseSdWanNode sdWanNode, Supplier<ChannelHandler> handler) {
+    public void setLocalVip(String localVip) {
+        this.localVip = localVip;
+    }
+
+    public IceClient(SdWanNodeConfig config, SdWanClient sdWanClient, Supplier<ChannelHandler> handler) {
         this.config = config;
-        this.sdWanNode = sdWanNode;
+        this.sdWanClient = sdWanClient;
         this.handler = handler;
     }
 
@@ -157,22 +164,22 @@ public class IceClient implements TransportLifecycle, Runnable {
                 config.getElectionTimeout(), config.getP2pCheckTimeout()) {
             @Override
             protected CompletableFuture<SDWanProtos.P2pAnswer> sendOffer(SDWanProtos.P2pOffer p2pOffer, long timeout) {
-                return sdWanNode.getSdWanClient().offer(p2pOffer, timeout);
+                return sdWanClient.offer(p2pOffer, timeout);
             }
 
             @Override
             protected void sendAnswer(String reqId, SDWanProtos.P2pAnswer p2pAnswer) {
-                sdWanNode.getSdWanClient().answer(reqId, p2pAnswer);
+                sdWanClient.answer(reqId, p2pAnswer);
             }
 
             @Override
             protected String getLocalVip() {
-                return sdWanNode.getLocalVip();
+                return localVip;
             }
 
             @Override
             protected List<String> getLocalAddressUriList() {
-                return sdWanNode.getLocalAddressUriList();
+                return localAddressUriListRef.get();
             }
         };
         p2pTransportManager = new P2pTransportManager(config);
@@ -206,14 +213,17 @@ public class IceClient implements TransportLifecycle, Runnable {
 
     @Override
     public void run() {
+        if (!status.get()) {
+            return;
+        }
         try {
-            heart();
+            checkServerList();
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
     }
 
-    private void heart() throws Exception {
+    private void checkServerList() throws Exception {
         List<String> stunServerList = config.getStunServerList();
         List<String> relayServerList = config.getRelayServerList();
         BlockingQueue<AddressUri> queue = new LinkedBlockingQueue<>();
@@ -230,7 +240,39 @@ public class IceClient implements TransportLifecycle, Runnable {
         }
         List<AddressUri> addressUriList = new ArrayList<>();
         queue.drainTo(addressUriList);
-        sdWanNode.registNodeInfo(addressUriList);
+        updateNodeInfo(addressUriList);
+    }
+
+    public void updateNodeInfo(List<AddressUri> addressUriList) throws Exception {
+        List<AddressUri> list = new ArrayList<>();
+        if (config.isOnlyRelayTransport()) {
+            List<AddressUri> collect = addressUriList.stream()
+                    .filter(e -> AddressType.RELAY.equals(e.getScheme()))
+                    .collect(Collectors.toList());
+            list.addAll(collect);
+        } else {
+            List<NetworkInterfaceInfo> interfaceInfoList;
+            if (null == config.getLocalAddress()) {
+                InetAddress[] inetAddresses = InetAddress.getAllByName(InetAddress.getLocalHost().getHostName());
+                interfaceInfoList = NetworkInterfaceUtil.parseInetAddress(inetAddresses);
+            } else {
+                NetworkInterfaceInfo networkInterfaceInfo = NetworkInterfaceUtil.findIp(config.getLocalAddress());
+                interfaceInfoList = Arrays.asList(networkInterfaceInfo);
+            }
+            interfaceInfoList.forEach(e -> {
+                String address = e.getInterfaceAddress().getAddress().getHostAddress();
+                AddressUri addressUri = AddressUri.builder()
+                        .scheme(AddressType.HOST)
+                        .host(address)
+                        .port(p2pClient.getLocalPort())
+                        .build();
+                list.add(addressUri);
+            });
+            list.addAll(addressUriList);
+        }
+        List<String> collect = list.stream().map(e -> e.toString()).collect(Collectors.toList());
+        localAddressUriListRef.set(collect);
+        sdWanClient.updateNodeInfo(collect);
     }
 
     private void checkStun(CountDownLatch countDownLatch, String address, BlockingQueue<AddressUri> queue) {

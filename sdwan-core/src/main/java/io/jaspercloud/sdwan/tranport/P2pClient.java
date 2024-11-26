@@ -1,6 +1,7 @@
 package io.jaspercloud.sdwan.tranport;
 
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
+import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.stun.*;
 import io.jaspercloud.sdwan.support.AsyncTask;
 import io.jaspercloud.sdwan.util.IPUtil;
@@ -30,6 +31,12 @@ public class P2pClient implements TransportLifecycle {
     public int getLocalPort() {
         InetSocketAddress address = (InetSocketAddress) localChannel.localAddress();
         return address.getPort();
+    }
+
+    public P2pClient() {
+        this(() -> {
+            return new ChannelInboundHandlerAdapter();
+        });
     }
 
     public P2pClient(Supplier<ChannelHandler> handler) {
@@ -164,7 +171,7 @@ public class P2pClient implements TransportLifecycle {
     }
 
     @Override
-    public void start() throws Exception {
+    public void start() {
         NioEventLoopGroup bossGroup = NioEventLoopFactory.createBossGroup();
         Bootstrap bootstrap = new Bootstrap()
                 .group(bossGroup)
@@ -209,12 +216,12 @@ public class P2pClient implements TransportLifecycle {
             });
         } catch (Exception e) {
             bossGroup.shutdownGracefully();
-            throw e;
+            throw new ProcessException(e.getMessage(), e);
         }
     }
 
     @Override
-    public void stop() throws Exception {
+    public void stop() {
         log.info("P2pClient stopping");
         if (null == localChannel) {
             return;
