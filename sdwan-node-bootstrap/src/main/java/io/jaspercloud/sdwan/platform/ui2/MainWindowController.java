@@ -184,8 +184,46 @@ public class MainWindowController implements EventHandler<ActionEvent> {
                 @Override
                 public void onConnected() {
                     Platform.runLater(() -> {
+                        statusLab.setText("已连接");
                         vipText.setText(tunSdWanNode.getLocalVip());
+                        stopBtn.setDisable(false);
                     });
+                }
+
+                @Override
+                public void onReConnecting() {
+                    Platform.runLater(() -> {
+                        statusLab.setText("重新连接中");
+                    });
+                }
+
+                @Override
+                public void onError(int code) {
+                    if (SDWanProtos.MessageCode.NotGrant.getNumber() == code) {
+                        stop(code);
+                    } else if (SDWanProtos.MessageCode.Disabled.getNumber() == code) {
+                        stop(code);
+                    }
+                }
+
+                private void stop(int code) {
+                    try {
+                        tunSdWanNode.stop();
+                        Platform.runLater(() -> {
+                            if (SDWanProtos.MessageCode.NotGrant.getNumber() == code) {
+                                statusLab.setText("客户端未授权");
+                            } else if (SDWanProtos.MessageCode.Disabled.getNumber() == code) {
+                                statusLab.setText("客户端被禁用");
+                            }
+                            startBtn.setDisable(false);
+                            stopBtn.setDisable(true);
+                            netSelect.setDisable(false);
+                            refreshBtn.setDisable(false);
+                            settingBtn.setDisable(false);
+                        });
+                    } catch (Exception e) {
+                        log.error(e.getMessage(), e);
+                    }
                 }
 
                 @Override
@@ -215,16 +253,14 @@ public class MainWindowController implements EventHandler<ActionEvent> {
             });
             try {
                 tunSdWanNode.start();
-                Platform.runLater(() -> {
-                    statusLab.setText("已连接");
-                    stopBtn.setDisable(false);
-                });
             } catch (ProcessCodeException e) {
                 Platform.runLater(() -> {
                     if (SDWanProtos.MessageCode.NotGrant.getNumber() == e.getCode()) {
-                        statusLab.setText("未授权");
+                        statusLab.setText("客户端未授权");
+                    } else if (SDWanProtos.MessageCode.Disabled.getNumber() == e.getCode()) {
+                        statusLab.setText("客户端被禁用");
                     } else {
-                        statusLab.setText("连接异常");
+                        statusLab.setText("连接异常: " + e.getCode());
                     }
                     startBtn.setDisable(false);
                     stopBtn.setDisable(true);
@@ -247,6 +283,7 @@ public class MainWindowController implements EventHandler<ActionEvent> {
         } else if ("stop".equals(action)) {
             Platform.runLater(() -> {
                 statusLab.setText("断开中");
+                stopBtn.setDisable(false);
             });
             tunSdWanNode.stop();
             Platform.runLater(() -> {

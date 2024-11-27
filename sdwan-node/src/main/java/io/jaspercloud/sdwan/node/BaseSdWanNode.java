@@ -120,6 +120,10 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                         if (getStatus() && !config.getAutoReconnect()) {
                             fireEvent(EventListener::onErrorDisconnected);
                         }
+                        if (!loopStatus.get()) {
+                            return;
+                        }
+                        fireEvent(EventListener::onReConnecting);
                         signalAll();
                     }
 
@@ -237,7 +241,6 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         iceClient.setLocalVip(localVip);
         iceClient.start();
         log.info("SdWanNode installed");
-        fireEvent(EventListener::onConnected);
     }
 
     protected void uninstall() throws Exception {
@@ -376,7 +379,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         }
     }
 
-    private void fireEvent(Consumer<EventListener> consumer) {
+    protected void fireEvent(Consumer<EventListener> consumer) {
         for (EventListener listener : eventListenerList) {
             consumer.accept(listener);
         }
@@ -394,9 +397,14 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
                         continue;
                     }
                 }
+                if (!loopStatus.get()) {
+                    return;
+                }
                 uninstall();
                 install();
                 up = sdWanClient.isRunning();
+            } catch (ProcessCodeException e) {
+                fireEvent(fire -> fire.onError(e.getCode()));
             } catch (InterruptedException e) {
             } catch (ProcessException e) {
                 log.error(e.getMessage());

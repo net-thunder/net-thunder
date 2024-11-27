@@ -118,6 +118,7 @@ public class TunSdWanNode extends BaseSdWanNode {
         TunChannel tunChannel = tunTransport.getChannel();
         routeManager = RouteManagerFactory.create(tunChannel, getVirtualRouter());
         routeManager.start();
+        fireEvent(EventListener::onConnected);
     }
 
     @Override

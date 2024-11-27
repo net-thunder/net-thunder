@@ -106,6 +106,7 @@ public class TunTransport implements TransportLifecycle {
             localChannel.disableNetMesh(interfaceInfo.getEthName());
         }
         localChannel.close();
+        localChannel = null;
     }
 
     @Override
