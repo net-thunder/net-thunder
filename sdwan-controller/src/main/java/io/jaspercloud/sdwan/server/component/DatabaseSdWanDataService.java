@@ -45,14 +45,14 @@ public class DatabaseSdWanDataService implements SdWanDataService {
     }
 
     @Override
-    public NodeConfig applyNodeInfo(Channel channel, String tenantCode, String macAddress) {
+    public NodeConfig assignNodeInfo(Channel channel, String tenantCode, String macAddress) {
         TenantResponse tenantResponse = tenantService.queryByTenantCode(tenantCode);
         if (null == tenantResponse) {
             throw new ProcessException("not found tenant");
         }
         TenantContextHandler.setTenantId(tenantResponse.getId());
         try {
-            NodeDetailResponse detailResponse = nodeService.applyNodeInfo(tenantResponse.getId(), macAddress);
+            NodeDetailResponse detailResponse = nodeService.assignNodeInfo(tenantResponse.getId(), macAddress);
             NodeConfig nodeConfig = new NodeConfig();
             nodeConfig.setMac(detailResponse.getMac());
             nodeConfig.setVip(detailResponse.getVip());

@@ -83,7 +83,7 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
         Tenant tenant = tenantService.queryById(TenantContextHandler.getCurrentTenantId());
         NodePO node = BeanUtil.toBean(request, NodePO.class);
         node.setId(null);
-        String vip = applyIp(tenant);
+        String vip = assignIp(tenant);
         node.setVip(vip);
         node.insert();
         if (CollectionUtil.isNotEmpty(request.getGroupIdList())) {
@@ -245,7 +245,7 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
     }
 
     @Override
-    public NodeDetailResponse applyNodeInfo(Long tenantId, String macAddress) {
+    public NodeDetailResponse assignNodeInfo(Long tenantId, String macAddress) {
         try (LockGroup.Lock lock = lockGroup.getLock(tenantId)) {
             Node node = nodeRepository.query()
                     .eq(Node::getMac, macAddress)
@@ -272,7 +272,7 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
                 if (tenant.getNodeGrant() && false == node.getEnable()) {
                     throw new ProcessCodeException(SDWanProtos.MessageCode.NotGrant_VALUE);
                 }
-                String vip = applyIp(tenant);
+                String vip = assignIp(tenant);
                 node.setVip(vip);
                 nodeRepository.updateById(node);
             }
@@ -298,7 +298,7 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
         }
     }
 
-    private String applyIp(Tenant tenant) {
+    private String assignIp(Tenant tenant) {
         String vip = reuseIp();
         if (null != vip) {
             return vip;

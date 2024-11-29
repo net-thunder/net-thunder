@@ -12,7 +12,7 @@ public interface SdWanDataService {
 
     TenantConfig getTenantConfig(String tenantCode);
 
-    NodeConfig applyNodeInfo(Channel channel, String tenantCode, String macAddress);
+    NodeConfig assignNodeInfo(Channel channel, String tenantCode, String macAddress);
 
     List<String> getStunServerList(String tenantCode);
 

@@ -221,7 +221,7 @@ public class SdWanServer implements Lifecycle, Runnable {
                         registChannelMap.remove(channel);
                     }
                 });
-                NodeConfig nodeConfig = sdWanDataService.applyNodeInfo(channel, registReq.getTenantId(), registReq.getMacAddress());
+                NodeConfig nodeConfig = sdWanDataService.assignNodeInfo(channel, registReq.getTenantId(), registReq.getMacAddress());
                 attr.setVip(nodeConfig.getVip());
                 channelSpace.addChannel(nodeConfig.getVip(), channel);
                 return nodeConfig;
