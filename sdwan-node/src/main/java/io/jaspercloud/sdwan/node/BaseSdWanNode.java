@@ -204,14 +204,11 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         if (!SDWanProtos.MessageCode.Success.equals(configResp.getCode())) {
             throw new ProcessException("get config error");
         }
+        applyLocalAddress();
         config.setStunServerList(configResp.getStunServersList());
         config.setRelayServerList(configResp.getRelayServersList());
         log.info("SdWanNode install");
-        String localAddress = config.getLocalAddress();
-        if (null == localAddress) {
-            localAddress = config.getHostAddress();
-        }
-        String macAddress = processMacAddress(NetworkInterfaceUtil.getHardwareAddress(localAddress));
+        String macAddress = processMacAddress(NetworkInterfaceUtil.getHardwareAddress(config.getLocalAddress()));
         log.info("parseMacAddress: {}", macAddress);
         SDWanProtos.RegistReq.Builder builder = SDWanProtos.RegistReq.newBuilder()
                 .setTenantId(config.getTenantId())
@@ -241,6 +238,17 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         iceClient.setLocalVip(localVip);
         iceClient.start();
         log.info("SdWanNode installed");
+    }
+
+    private void applyLocalAddress() {
+        String localAddress = config.getLocalAddress();
+        if (null == localAddress) {
+            localAddress = sdWanClient.getLocalAddress();
+        }
+        if (null == localAddress) {
+            localAddress = config.getHostAddress();
+        }
+        config.setLocalAddress(localAddress);
     }
 
     protected void uninstall() throws Exception {
