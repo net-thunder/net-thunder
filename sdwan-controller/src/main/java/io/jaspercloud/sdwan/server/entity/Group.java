@@ -12,6 +12,7 @@ public class Group extends BaseEntity {
     private String name;
     private String description;
     private Boolean defaultGroup;
+    private List<Long> nodeIdList;
     private List<Long> routeIdList;
     private List<Long> routeRuleIdList;
     private List<Long> vnatIdList;

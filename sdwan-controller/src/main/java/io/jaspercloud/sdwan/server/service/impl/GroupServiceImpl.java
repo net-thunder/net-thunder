@@ -3,13 +3,13 @@ package io.jaspercloud.sdwan.server.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import io.jaspercloud.sdwan.exception.ProcessException;
+import io.jaspercloud.sdwan.server.controller.request.EditGroupMemberRequest;
 import io.jaspercloud.sdwan.server.controller.request.EditGroupRequest;
 import io.jaspercloud.sdwan.server.controller.response.GroupResponse;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.entity.*;
 import io.jaspercloud.sdwan.server.repository.*;
-import io.jaspercloud.sdwan.server.repository.po.GroupMemberPO;
-import io.jaspercloud.sdwan.server.repository.po.GroupPO;
+import io.jaspercloud.sdwan.server.repository.po.*;
 import io.jaspercloud.sdwan.server.service.GroupService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -142,15 +142,46 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public void updateMemberList(Long groupId, List<Long> memberIdList) {
+    public void updateMemberList(EditGroupMemberRequest request) {
+        //member
         groupMemberRepository.delete()
-                .eq(GroupMember::getGroupId, groupId)
+                .eq(GroupMember::getGroupId, request.getId())
                 .delete();
-        for (Long memberId : memberIdList) {
+        for (Long memberId : request.getNodeIdList()) {
             GroupMemberPO groupMemberPO = new GroupMemberPO();
-            groupMemberPO.setGroupId(groupId);
+            groupMemberPO.setGroupId(request.getId());
             groupMemberPO.setMemberId(memberId);
             groupMemberPO.insert();
+        }
+        //route
+        groupRouteRepository.delete()
+                .eq(GroupRoute::getGroupId, request.getId())
+                .delete();
+        for (Long routeId : request.getRouteIdList()) {
+            GroupRoutePO groupRoutePO = new GroupRoutePO();
+            groupRoutePO.setGroupId(request.getId());
+            groupRoutePO.setRouteId(routeId);
+            groupRoutePO.insert();
+        }
+        //routeRule
+        groupRouteRuleRepository.delete()
+                .eq(GroupRouteRule::getGroupId, request.getId())
+                .delete();
+        for (Long routeRuleId : request.getRouteRuleIdList()) {
+            GroupRouteRulePO groupRouteRulePO = new GroupRouteRulePO();
+            groupRouteRulePO.setGroupId(request.getId());
+            groupRouteRulePO.setRuleId(routeRuleId);
+            groupRouteRulePO.insert();
+        }
+        //vnat
+        groupVNATRepository.delete()
+                .eq(GroupVNAT::getGroupId, request.getId())
+                .delete();
+        for (Long vnatId : request.getVnatIdList()) {
+            GroupVNATPO groupVNATPO = new GroupVNATPO();
+            groupVNATPO.setGroupId(request.getId());
+            groupVNATPO.setVnatId(vnatId);
+            groupVNATPO.insert();
         }
     }
 
@@ -235,6 +266,31 @@ public class GroupServiceImpl implements GroupService {
         Group group = groupRepository.query()
                 .eq(Group::getDefaultGroup, true)
                 .one();
+        return group;
+    }
+
+    @Override
+    public Group queryDetail(Long groupId) {
+        Group group = groupRepository.selectById(groupId);
+        if (null == group) {
+            return null;
+        }
+        List<Long> nodeIdList = groupMemberRepository.query()
+                .eq(GroupMember::getGroupId, groupId)
+                .list().stream().map(e -> e.getMemberId()).collect(Collectors.toList());
+        group.setNodeIdList(nodeIdList);
+        List<Long> routeIdList = groupRouteRepository.query()
+                .eq(GroupRoute::getGroupId, groupId)
+                .list().stream().map(e -> e.getRouteId()).collect(Collectors.toList());
+        group.setRouteIdList(routeIdList);
+        List<Long> routeRuleIdList = groupRouteRuleRepository.query()
+                .eq(GroupRouteRule::getGroupId, groupId)
+                .list().stream().map(e -> e.getRuleId()).collect(Collectors.toList());
+        group.setRouteRuleIdList(routeRuleIdList);
+        List<Long> vnatIdList = groupVNATRepository.query()
+                .eq(GroupVNAT::getGroupId, groupId)
+                .list().stream().map(e -> e.getVnatId()).collect(Collectors.toList());
+        group.setVnatIdList(vnatIdList);
         return group;
     }
 

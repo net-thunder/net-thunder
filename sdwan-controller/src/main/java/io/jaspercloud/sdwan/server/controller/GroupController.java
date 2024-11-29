@@ -6,9 +6,8 @@ import io.jaspercloud.sdwan.server.controller.request.EditGroupMemberRequest;
 import io.jaspercloud.sdwan.server.controller.request.EditGroupRequest;
 import io.jaspercloud.sdwan.server.controller.response.GroupResponse;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
-import io.jaspercloud.sdwan.server.entity.Node;
-import io.jaspercloud.sdwan.server.service.GroupService;
-import io.jaspercloud.sdwan.server.service.NodeService;
+import io.jaspercloud.sdwan.server.entity.*;
+import io.jaspercloud.sdwan.server.service.*;
 import jakarta.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +23,15 @@ public class GroupController extends BaseController {
 
     @Resource
     private NodeService nodeService;
+
+    @Resource
+    private RouteService routeService;
+
+    @Resource
+    private RouteRuleService routeRuleService;
+
+    @Resource
+    private VNATService vnatService;
 
     @PostMapping("/add")
     public void add(@Validated(ValidGroup.Add.class) @RequestBody EditGroupRequest request) {
@@ -54,20 +62,41 @@ public class GroupController extends BaseController {
 
     @PostMapping("/updateMemberList")
     public void updateMemberList(@Validated @RequestBody EditGroupMemberRequest request) {
-        for (Long id : request.getMemberIdList()) {
-            Node node = nodeService.queryById(id);
+        //member
+        for (Long nodeId : request.getNodeIdList()) {
+            Node node = nodeService.queryById(nodeId);
             if (null == node) {
                 throw new ProcessException("not found node");
             }
         }
-        groupService.updateMemberList(request.getGroupId(), request.getMemberIdList());
+        //route
+        for (Long routeId : request.getRouteIdList()) {
+            Route route = routeService.queryById(routeId);
+            if (null == route) {
+                throw new ProcessException("not found route");
+            }
+        }
+        //routeRule
+        for (Long routeRuleId : request.getRouteRuleIdList()) {
+            RouteRule routeRule = routeRuleService.queryById(routeRuleId);
+            if (null == routeRule) {
+                throw new ProcessException("not found routeRule");
+            }
+        }
+        //vnat
+        for (Long vnatId : request.getVnatIdList()) {
+            VNAT vnat = vnatService.queryById(vnatId);
+            if (null == vnat) {
+                throw new ProcessException("not found vnat");
+            }
+        }
+        groupService.updateMemberList(request);
         reloadClientList();
     }
 
-    @GetMapping("/memberList/{id}")
-    public List<Node> memberList(@PathVariable("id") Long groupId) {
-        List<Long> memberList = groupService.memberList(groupId);
-        List<Node> nodeList = nodeService.queryByIdList(memberList);
-        return nodeList;
+    @GetMapping("/detail/{id}")
+    public Group detail(@PathVariable("id") Long groupId) {
+        Group group = groupService.queryDetail(groupId);
+        return group;
     }
 }
