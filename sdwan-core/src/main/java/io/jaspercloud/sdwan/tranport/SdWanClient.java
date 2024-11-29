@@ -41,6 +41,11 @@ public class SdWanClient implements TransportLifecycle, Runnable {
         return localChannel;
     }
 
+    public String getLocalAddress() {
+        InetSocketAddress address = (InetSocketAddress) localChannel.localAddress();
+        return address.getAddress().getHostAddress();
+    }
+
     public EventLoop getEventLoop() {
         return localChannel.eventLoop();
     }
