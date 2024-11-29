@@ -28,7 +28,7 @@ public interface NodeService {
 
     List<Node> queryByTenantId(Long tenantId);
 
-    NodeDetailResponse applyNodeInfo(Long tenantId, String macAddress);
+    NodeDetailResponse assignNodeInfo(Long tenantId, String macAddress);
 
     boolean existsNode(Long nodeId);
 }

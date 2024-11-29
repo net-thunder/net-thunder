@@ -103,12 +103,12 @@ public class LocalConfigSdWanDataService implements SdWanDataService {
     }
 
     @Override
-    public NodeConfig applyNodeInfo(Channel channel, String tenantCode, String macAddress) {
+    public NodeConfig assignNodeInfo(Channel channel, String tenantCode, String macAddress) {
         TenantSpace tenantSpace = tenantSpaceMap.get(tenantCode);
         if (null == tenantSpace) {
             throw new ProcessException("not found tenant");
         }
-        String vip = applyVip(channel, tenantSpace, macAddress);
+        String vip = assignVip(channel, tenantSpace, macAddress);
         NodeConfig nodeConfig = new NodeConfig();
         nodeConfig.setMac(macAddress);
         nodeConfig.setVip(vip);
@@ -138,7 +138,7 @@ public class LocalConfigSdWanDataService implements SdWanDataService {
         return list;
     }
 
-    private String applyVip(Channel channel, TenantSpace tenantSpace, String macAddress) {
+    private String assignVip(Channel channel, TenantSpace tenantSpace, String macAddress) {
         Map<String, String> fixedVipMap = tenantSpace.getFixedVipMap();
         Map<String, AtomicReference<Channel>> bindIPMap = tenantSpace.getBindIPMap();
         String fixedIp = fixedVipMap.get(macAddress);
