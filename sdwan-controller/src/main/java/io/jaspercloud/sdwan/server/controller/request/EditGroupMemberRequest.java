@@ -11,7 +11,13 @@ import java.util.List;
 public class EditGroupMemberRequest {
 
     @NotNull
-    private Long groupId;
+    private Long id;
     @NotNull
-    private List<Long> memberIdList;
+    private List<Long> nodeIdList;
+    @NotNull
+    private List<Long> routeIdList;
+    @NotNull
+    private List<Long> routeRuleIdList;
+    @NotNull
+    private List<Long> vnatIdList;
 }

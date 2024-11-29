@@ -18,7 +18,7 @@ public interface VNATService {
 
     PageResponse<VNAT> page();
 
-    VNAT queryId(Long id);
+    VNAT queryById(Long id);
 
     List<VNAT> queryIdList(List<Long> idList);
 

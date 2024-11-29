@@ -118,7 +118,7 @@ public class VNATServiceImpl implements VNATService {
     }
 
     @Override
-    public VNAT queryId(Long id) {
+    public VNAT queryById(Long id) {
         VNAT vnat = vnatRepository.selectById(id);
         return vnat;
     }
