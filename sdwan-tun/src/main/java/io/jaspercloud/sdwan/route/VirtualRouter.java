@@ -4,8 +4,8 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.protobuf.ProtocolStringList;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
-import io.jaspercloud.sdwan.route.rule.RouteRuleChain;
 import io.jaspercloud.sdwan.route.rule.RouteRuleDirectionEnum;
+import io.jaspercloud.sdwan.route.rule.RouteRulePredicateChain;
 import io.jaspercloud.sdwan.route.rule.RouteRulePredicateProcessor;
 import io.jaspercloud.sdwan.support.Cidr;
 import io.jaspercloud.sdwan.tranport.TransportLifecycle;
@@ -92,13 +92,13 @@ public class VirtualRouter implements TransportLifecycle {
         listenerMap.forEach((k, v) -> v.accept(routeList));
     }
 
-    public void updateRouteRules(List<RouteRuleChain> list) {
+    public void updateRouteRules(List<RouteRulePredicateChain> list) {
         lock.writeLock().lock();
         try {
-            List<RouteRuleChain> routeInRuleList = list.stream()
+            List<RouteRulePredicateChain> routeInRuleList = list.stream()
                     .filter(e -> Arrays.asList(RouteRuleDirectionEnum.All, RouteRuleDirectionEnum.Input).contains(e.getDirection()))
                     .collect(Collectors.toList());
-            List<RouteRuleChain> routeOutRuleList = list.stream()
+            List<RouteRulePredicateChain> routeOutRuleList = list.stream()
                     .filter(e -> Arrays.asList(RouteRuleDirectionEnum.All, RouteRuleDirectionEnum.Output).contains(e.getDirection()))
                     .collect(Collectors.toList());
             routeInRuleProcessor = new RouteRulePredicateProcessor(routeInRuleList);
