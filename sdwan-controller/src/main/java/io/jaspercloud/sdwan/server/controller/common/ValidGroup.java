@@ -4,7 +4,7 @@ import cn.hutool.core.lang.RegexPool;
 
 public interface ValidGroup {
 
-    String NAME = "^[\u4E00-\u9FFF\\w]{2,16}$";
+    String NAME = "^[\u4E00-\u9FFF\\w-_]{2,16}$";
     String CODE = "^\\w{4,10}";
     String UNAME_PWD = "^\\w{6,18}";
     String MAC_ADDRESS = RegexPool.MAC_ADDRESS;
