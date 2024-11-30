@@ -1,5 +1,6 @@
 package io.jaspercloud.sdwan.support;
 
+import cn.hutool.core.lang.PatternPool;
 import io.jaspercloud.sdwan.exception.CidrParseException;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.util.IPUtil;
@@ -37,8 +38,14 @@ public class Cidr {
 
     public static Cidr parseCidr(String text) {
         String[] split = text.split("/");
+        if (!PatternPool.IPV4.matcher(split[0]).find()) {
+            throw new ProcessException("cidr格式错误");
+        }
         long address = IPUtil.ip2long(split[0]);
         int maskBits = Integer.parseInt(split[1]);
+        if (!(maskBits >= 0 && maskBits <= 32)) {
+            throw new ProcessException("cidr格式错误");
+        }
         address = parseIdentifierAddress(address, maskBits);
         String maskAddress = parseMaskAddress(maskBits);
         String networkIdentifier = parseNetworkIdentifier(address, maskBits);

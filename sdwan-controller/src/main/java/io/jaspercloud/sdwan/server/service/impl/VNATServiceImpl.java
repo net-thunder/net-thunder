@@ -13,6 +13,7 @@ import io.jaspercloud.sdwan.server.repository.po.VNATNodeItemPO;
 import io.jaspercloud.sdwan.server.repository.po.VNATPO;
 import io.jaspercloud.sdwan.server.service.GroupConfigService;
 import io.jaspercloud.sdwan.server.service.VNATService;
+import io.jaspercloud.sdwan.support.Cidr;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +39,7 @@ public class VNATServiceImpl implements VNATService {
     @Override
     public void add(EditVNATRequest request) {
         checkUnique(request.getId(), request.getName());
+        checkCidr(request);
         VNATPO vnat = BeanUtil.toBean(request, VNATPO.class);
         vnat.setId(null);
         vnat.insert();
@@ -48,10 +50,19 @@ public class VNATServiceImpl implements VNATService {
     @Override
     public void edit(EditVNATRequest request) {
         checkUnique(request.getId(), request.getName());
+        checkCidr(request);
         VNATPO vnat = BeanUtil.toBean(request, VNATPO.class);
         vnat.updateById();
         updateVNATItemList(vnat.getId(), request.getNodeIdList());
         groupConfigService.updateGroupVNAT(vnat.getId(), request.getGroupIdList());
+    }
+
+    private void checkCidr(EditVNATRequest request) {
+        Cidr src = Cidr.parseCidr(request.getSrcCidr());
+        Cidr dst = Cidr.parseCidr(request.getDstCidr());
+        if (src.getMaskBits() != dst.getMaskBits()) {
+            throw new ProcessException("源地址池与目标地址池的掩码范围不一致");
+        }
     }
 
     private void updateVNATItemList(Long id, List<Long> nodeIdList) {

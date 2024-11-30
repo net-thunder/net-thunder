@@ -4,9 +4,8 @@ import com.google.protobuf.ByteString;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.exception.ProcessCodeException;
 import io.jaspercloud.sdwan.exception.ProcessException;
-import io.jaspercloud.sdwan.node.rule.CidrRouteRulePredicate;
 import io.jaspercloud.sdwan.route.VirtualRouter;
-import io.jaspercloud.sdwan.route.rule.RouteRulePredicate;
+import io.jaspercloud.sdwan.route.rule.RouteRuleChain;
 import io.jaspercloud.sdwan.stun.NatAddress;
 import io.jaspercloud.sdwan.support.AsyncTask;
 import io.jaspercloud.sdwan.support.Cidr;
@@ -348,10 +347,10 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         return list;
     }
 
-    private List<RouteRulePredicate> buildRouteRuleList(List<SDWanProtos.RouteRule> routeRuleList) {
-        List<RouteRulePredicate> collect = routeRuleList.stream()
+    private List<RouteRuleChain> buildRouteRuleList(List<SDWanProtos.RouteRule> routeRuleList) {
+        List<RouteRuleChain> collect = routeRuleList.stream()
                 .sorted(((o1, o2) -> Integer.compare(o1.getLevel(), o2.getLevel())))
-                .map(e -> new CidrRouteRulePredicate(e))
+                .map(e -> RouteRuleChain.build(e))
                 .collect(Collectors.toList());
         return collect;
     }

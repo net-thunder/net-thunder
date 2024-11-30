@@ -6,40 +6,30 @@ import java.util.stream.Collectors;
 
 public class RouteRulePredicateProcessor implements RouteRulePredicate {
 
-    private List<RouteRulePredicate> rejectList;
-    private List<RouteRulePredicate> allowList;
+    private List<RouteRuleChain> rejectList;
+    private List<RouteRuleChain> allowList;
 
     public RouteRulePredicateProcessor() {
         this(Collections.emptyList());
     }
 
-    public RouteRulePredicateProcessor(List<RouteRulePredicate> predicateList) {
+    public RouteRulePredicateProcessor(List<RouteRuleChain> predicateList) {
         this.rejectList = predicateList.stream()
-                .filter(e -> RouteRuleStrategyEnum.Reject.equals(e.strategy()))
+                .filter(e -> RouteRuleStrategyEnum.Reject.equals(e.getStrategy()))
                 .collect(Collectors.toList());
         this.allowList = predicateList.stream()
-                .filter(e -> RouteRuleStrategyEnum.Allow.equals(e.strategy()))
+                .filter(e -> RouteRuleStrategyEnum.Allow.equals(e.getStrategy()))
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public RouteRuleStrategyEnum strategy() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public RouteRuleDirectionEnum direction() {
-        throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean test(String ip) {
-        for (RouteRulePredicate predicate : rejectList) {
+        for (RouteRuleChain predicate : rejectList) {
             if (false == predicate.test(ip)) {
                 return false;
             }
         }
-        for (RouteRulePredicate predicate : allowList) {
+        for (RouteRuleChain predicate : allowList) {
             if (true == predicate.test(ip)) {
                 return true;
             }
