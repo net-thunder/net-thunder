@@ -5,18 +5,18 @@ import java.util.List;
 
 public class RouteRulePredicateProcessor {
 
-    private List<RouteRuleChain> predicateList;
+    private List<RouteRulePredicateChain> predicateList;
 
     public RouteRulePredicateProcessor() {
         this(Collections.emptyList());
     }
 
-    public RouteRulePredicateProcessor(List<RouteRuleChain> predicateList) {
+    public RouteRulePredicateProcessor(List<RouteRulePredicateChain> predicateList) {
         this.predicateList = predicateList;
     }
 
     public boolean test(String ip) {
-        for (RouteRuleChain predicate : predicateList) {
+        for (RouteRulePredicateChain predicate : predicateList) {
             if (predicate.test(ip)) {
                 if (RouteRuleStrategyEnum.Allow.equals(predicate.getStrategy())) {
                     return true;

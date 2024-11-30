@@ -5,7 +5,7 @@ import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RouteRuleChain {
+public class RouteRulePredicateChain {
 
     private RouteRuleStrategyEnum strategy;
     private RouteRuleDirectionEnum direction;
@@ -19,7 +19,7 @@ public class RouteRuleChain {
         return direction;
     }
 
-    public RouteRuleChain(RouteRuleStrategyEnum strategy, RouteRuleDirectionEnum direction, List<RouteRulePredicate> predicateList) {
+    public RouteRulePredicateChain(RouteRuleStrategyEnum strategy, RouteRuleDirectionEnum direction, List<RouteRulePredicate> predicateList) {
         this.strategy = strategy;
         this.direction = direction;
         this.predicateList = predicateList;
@@ -30,7 +30,7 @@ public class RouteRuleChain {
         return count > 0;
     }
 
-    public static RouteRuleChain build(SDWanProtos.RouteRule routeRule) {
+    public static RouteRulePredicateChain build(SDWanProtos.RouteRule routeRule) {
         List<RouteRulePredicate> list = new ArrayList<>();
         for (String rule : routeRule.getRuleListList()) {
             RouteRulePredicate rulePredicate = RouteRulePredicateFactory.parse(rule);
@@ -38,7 +38,7 @@ public class RouteRuleChain {
         }
         RouteRuleStrategyEnum strategy = RouteRuleStrategyEnum.valueOf(routeRule.getStrategy());
         RouteRuleDirectionEnum direction = RouteRuleDirectionEnum.valueOf(routeRule.getDirection());
-        RouteRuleChain chain = new RouteRuleChain(strategy, direction, list);
+        RouteRulePredicateChain chain = new RouteRulePredicateChain(strategy, direction, list);
         return chain;
     }
 }

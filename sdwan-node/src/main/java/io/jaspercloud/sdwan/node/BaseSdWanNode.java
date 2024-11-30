@@ -5,7 +5,7 @@ import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.exception.ProcessCodeException;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.route.VirtualRouter;
-import io.jaspercloud.sdwan.route.rule.RouteRuleChain;
+import io.jaspercloud.sdwan.route.rule.RouteRulePredicateChain;
 import io.jaspercloud.sdwan.stun.NatAddress;
 import io.jaspercloud.sdwan.support.AsyncTask;
 import io.jaspercloud.sdwan.support.Cidr;
@@ -347,10 +347,10 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
         return list;
     }
 
-    private List<RouteRuleChain> buildRouteRuleList(List<SDWanProtos.RouteRule> routeRuleList) {
-        List<RouteRuleChain> collect = routeRuleList.stream()
+    private List<RouteRulePredicateChain> buildRouteRuleList(List<SDWanProtos.RouteRule> routeRuleList) {
+        List<RouteRulePredicateChain> collect = routeRuleList.stream()
                 .sorted(((o1, o2) -> Integer.compare(o1.getLevel(), o2.getLevel())))
-                .map(e -> RouteRuleChain.build(e))
+                .map(e -> RouteRulePredicateChain.build(e))
                 .collect(Collectors.toList());
         return collect;
     }
