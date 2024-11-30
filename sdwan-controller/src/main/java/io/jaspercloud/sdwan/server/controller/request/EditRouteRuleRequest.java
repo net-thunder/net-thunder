@@ -1,11 +1,12 @@
 package io.jaspercloud.sdwan.server.controller.request;
 
+import cn.hutool.core.lang.PatternPool;
 import io.jaspercloud.sdwan.exception.ProcessException;
+import io.jaspercloud.sdwan.route.rule.RouteRuleDirectionEnum;
+import io.jaspercloud.sdwan.route.rule.RouteRuleStrategyEnum;
 import io.jaspercloud.sdwan.server.controller.common.ValidCheck;
 import io.jaspercloud.sdwan.server.controller.common.ValidGroup;
 import io.jaspercloud.sdwan.support.Cidr;
-import io.jaspercloud.sdwan.route.rule.RouteRuleDirectionEnum;
-import io.jaspercloud.sdwan.route.rule.RouteRuleStrategyEnum;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
@@ -38,11 +39,30 @@ public class EditRouteRuleRequest implements ValidCheck {
     @Override
     public void check() {
         ruleList.forEach(rule -> {
-            try {
-                Cidr.parseCidr(rule);
-            } catch (Exception e) {
-                throw new ProcessException("规则格式错误: " + rule);
+            if (PatternPool.IPV4.matcher(rule).find()) {
+                //ipv4
+            } else if (rule.contains("-")) {
+                checkIpRange(rule);
+            } else {
+                try {
+                    Cidr.parseCidr(rule);
+                } catch (Exception e) {
+                    throw new ProcessException("规则格式错误: " + rule);
+                }
             }
         });
+    }
+
+    private void checkIpRange(String range) {
+        String[] split = range.split("-");
+        if (split.length != 2) {
+            throw new ProcessException("规则格式错误: " + range);
+        }
+        if (!PatternPool.IPV4.matcher(split[0]).find()) {
+            throw new ProcessException("规则格式错误: " + range);
+        }
+        if (!PatternPool.IPV4.matcher(split[1]).find()) {
+            throw new ProcessException("规则格式错误: " + range);
+        }
     }
 }

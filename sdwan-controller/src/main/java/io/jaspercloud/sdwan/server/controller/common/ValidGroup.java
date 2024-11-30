@@ -8,6 +8,7 @@ public interface ValidGroup {
     String CODE = "^\\w{4,10}";
     String UNAME_PWD = "^\\w{6,18}";
     String MAC_ADDRESS = RegexPool.MAC_ADDRESS;
+    String IPV4_ADDRESS = RegexPool.IPV4;
 
     interface Add {
 
