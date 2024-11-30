@@ -27,13 +27,7 @@ public class RouteRuleChain {
 
     public boolean test(String ip) {
         long count = predicateList.stream().filter(e -> e.test(ip)).count();
-        if (RouteRuleStrategyEnum.Allow.equals(strategy)) {
-            return count > 0;
-        } else if (RouteRuleStrategyEnum.Reject.equals(strategy)) {
-            return count <= 0;
-        } else {
-            throw new UnsupportedOperationException();
-        }
+        return count > 0;
     }
 
     public static RouteRuleChain build(SDWanProtos.RouteRule routeRule) {

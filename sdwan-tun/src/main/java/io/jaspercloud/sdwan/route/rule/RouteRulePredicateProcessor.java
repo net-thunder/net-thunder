@@ -3,9 +3,8 @@ package io.jaspercloud.sdwan.route.rule;
 import java.util.Collections;
 import java.util.List;
 
-public class RouteRulePredicateProcessor implements RouteRulePredicate {
+public class RouteRulePredicateProcessor {
 
-    private List<RouteRuleChain> rejectList;
     private List<RouteRuleChain> predicateList;
 
     public RouteRulePredicateProcessor() {
@@ -16,7 +15,6 @@ public class RouteRulePredicateProcessor implements RouteRulePredicate {
         this.predicateList = predicateList;
     }
 
-    @Override
     public boolean test(String ip) {
         for (RouteRuleChain predicate : predicateList) {
             if (predicate.test(ip)) {
