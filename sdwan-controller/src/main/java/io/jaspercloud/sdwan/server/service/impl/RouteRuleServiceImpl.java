@@ -6,6 +6,7 @@ import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.route.rule.RouteRuleDirectionEnum;
 import io.jaspercloud.sdwan.route.rule.RouteRuleStrategyEnum;
 import io.jaspercloud.sdwan.server.controller.request.EditRouteRuleRequest;
+import io.jaspercloud.sdwan.server.controller.request.RouteRuleRequest;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.controller.response.RouteRuleResponse;
 import io.jaspercloud.sdwan.server.entity.RouteRule;
@@ -88,10 +89,8 @@ public class RouteRuleServiceImpl implements RouteRuleService {
     }
 
     @Override
-    public List<RouteRuleResponse> list() {
-        List<RouteRule> list = routeRuleRepository.query()
-                .orderByAsc(RouteRule::getLevel)
-                .list();
+    public List<RouteRuleResponse> list(RouteRuleRequest request) {
+        List<RouteRule> list = routeRuleRepository.selectByRequest(request);
         List<RouteRuleResponse> collect = list.stream().map(e -> {
             RouteRuleResponse routeRuleResponse = BeanUtil.toBean(e, RouteRuleResponse.class);
             return routeRuleResponse;

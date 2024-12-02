@@ -1,6 +1,7 @@
 package io.jaspercloud.sdwan.server.service;
 
 import io.jaspercloud.sdwan.server.controller.request.EditRouteRuleRequest;
+import io.jaspercloud.sdwan.server.controller.request.RouteRuleRequest;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.controller.response.RouteRuleResponse;
 import io.jaspercloud.sdwan.server.entity.RouteRule;
@@ -17,7 +18,7 @@ public interface RouteRuleService {
 
     void del(EditRouteRuleRequest request);
 
-    List<RouteRuleResponse> list();
+    List<RouteRuleResponse> list(RouteRuleRequest request);
 
     PageResponse<RouteRuleResponse> page();
 

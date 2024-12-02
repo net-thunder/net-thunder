@@ -3,6 +3,7 @@ package io.jaspercloud.sdwan.server.controller;
 import cn.hutool.core.bean.BeanUtil;
 import io.jaspercloud.sdwan.server.controller.common.ValidGroup;
 import io.jaspercloud.sdwan.server.controller.request.EditRouteRuleRequest;
+import io.jaspercloud.sdwan.server.controller.request.RouteRuleRequest;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.controller.response.RouteRuleResponse;
 import io.jaspercloud.sdwan.server.entity.RouteRule;
@@ -54,9 +55,9 @@ public class RouteRuleController extends BaseController {
         return response;
     }
 
-    @GetMapping("/list")
-    public List<RouteRuleResponse> list() {
-        List<RouteRuleResponse> list = routeRuleService.list();
+    @PostMapping("/list")
+    public List<RouteRuleResponse> list(@RequestBody RouteRuleRequest request) {
+        List<RouteRuleResponse> list = routeRuleService.list(request);
         return list;
     }
 
