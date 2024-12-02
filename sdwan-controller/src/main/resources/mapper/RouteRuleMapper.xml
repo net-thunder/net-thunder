@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.jaspercloud.sdwan.server.repository.mapper.RouteRuleMapper">
+
+    <select id="selectByGroup" resultType="io.jaspercloud.sdwan.server.repository.po.RouteRulePO">
+        select a.*
+        from (
+        select * from biz_route_rule
+        <where>
+            <if test="null != param.enable">
+                and enable=#{param.enable}
+            </if>
+        </where>
+        ) a
+        <if test="null != param.groupIdList">
+            join biz_group_rule b
+            on a.id = b.rule_id
+            join (
+            select * from biz_group where id in
+            <foreach collection="param.groupIdList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+            ) c
+            on b.group_id = c.id
+        </if>
+        order by level asc
+    </select>
+
+</mapper>
