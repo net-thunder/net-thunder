@@ -6,6 +6,7 @@ import io.jaspercloud.sdwan.route.rule.RouteRulePredicateChain;
 import io.jaspercloud.sdwan.route.rule.RouteRuleStrategyEnum;
 import io.jaspercloud.sdwan.server.controller.response.NodeDetailResponse;
 import io.jaspercloud.sdwan.server.entity.Route;
+import io.jaspercloud.sdwan.server.entity.Tenant;
 import io.jaspercloud.sdwan.server.entity.VNAT;
 import io.jaspercloud.sdwan.support.Cidr;
 import lombok.Getter;
@@ -44,17 +45,22 @@ public class IpRouteTest {
         logList.add(message);
     }
 
-    public void test(NodeDetailResponse detail) {
+    public void test(Tenant tenant, NodeDetailResponse detail) {
+        Cidr vipCidr = Cidr.parseCidr(tenant.getCidr());
         request();
-        testOutRoute(detail);
+        testOutRoute(vipCidr, detail);
         if (isFinish()) {
             return;
         }
         response();
-        testInRoute(detail);
+        testInRoute(vipCidr, detail);
     }
 
-    private void testOutRoute(NodeDetailResponse detail) {
+    private void testOutRoute(Cidr vipCidr, NodeDetailResponse detail) {
+        if (vipCidr.contains(detail.getVip())) {
+            testRule(detail, RouteRuleDirectionEnum.Output, getDstIp());
+            return;
+        }
         for (VNAT vnat : detail.getVnatList()) {
             String srcCidr = vnat.getSrcCidr();
             String dstCidr = vnat.getDstCidr();
@@ -88,7 +94,11 @@ public class IpRouteTest {
         setFinish(true);
     }
 
-    private void testInRoute(NodeDetailResponse detail) {
+    private void testInRoute(Cidr vipCidr, NodeDetailResponse detail) {
+        if (vipCidr.contains(detail.getVip())) {
+            testRule(detail, RouteRuleDirectionEnum.Input, getSrcIp());
+            return;
+        }
         for (VNAT vnat : detail.getVnatList()) {
             String srcCidr = vnat.getSrcCidr();
             String dstCidr = vnat.getDstCidr();

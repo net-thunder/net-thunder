@@ -66,6 +66,7 @@ public class RouteController extends BaseController {
     @PostMapping("/del")
     public void del(@Validated(ValidGroup.Delete.class) @RequestBody EditRouteRequest request) {
         routeService.del(request);
+        reloadClientList();
     }
 
     @GetMapping("/detail/{id}")

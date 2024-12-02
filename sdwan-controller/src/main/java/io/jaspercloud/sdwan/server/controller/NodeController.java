@@ -1,6 +1,7 @@
 package io.jaspercloud.sdwan.server.controller;
 
 import cn.hutool.core.collection.CollectionUtil;
+import io.jaspercloud.sdwan.server.config.TenantContextHandler;
 import io.jaspercloud.sdwan.server.controller.common.ValidGroup;
 import io.jaspercloud.sdwan.server.controller.request.EditNodeRequest;
 import io.jaspercloud.sdwan.server.controller.request.TestIpRequest;
@@ -122,11 +123,12 @@ public class NodeController extends BaseController {
 
     @PostMapping("/test")
     public List<IpRouteTest.Message> test(@Validated @RequestBody TestIpRequest request) {
+        Tenant tenant = tenantService.queryById(TenantContextHandler.getCurrentTenantId());
         NodeDetailResponse detail = nodeService.queryDetail(request.getNodeId());
         IpRouteTest ipRouteTest = new IpRouteTest();
         ipRouteTest.setSrcIp(detail.getVip());
         ipRouteTest.setDstIp(request.getIp());
-        ipRouteTest.test(detail);
+        ipRouteTest.test(tenant, detail);
         return ipRouteTest.getLogList();
     }
 
