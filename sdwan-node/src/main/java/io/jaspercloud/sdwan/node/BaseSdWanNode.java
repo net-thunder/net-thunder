@@ -349,7 +349,7 @@ public class BaseSdWanNode implements Lifecycle, Runnable {
 
     private List<RouteRulePredicateChain> buildRouteRuleList(List<SDWanProtos.RouteRule> routeRuleList) {
         List<RouteRulePredicateChain> collect = routeRuleList.stream()
-                .sorted(((o1, o2) -> Integer.compare(o1.getLevel(), o2.getLevel())))
+                .sorted(RouteRulePredicateChain.comparator())
                 .map(e -> RouteRulePredicateChain.build(e))
                 .collect(Collectors.toList());
         return collect;

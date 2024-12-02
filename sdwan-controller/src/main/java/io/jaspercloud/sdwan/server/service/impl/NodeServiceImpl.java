@@ -202,7 +202,10 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
         List<Route> routeList = routeService.queryByIdList(groupList.stream()
                 .flatMap(e -> e.getRouteIdList().stream()).distinct().collect(Collectors.toList()));
         List<RouteRule> routeRuleList = routeRuleService.queryByIdList(groupList.stream()
-                .flatMap(e -> e.getRouteRuleIdList().stream()).distinct().collect(Collectors.toList()));
+                        .flatMap(e -> e.getRouteRuleIdList().stream()).distinct().collect(Collectors.toList()))
+                .stream()
+                .sorted((o1, o2) -> Integer.compare(o1.getLevel(), o2.getLevel()))
+                .collect(Collectors.toList());
         List<VNAT> vnatList = vnatService.queryIdList(groupList.stream()
                 .flatMap(e -> e.getVnatIdList().stream()).distinct().collect(Collectors.toList()));
         List<Node> nodeList;

@@ -129,28 +129,17 @@ public class VirtualRouter implements TransportLifecycle {
             }
             return null;
         }
-        SDWanProtos.VNAT vnat = findVNAT(getVnatMap(), packet, IpLayerPacket::getDstIP);
-        if (null == vnat) {
-            return packet;
-        }
-        String dstIP = packet.getDstIP();
-        String natIp = natIp(vnat, dstIP);
-        packet.setDstIP(natIp);
-        String identifier = packet.getIdentifier(true);
-        vnatMappingCache.put(identifier, dstIP);
+        processVnatIn(packet);
         return packet;
     }
 
     public String routeOut(IpLayerPacket packet) {
+        processVnatOut(packet);
         if (!routeOutRuleProcessor.test(packet.getDstIP())) {
             if (showRouteRuleLog) {
                 log.info("reject routeOut: {}", packet);
             }
             return null;
-        }
-        String originalIp = vnatMappingCache.getIfPresent(packet.getIdentifier());
-        if (null != originalIp) {
-            packet.setSrcIP(originalIp);
         }
         String dstIP = packet.getDstIP();
         if (Cidr.contains(cidr, dstIP)) {
@@ -158,6 +147,24 @@ public class VirtualRouter implements TransportLifecycle {
         }
         dstIP = findRoute(packet);
         return dstIP;
+    }
+
+    private void processVnatIn(IpLayerPacket packet) {
+        SDWanProtos.VNAT vnat = findVNAT(getVnatMap(), packet, IpLayerPacket::getDstIP);
+        if (null != vnat) {
+            String dstIP = packet.getDstIP();
+            String natIp = natIp(vnat, dstIP);
+            packet.setDstIP(natIp);
+            String identifier = packet.getIdentifier(true);
+            vnatMappingCache.put(identifier, dstIP);
+        }
+    }
+
+    private void processVnatOut(IpLayerPacket packet) {
+        String originalIp = vnatMappingCache.getIfPresent(packet.getIdentifier());
+        if (null != originalIp) {
+            packet.setSrcIP(originalIp);
+        }
     }
 
     private String natIp(SDWanProtos.VNAT vnat, String ip) {
