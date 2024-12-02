@@ -3,12 +3,14 @@ package io.jaspercloud.sdwan.server.controller;
 import cn.hutool.core.collection.CollectionUtil;
 import io.jaspercloud.sdwan.server.controller.common.ValidGroup;
 import io.jaspercloud.sdwan.server.controller.request.EditNodeRequest;
+import io.jaspercloud.sdwan.server.controller.request.TestIpRequest;
 import io.jaspercloud.sdwan.server.controller.response.ICEAddress;
 import io.jaspercloud.sdwan.server.controller.response.NodeDetailResponse;
 import io.jaspercloud.sdwan.server.controller.response.NodeResponse;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
 import io.jaspercloud.sdwan.server.entity.Node;
 import io.jaspercloud.sdwan.server.entity.Tenant;
+import io.jaspercloud.sdwan.server.entity.dto.IpRouteTest;
 import io.jaspercloud.sdwan.server.service.NodeService;
 import io.jaspercloud.sdwan.server.service.TenantService;
 import io.jaspercloud.sdwan.support.AddressUri;
@@ -116,6 +118,16 @@ public class NodeController extends BaseController {
             e.setOnline(null != channel);
         });
         return list;
+    }
+
+    @PostMapping("/test")
+    public List<IpRouteTest.Message> test(@Validated @RequestBody TestIpRequest request) {
+        NodeDetailResponse detail = nodeService.queryDetail(request.getNodeId());
+        IpRouteTest ipRouteTest = new IpRouteTest();
+        ipRouteTest.setSrcIp(detail.getVip());
+        ipRouteTest.setDstIp(request.getIp());
+        ipRouteTest.test(detail);
+        return ipRouteTest.getLogList();
     }
 
     @GetMapping("/page")

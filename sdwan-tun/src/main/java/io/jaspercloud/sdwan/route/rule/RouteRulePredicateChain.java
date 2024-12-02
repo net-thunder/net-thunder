@@ -3,6 +3,7 @@ package io.jaspercloud.sdwan.route.rule;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class RouteRulePredicateChain {
@@ -40,5 +41,9 @@ public class RouteRulePredicateChain {
         RouteRuleDirectionEnum direction = RouteRuleDirectionEnum.valueOf(routeRule.getDirection());
         RouteRulePredicateChain chain = new RouteRulePredicateChain(strategy, direction, list);
         return chain;
+    }
+
+    public static Comparator<SDWanProtos.RouteRule> comparator() {
+        return (o1, o2) -> Integer.compare(o1.getLevel(), o2.getLevel());
     }
 }
