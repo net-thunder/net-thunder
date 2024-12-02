@@ -47,6 +47,7 @@ public class VNATController extends BaseController {
     @PostMapping("/del")
     public void del(@Validated(ValidGroup.Delete.class) @RequestBody EditVNATRequest request) {
         vnatService.del(request);
+        reloadClientList();
     }
 
     @GetMapping("/detail/{id}")
