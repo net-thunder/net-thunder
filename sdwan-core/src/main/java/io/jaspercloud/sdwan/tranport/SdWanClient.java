@@ -109,7 +109,6 @@ public class SdWanClient implements TransportLifecycle, Runnable {
 
     public CompletableFuture<SDWanProtos.P2pAnswer> offer(SDWanProtos.P2pOffer req, long timeout) {
         String id = ShortUUID.gen();
-        log.info("offer: srcVIP={}, dstVIP={}, id={}", req.getSrcVIP(), req.getDstVIP(), id);
         SDWanProtos.Message message = SDWanProtos.Message.newBuilder()
                 .setReqId(id)
                 .setMode(SDWanProtos.MessageMode.ReqResp)
@@ -129,7 +128,6 @@ public class SdWanClient implements TransportLifecycle, Runnable {
     }
 
     public void answer(String id, SDWanProtos.P2pAnswer req) {
-        log.info("answer: srcVIP={}, dstVIP={}, id={}", req.getSrcVIP(), req.getDstVIP(), id);
         SDWanProtos.Message message = SDWanProtos.Message.newBuilder()
                 .setReqId(id)
                 .setMode(SDWanProtos.MessageMode.ReqResp)
@@ -204,7 +202,8 @@ public class SdWanClient implements TransportLifecycle, Runnable {
         InetSocketAddress socketAddress = SocketAddressUtil.parse(config.getControllerServer());
         try {
             localChannel = bootstrap.connect(socketAddress).syncUninterruptibly().channel();
-            log.info("SdWanClient started");
+            InetSocketAddress localAddress = (InetSocketAddress) localChannel.localAddress();
+            log.info("SdWanClient started: port={}", localAddress.getPort());
             bossGroup.scheduleAtFixedRate(this, 0, config.getHeartTime(), TimeUnit.MILLISECONDS);
             localChannel.closeFuture().addListener(new ChannelFutureListener() {
                 @Override

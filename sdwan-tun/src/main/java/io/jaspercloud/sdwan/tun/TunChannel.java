@@ -43,6 +43,10 @@ public class TunChannel extends AbstractChannel {
     private TunAddress tunAddress;
     private TunDevice tunDevice;
 
+    public TunAddress getTunAddress() {
+        return tunAddress;
+    }
+
     public TunDevice getTunDevice() {
         return tunDevice;
     }

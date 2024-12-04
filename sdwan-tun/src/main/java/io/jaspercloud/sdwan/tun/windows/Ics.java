@@ -14,7 +14,7 @@ public final class Ics {
 
     public static final String IcsIp = "192.168.137.1";
 
-    public static void enable(String publicIp, String privateIp, boolean status) throws Exception {
+    public static void operateICS(String publicIp, String privateIp, boolean status) throws Exception {
         File vbs = SystemFile.getFile("ics.vbs");
         SystemFile.writeClassFile("script/ics.vbs", vbs);
         String hostName = InetAddress.getByName(publicIp).getHostName();
@@ -22,7 +22,7 @@ public final class Ics {
         String privateGuid = getGuid(hostName, privateIp);
         File wscript = new File("C:/Windows/System32/wscript.exe");
         String cmd = String.format("%s %s \"%s\" \"%s\" %s", wscript.getAbsoluteFile(), vbs.getAbsoluteFile(), publicGuid, privateGuid, status);
-        log.info("enableICS: {}", cmd);
+        log.info("operateICS: {}", cmd);
         int code = ProcessUtil.exec(cmd);
         CheckInvoke.check(code, 0);
     }

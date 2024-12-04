@@ -1,7 +1,7 @@
 package io.jaspercloud.sdwan.tranport.config;
 
-import io.jaspercloud.sdwan.route.rule.RouteRuleDirectionEnum;
-import io.jaspercloud.sdwan.route.rule.RouteRuleStrategyEnum;
+import io.jaspercloud.sdwan.tranport.rule.RouteRuleDirectionEnum;
+import io.jaspercloud.sdwan.tranport.rule.RouteRuleStrategyEnum;
 import lombok.*;
 
 import java.util.List;

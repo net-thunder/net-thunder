@@ -67,6 +67,7 @@ public class LocalConfigSdWanDataService implements SdWanDataService {
                                 VNATConfig vnatConfig = new VNATConfig();
                                 vnatConfig.setSrcCidr(e.getSrc());
                                 vnatConfig.setDstCidr(e.getDst());
+                                vnatConfig.setVipList(e.getVipList());
                                 return vnatConfig;
                             }).collect(Collectors.toList());
                     tenantSpace.setVnatList(collect);

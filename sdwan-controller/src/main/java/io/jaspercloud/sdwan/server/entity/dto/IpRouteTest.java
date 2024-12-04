@@ -1,14 +1,14 @@
 package io.jaspercloud.sdwan.server.entity.dto;
 
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
-import io.jaspercloud.sdwan.route.rule.RouteRuleDirectionEnum;
-import io.jaspercloud.sdwan.route.rule.RouteRulePredicateChain;
-import io.jaspercloud.sdwan.route.rule.RouteRuleStrategyEnum;
 import io.jaspercloud.sdwan.server.controller.response.NodeDetailResponse;
 import io.jaspercloud.sdwan.server.entity.Route;
 import io.jaspercloud.sdwan.server.entity.Tenant;
 import io.jaspercloud.sdwan.server.entity.VNAT;
 import io.jaspercloud.sdwan.support.Cidr;
+import io.jaspercloud.sdwan.tranport.rule.RouteRuleDirectionEnum;
+import io.jaspercloud.sdwan.tranport.rule.RouteRulePredicateChain;
+import io.jaspercloud.sdwan.tranport.rule.RouteRuleStrategyEnum;
 import lombok.Getter;
 import lombok.Setter;
 

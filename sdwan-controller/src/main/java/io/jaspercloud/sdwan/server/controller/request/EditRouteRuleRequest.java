@@ -2,11 +2,11 @@ package io.jaspercloud.sdwan.server.controller.request;
 
 import cn.hutool.core.lang.PatternPool;
 import io.jaspercloud.sdwan.exception.ProcessException;
-import io.jaspercloud.sdwan.route.rule.RouteRuleDirectionEnum;
-import io.jaspercloud.sdwan.route.rule.RouteRuleStrategyEnum;
 import io.jaspercloud.sdwan.server.controller.common.ValidCheck;
 import io.jaspercloud.sdwan.server.controller.common.ValidGroup;
 import io.jaspercloud.sdwan.support.Cidr;
+import io.jaspercloud.sdwan.tranport.rule.RouteRuleDirectionEnum;
+import io.jaspercloud.sdwan.tranport.rule.RouteRuleStrategyEnum;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;

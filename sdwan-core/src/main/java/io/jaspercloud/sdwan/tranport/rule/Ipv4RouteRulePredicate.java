@@ -1,4 +1,4 @@
-package io.jaspercloud.sdwan.route.rule;
+package io.jaspercloud.sdwan.tranport.rule;
 
 import org.apache.commons.lang3.StringUtils;
 

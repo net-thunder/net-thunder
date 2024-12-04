@@ -80,6 +80,9 @@ public abstract class ElectionProtocol {
                 .setPublicKey(ByteString.copyFrom(config.getEncryptionKeyPair().getPublic().getEncoded()))
                 .build();
         //sendOffer = 3 * electionTimeout
+        if (config.getShowElectionLog()) {
+            log.info("sendOffer: srcVIP={}, dstVIP={}", p2pOffer.getSrcVIP(), p2pOffer.getDstVIP());
+        }
         return sendOffer(p2pOffer, 3 * config.getElectionTimeout())
                 .thenApply(resp -> {
                     try {
@@ -87,7 +90,9 @@ public abstract class ElectionProtocol {
                         if (null == transport) {
                             throw new ProcessException("not found transport");
                         }
-                        log.info("selectDataTransport: {} -> {}, uri={}", p2pOffer.getSrcVIP(), p2pOffer.getDstVIP(), transport.addressUri().toString());
+                        if (config.getShowElectionLog()) {
+                            log.info("selectDataTransport: {} -> {}, uri={}", p2pOffer.getSrcVIP(), p2pOffer.getDstVIP(), transport.addressUri().toString());
+                        }
                         byte[] publicKey = resp.getPublicKey().toByteArray();
                         SecretKey secretKey = Ecdh.generateAESKey(config.getEncryptionKeyPair().getPrivate(), publicKey);
                         transport.setSecretKey(secretKey);
@@ -136,7 +141,9 @@ public abstract class ElectionProtocol {
         });
         return future.thenApply(transport -> {
             try {
-                log.info("selectDataTransport: {} -> {}, uri={}", p2pOffer.getDstVIP(), p2pOffer.getSrcVIP(), transport.addressUri().toString());
+                if (config.getShowElectionLog()) {
+                    log.info("selectDataTransport: {} -> {}, uri={}", p2pOffer.getDstVIP(), p2pOffer.getSrcVIP(), transport.addressUri().toString());
+                }
                 byte[] publicKey = p2pOffer.getPublicKey().toByteArray();
                 SecretKey secretKey = Ecdh.generateAESKey(config.getEncryptionKeyPair().getPrivate(), publicKey);
                 transport.setSecretKey(secretKey);
@@ -147,6 +154,9 @@ public abstract class ElectionProtocol {
                         .setDstVIP(p2pOffer.getSrcVIP())
                         .setPublicKey(ByteString.copyFrom(config.getEncryptionKeyPair().getPublic().getEncoded()))
                         .build();
+                if (config.getShowElectionLog()) {
+                    log.info("sendAnswer: srcVIP={}, dstVIP={}, code={}", p2pAnswer.getSrcVIP(), p2pAnswer.getDstVIP(), p2pAnswer.getCode());
+                }
                 sendAnswer(reqId, p2pAnswer);
                 return transport;
             } catch (Exception e) {
@@ -154,6 +164,9 @@ public abstract class ElectionProtocol {
                         .setTenantId(config.getTenantId())
                         .setCode(SDWanProtos.MessageCode.SysError)
                         .build();
+                if (config.getShowElectionLog()) {
+                    log.info("sendAnswer: srcVIP={}, dstVIP={}, code={}", p2pAnswer.getSrcVIP(), p2pAnswer.getDstVIP(), p2pAnswer.getCode());
+                }
                 sendAnswer(reqId, p2pAnswer);
                 throw new ProcessException(e.getMessage(), e);
             }

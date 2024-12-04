@@ -332,9 +332,6 @@ public class SdWanServer implements Lifecycle, Runnable {
                 .addAllAddressUri(attr.getAddressUriList())
                 .build();
         for (Channel item : registChannelMap.keySet()) {
-            if (item.id().asShortText().equals(channel.id().asShortText())) {
-                continue;
-            }
             try {
                 SdWanServer.push(item, SDWanProtos.MessageTypeCode.NodeOnlineType, nodeInfo);
             } catch (Exception e) {

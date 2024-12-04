@@ -2,24 +2,19 @@ package io.jaspercloud.sdwan.tranport.support;
 
 import com.google.protobuf.ByteString;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
-import io.jaspercloud.sdwan.route.RouteManager;
-import io.jaspercloud.sdwan.route.WindowsRouteManager;
-import io.jaspercloud.sdwan.stun.*;
 import io.jaspercloud.sdwan.node.BaseSdWanNode;
 import io.jaspercloud.sdwan.node.SdWanNodeConfig;
+import io.jaspercloud.sdwan.route.OSRouteTableFactory;
+import io.jaspercloud.sdwan.route.OSRouteTableManager;
 import io.jaspercloud.sdwan.tranport.TunTransport;
 import io.jaspercloud.sdwan.tranport.TunTransportConfig;
 import io.jaspercloud.sdwan.tun.Ipv4Packet;
 import io.jaspercloud.sdwan.tun.TunChannel;
 import io.jaspercloud.sdwan.util.ByteBufUtil;
-import io.jaspercloud.sdwan.util.SocketAddressUtil;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
-
-import java.net.InetSocketAddress;
 
 /**
  * @author jasper
@@ -31,32 +26,11 @@ public class TestTunSdWanNode extends BaseSdWanNode {
     private SdWanNodeConfig config;
 
     private TunTransport tunTransport;
-    private RouteManager routeManager;
+    private OSRouteTableManager osRouteTableManager;
 
     public TestTunSdWanNode(SdWanNodeConfig config) {
         super(config);
         this.config = config;
-    }
-
-    @Override
-    protected ChannelHandler getProcessHandler() {
-        return new SimpleChannelInboundHandler<StunPacket>() {
-            @Override
-            protected void channelRead0(ChannelHandlerContext ctx, StunPacket msg) throws Exception {
-                InetSocketAddress sender = msg.sender();
-                StunMessage stunMessage = msg.content();
-                StringAttr transferTypeAttr = stunMessage.getAttr(AttrType.TransferType);
-                BytesAttr dataAttr = stunMessage.getAttr(AttrType.Data);
-                byte[] data = dataAttr.getData();
-                if (!MessageType.Transfer.equals(stunMessage.getMessageType())) {
-                    return;
-                }
-                SDWanProtos.IpPacket ipPacket = SDWanProtos.IpPacket.parseFrom(data);
-                log.debug("recv transfer type={}, sender={},  src={}, dst={}",
-                        transferTypeAttr.getData(), SocketAddressUtil.toAddress(sender),
-                        ipPacket.getSrcIP(), ipPacket.getDstIP());
-            }
-        };
     }
 
     @Override
@@ -82,14 +56,14 @@ public class TestTunSdWanNode extends BaseSdWanNode {
         });
         tunTransport.start();
         TunChannel tunChannel = tunTransport.getChannel();
-        routeManager = new WindowsRouteManager(tunChannel, getVirtualRouter());
-        routeManager.start();
+        osRouteTableManager = OSRouteTableFactory.create(tunChannel);
+        osRouteTableManager.start();
     }
 
     @Override
     protected void uninstall() throws Exception {
-        tunTransport.stop();
-        routeManager.stop();
         super.uninstall();
+        osRouteTableManager.stop();
+        tunTransport.stop();
     }
 }

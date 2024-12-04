@@ -2,14 +2,14 @@ package io.jaspercloud.sdwan.server.repository;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.json.JSONUtil;
-import io.jaspercloud.sdwan.route.rule.RouteRuleDirectionEnum;
-import io.jaspercloud.sdwan.route.rule.RouteRuleStrategyEnum;
 import io.jaspercloud.sdwan.server.controller.request.RouteRuleRequest;
 import io.jaspercloud.sdwan.server.entity.RouteRule;
 import io.jaspercloud.sdwan.server.repository.base.BaseRepositoryImpl;
 import io.jaspercloud.sdwan.server.repository.mapper.RouteRuleMapper;
 import io.jaspercloud.sdwan.server.repository.po.RouteRulePO;
 import io.jaspercloud.sdwan.server.support.BeanTransformer;
+import io.jaspercloud.sdwan.tranport.rule.RouteRuleDirectionEnum;
+import io.jaspercloud.sdwan.tranport.rule.RouteRuleStrategyEnum;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.stereotype.Repository;
 
