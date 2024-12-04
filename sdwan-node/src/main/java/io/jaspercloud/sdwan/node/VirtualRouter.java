@@ -261,7 +261,7 @@ public class VirtualRouter implements TransportLifecycle {
                             case SDWanProtos.MessageTypeCode.P2pOfferType_VALUE: {
                                 SDWanProtos.P2pOffer p2pOffer = SDWanProtos.P2pOffer.parseFrom(msg.getData());
                                 if (iceClient.isRunning()) {
-                                    iceClient.processOffer(msg.getReqId(), p2pOffer);
+                                    iceClient.processAnswer(msg.getReqId(), p2pOffer);
                                 }
                                 break;
                             }
@@ -290,7 +290,7 @@ public class VirtualRouter implements TransportLifecycle {
                             case SDWanProtos.MessageTypeCode.NodeOfflineType_VALUE: {
                                 SDWanProtos.NodeInfo nodeInfo = SDWanProtos.NodeInfo.parseFrom(msg.getData());
                                 log.info("offlineNode: vip={}", nodeInfo.getVip());
-                                nodeManager.delNode(nodeInfo.getVip());
+                                nodeManager.deleteNode(nodeInfo.getVip());
                                 if (iceClient.isRunning()) {
                                     iceClient.offlineTransport(nodeInfo.getVip());
                                 }

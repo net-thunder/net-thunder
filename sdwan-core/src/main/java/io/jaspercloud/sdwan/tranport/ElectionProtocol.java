@@ -37,7 +37,10 @@ public abstract class ElectionProtocol {
         this.relayClient = relayClient;
     }
 
-    public CompletableFuture<DataTransport> offer(SDWanProtos.NodeInfo nodeInfo) {
+    public CompletableFuture<DataTransport> processOffer(SDWanProtos.NodeInfo nodeInfo) {
+        if (config.getShowElectionLog()) {
+            log.info("processOffer: src={}, dst={}", getLocalVip(), nodeInfo.getVip());
+        }
         List<AddressUri> uriList = nodeInfo.getAddressUriList()
                 .stream()
                 .map(u -> AddressUri.parse(u))
@@ -105,7 +108,10 @@ public abstract class ElectionProtocol {
                 });
     }
 
-    public CompletableFuture<DataTransport> answer(String reqId, SDWanProtos.P2pOffer p2pOffer) {
+    public CompletableFuture<DataTransport> processAnswer(String reqId, SDWanProtos.P2pOffer p2pOffer) {
+        if (config.getShowElectionLog()) {
+            log.info("processAnswer: src={}, dst={}", p2pOffer.getDstVIP(), p2pOffer.getSrcVIP());
+        }
         List<AddressUri> uriList = p2pOffer.getAddressUriList().stream()
                 .map(u -> AddressUri.parse(u))
                 .collect(Collectors.toList());

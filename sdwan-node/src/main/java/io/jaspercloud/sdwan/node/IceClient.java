@@ -72,14 +72,14 @@ public class IceClient implements TransportLifecycle, Runnable {
 
     public void sendNode(String srcVip, SDWanProtos.NodeInfo nodeInfo, byte[] bytes) {
         AtomicReference<DataTransport> ref = p2pTransportManager.getOrCreate(nodeInfo.getVip(), key -> {
-            electionProtocol.offer(nodeInfo)
+            electionProtocol.processOffer(nodeInfo)
                     .whenComplete((transport, ex) -> {
                         if (null != ex) {
-                            log.info("offerError: vip={}, error={}", nodeInfo.getVip(), ex.getMessage());
+                            log.info("electionError: vip={}, error={}", nodeInfo.getVip(), ex.getMessage());
                             p2pTransportManager.deleteTransport(nodeInfo.getVip());
                             return;
                         }
-                        log.info("offerSuccess: vip={}, addressUri={}", nodeInfo.getVip(), transport.addressUri().toString());
+                        log.info("electionSuccess: vip={}, addressUri={}", nodeInfo.getVip(), transport.addressUri().toString());
                         p2pTransportManager.addTransport(nodeInfo.getVip(), transport);
                         transport.transfer(srcVip, bytes);
                     });
@@ -92,8 +92,8 @@ public class IceClient implements TransportLifecycle, Runnable {
         transport.transfer(srcVip, bytes);
     }
 
-    public void processOffer(String reqId, SDWanProtos.P2pOffer p2pOffer) {
-        electionProtocol.answer(reqId, p2pOffer)
+    public void processAnswer(String reqId, SDWanProtos.P2pOffer p2pOffer) {
+        electionProtocol.processAnswer(reqId, p2pOffer)
                 .thenAccept(transport -> {
                     p2pTransportManager.addTransport(p2pOffer.getSrcVIP(), transport);
                 });
