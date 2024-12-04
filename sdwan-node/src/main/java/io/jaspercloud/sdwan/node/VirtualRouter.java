@@ -89,6 +89,11 @@ public class VirtualRouter implements TransportLifecycle {
     }
 
     public void send(IpLayerPacket packet) {
+        if (config.getShowVRouterLog()) {
+            if (!(Multicast.isMulticastIp(packet.getDstIP()) || Cidr.isBroadcastAddress(vipCidr, packet.getDstIP()))) {
+                log.info("send: src={}, dst={}", packet.getSrcIP(), packet.getDstIP());
+            }
+        }
         if (config.getNetMesh()
                 && PlatformDependent.isWindows()
                 && Ics.IcsIp.equals(packet.getSrcIP())) {
@@ -109,9 +114,6 @@ public class VirtualRouter implements TransportLifecycle {
                 iceClient.sendNode(localVip, nodeInfo, bytes);
             });
             return;
-        }
-        if (config.getShowVRouterLog()) {
-            log.info("send: src={}, dst={}", packet.getSrcIP(), packet.getDstIP());
         }
         //route
         String dstVip = routeOut(packet);
@@ -142,9 +144,11 @@ public class VirtualRouter implements TransportLifecycle {
         }
         SDWanProtos.IpPacket ipPacket = SDWanProtos.IpPacket.parseFrom(data);
         if (config.getShowVRouterLog()) {
-            log.info("recv: type={}, sender={}, src={}, dst={}",
-                    transferTypeAttr.getData(), SocketAddressUtil.toAddress(sender),
-                    ipPacket.getSrcIP(), ipPacket.getDstIP());
+            if (!(Multicast.isMulticastIp(ipPacket.getDstIP()) || Cidr.isBroadcastAddress(vipCidr, ipPacket.getDstIP()))) {
+                log.info("recv: type={}, sender={}, src={}, dst={}",
+                        transferTypeAttr.getData(), SocketAddressUtil.toAddress(sender),
+                        ipPacket.getSrcIP(), ipPacket.getDstIP());
+            }
         }
         ByteBuf byteBuf = ByteBufUtil.toByteBuf(ipPacket.getPayload().toByteArray());
         try {
