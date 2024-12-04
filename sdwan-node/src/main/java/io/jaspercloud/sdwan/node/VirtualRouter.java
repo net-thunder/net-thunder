@@ -142,7 +142,7 @@ public class VirtualRouter implements TransportLifecycle {
         }
         SDWanProtos.IpPacket ipPacket = SDWanProtos.IpPacket.parseFrom(data);
         if (config.getShowVRouterLog()) {
-            log.info("recvICE: type={}, sender={}, src={}, dst={}",
+            log.info("recv: type={}, sender={}, src={}, dst={}",
                     transferTypeAttr.getData(), SocketAddressUtil.toAddress(sender),
                     ipPacket.getSrcIP(), ipPacket.getDstIP());
         }
