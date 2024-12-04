@@ -46,7 +46,7 @@ public class SdWanNodeConfig {
     private Boolean autoReconnect = true;
     private Boolean autoUpdateVersion = true;
 
-    private Boolean showTUNLog = false;
+    private Boolean showVRouterLog = false;
     private Boolean showICELog = false;
     private Boolean showElectionLog = false;
     private Boolean showRouteRuleLog = false;

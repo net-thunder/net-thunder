@@ -3,14 +3,12 @@ package io.jaspercloud.sdwan.tranport;
 import com.google.protobuf.ByteString;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.node.SdWanNodeConfig;
-import io.jaspercloud.sdwan.stun.NatAddress;
 import io.jaspercloud.sdwan.tranport.service.LocalConfigSdWanDataService;
 import io.jaspercloud.sdwan.tranport.support.TestSdWanNode;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.junit.jupiter.api.Test;
 
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -66,12 +64,6 @@ public class TransferReElectionTest {
             protected String processMacAddress(String hardwareAddress) {
                 return "x1:x:x:x:x:x";
             }
-
-            @Override
-            protected NatAddress processNatAddress(NatAddress mappingAddress) {
-                mappingAddress.setMappingAddress(new InetSocketAddress("192.168.1.0", 1000));
-                return mappingAddress;
-            }
         };
         sdWanNode1.start();
         SdWanNodeConfig nodeConfig2 = new SdWanNodeConfig();
@@ -84,12 +76,6 @@ public class TransferReElectionTest {
             @Override
             protected String processMacAddress(String hardwareAddress) {
                 return "x2:x:x:x:x:x";
-            }
-
-            @Override
-            protected NatAddress processNatAddress(NatAddress mappingAddress) {
-                mappingAddress.setMappingAddress(new InetSocketAddress("192.168.1.0", 1000));
-                return mappingAddress;
             }
         };
         sdWanNode2.start();
@@ -239,7 +225,7 @@ public class TransferReElectionTest {
         sdWanNode2.start();
         Executors.newSingleThreadScheduledExecutor()
                 .scheduleAtFixedRate(() -> {
-                    sdWanNode1.getIceClient().getP2pTransportManager().clear();
+                    sdWanNode1.getVirtualRouter().getIceClient().getP2pTransportManager().clear();
                 }, 0, 10 * 1000, TimeUnit.MILLISECONDS);
         int i = 1;
         while (true) {

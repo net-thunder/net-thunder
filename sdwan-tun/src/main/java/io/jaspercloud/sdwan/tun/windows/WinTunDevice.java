@@ -101,7 +101,7 @@ public class WinTunDevice extends TunDevice {
         String ethIp = eth.getInterfaceAddress().getAddress().getHostAddress();
         String tunIp = tunAddress.getIp();
         int maskBits = tunAddress.getMaskBits();
-        Ics.enable(ethIp, tunIp, true);
+        Ics.operateICS(ethIp, tunIp, true);
         {
             String cmd = String.format("netsh interface ipv4 set address name=\"%s\" static %s/%s", getName(), tunIp, maskBits);
             int code = ProcessUtil.exec(cmd);
@@ -120,7 +120,7 @@ public class WinTunDevice extends TunDevice {
         NetworkInterfaceInfo eth = NetworkInterfaceUtil.findEth(ethName);
         String ethIp = eth.getInterfaceAddress().getAddress().getHostAddress();
         String tunIp = tunAddress.getIp();
-        Ics.enable(ethIp, tunIp, false);
+        Ics.operateICS(ethIp, tunIp, false);
     }
 
     @Override

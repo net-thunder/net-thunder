@@ -69,6 +69,9 @@ public class TunTransport implements TransportLifecycle {
             localChannel = (TunChannel) bootstrap.bind(tunAddress).syncUninterruptibly().channel();
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 try {
+                    if (null == localChannel) {
+                        return;
+                    }
                     if (!localChannel.isActive()) {
                         return;
                     }

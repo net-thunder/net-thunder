@@ -1,4 +1,4 @@
-package io.jaspercloud.sdwan.route.rule;
+package io.jaspercloud.sdwan.tranport.rule;
 
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 

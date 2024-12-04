@@ -60,7 +60,7 @@ public class IceClient implements TransportLifecycle, Runnable {
         return p2pTransportManager;
     }
 
-    public void setLocalVip(String localVip) {
+    public void applyLocalVip(String localVip) {
         this.localVip = localVip;
     }
 
@@ -72,7 +72,6 @@ public class IceClient implements TransportLifecycle, Runnable {
 
     public void sendNode(String srcVip, SDWanProtos.NodeInfo nodeInfo, byte[] bytes) {
         AtomicReference<DataTransport> ref = p2pTransportManager.getOrCreate(nodeInfo.getVip(), key -> {
-            log.info("election: vip={}", nodeInfo.getVip());
             electionProtocol.offer(nodeInfo)
                     .whenComplete((transport, ex) -> {
                         if (null != ex) {
@@ -94,7 +93,6 @@ public class IceClient implements TransportLifecycle, Runnable {
     }
 
     public void processOffer(String reqId, SDWanProtos.P2pOffer p2pOffer) {
-        log.info("processOffer: id={}", reqId);
         electionProtocol.answer(reqId, p2pOffer)
                 .thenAccept(transport -> {
                     p2pTransportManager.addTransport(p2pOffer.getSrcVIP(), transport);
@@ -112,7 +110,7 @@ public class IceClient implements TransportLifecycle, Runnable {
         }
     }
 
-    private ChannelHandler createStunPacketHandler(String client) {
+    private ChannelHandler createStunPacketHandler(String clientTag) {
         return new ChannelInitializer<Channel>() {
             @Override
             protected void initChannel(Channel ch) throws Exception {
@@ -144,7 +142,7 @@ public class IceClient implements TransportLifecycle, Runnable {
 
                     @Override
                     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-                        log.info("{} channelInactive", client);
+                        log.info("{} channelInactive", clientTag);
                         super.channelInactive(ctx);
                     }
                 });
@@ -207,8 +205,8 @@ public class IceClient implements TransportLifecycle, Runnable {
         p2pTransportManager.start();
         p2pClient.start();
         relayClient.start();
-        log.info("IceClient started");
         status.set(true);
+        log.info("IceClient started");
         scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         scheduledExecutorService.scheduleAtFixedRate(this, 0, config.getIceCheckTime(), TimeUnit.MILLISECONDS);
     }
@@ -329,7 +327,7 @@ public class IceClient implements TransportLifecycle, Runnable {
                         Map<AttrType, Attr> attrs = packet.content().getAttrs();
                         AddressAttr mappedAddressAttr = (AddressAttr) attrs.get(AttrType.MappedAddress);
                         InetSocketAddress natAddress = mappedAddressAttr.getAddress();
-                        if (config.getShowElectionLog()) {
+                        if (config.getShowICELog()) {
                             log.info("connect stunServer success: address={}, publicAddress={}", address, SocketAddressUtil.toAddress(natAddress));
                         }
                         Map<String, String> params = new HashMap<>();
@@ -362,7 +360,7 @@ public class IceClient implements TransportLifecycle, Runnable {
                         StunMessage stunMessage = packet.content();
                         StringAttr attr = stunMessage.getAttr(AttrType.RelayToken);
                         String token = attr.getData();
-                        if (config.getShowElectionLog()) {
+                        if (config.getShowICELog()) {
                             log.info("connect relayServer success: address={}, token={}", address, token);
                         }
                         Map<String, String> params = new HashMap<>();

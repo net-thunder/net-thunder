@@ -1,4 +1,4 @@
-package io.jaspercloud.sdwan.route.rule;
+package io.jaspercloud.sdwan.tranport.rule;
 
 import cn.hutool.core.lang.PatternPool;
 import io.jaspercloud.sdwan.exception.ProcessException;

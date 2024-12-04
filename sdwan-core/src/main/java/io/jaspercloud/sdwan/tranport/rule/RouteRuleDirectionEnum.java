@@ -1,4 +1,4 @@
-package io.jaspercloud.sdwan.route.rule;
+package io.jaspercloud.sdwan.tranport.rule;
 
 public enum RouteRuleDirectionEnum {
 

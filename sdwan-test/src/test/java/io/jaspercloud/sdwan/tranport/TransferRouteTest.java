@@ -3,17 +3,12 @@ package io.jaspercloud.sdwan.tranport;
 import com.google.protobuf.ByteString;
 import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.node.SdWanNodeConfig;
-import io.jaspercloud.sdwan.stun.*;
 import io.jaspercloud.sdwan.tranport.service.LocalConfigSdWanDataService;
 import io.jaspercloud.sdwan.tranport.support.TestSdWanNode;
-import io.jaspercloud.sdwan.util.SocketAddressUtil;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerContext;
+import io.jaspercloud.sdwan.tun.IpLayerPacket;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.SimpleChannelInboundHandler;
 import org.junit.jupiter.api.Test;
 
-import java.net.InetSocketAddress;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
@@ -245,30 +240,13 @@ public class TransferRouteTest {
                     }
 
                     @Override
-                    protected ChannelHandler getProcessHandler() {
-                        return new SimpleChannelInboundHandler<StunPacket>() {
-                            @Override
-                            protected void channelRead0(ChannelHandlerContext ctx, StunPacket msg) throws Exception {
-                                InetSocketAddress sender = msg.sender();
-                                StunMessage stunMessage = msg.content();
-                                StringAttr transferTypeAttr = stunMessage.getAttr(AttrType.TransferType);
-                                BytesAttr dataAttr = stunMessage.getAttr(AttrType.Data);
-                                byte[] data = dataAttr.getData();
-                                if (!MessageType.Transfer.equals(stunMessage.getMessageType())) {
-                                    return;
-                                }
-                                SDWanProtos.IpPacket ipPacket = SDWanProtos.IpPacket.parseFrom(data);
-                                System.out.println(String.format("recv transfer: type=%s, sender=%s, src=%s, dst=%s, data=%s",
-                                        transferTypeAttr.getData(), SocketAddressUtil.toAddress(sender),
-                                        ipPacket.getSrcIP(), ipPacket.getDstIP(), new String(ipPacket.getPayload().toByteArray())));
-                                ipPacket = ipPacket.toBuilder()
-                                        .setSrcIP(ipPacket.getDstIP())
-                                        .setDstIP(ipPacket.getSrcIP())
-                                        .setPayload(ByteString.copyFrom("hello reply".getBytes()))
-                                        .build();
-                                sdWanNode2.sendIpPacket(ipPacket);
-                            }
-                        };
+                    protected void onData(IpLayerPacket packet) {
+                        SDWanProtos.IpPacket ipPacket = SDWanProtos.IpPacket.newBuilder()
+                                .setSrcIP(packet.getDstIP())
+                                .setDstIP(packet.getSrcIP())
+                                .setPayload(ByteString.copyFrom("hello reply".getBytes()))
+                                .build();
+                        sdWanNode2.sendIpPacket(ipPacket);
                     }
                 };
                 sdWanNode2.start();
