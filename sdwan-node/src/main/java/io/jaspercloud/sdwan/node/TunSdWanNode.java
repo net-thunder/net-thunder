@@ -66,9 +66,6 @@ public class TunSdWanNode extends BaseSdWanNode {
             @Override
             protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
                 IpLayerPacket packet = new IpLayerPacket(msg);
-                if (config.getShowVRouterLog()) {
-                    log.info("recvTUN: src={}, dst={}", packet.getSrcIP(), packet.getDstIP());
-                }
                 ipPacketProcessor.output(packet);
                 getVirtualRouter().send(packet);
             }

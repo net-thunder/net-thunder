@@ -110,6 +110,9 @@ public class VirtualRouter implements TransportLifecycle {
             });
             return;
         }
+        if (config.getShowVRouterLog()) {
+            log.info("send: src={}, dst={}", packet.getSrcIP(), packet.getDstIP());
+        }
         //route
         String dstVip = routeOut(packet);
         if (null == dstVip) {
@@ -126,6 +129,31 @@ public class VirtualRouter implements TransportLifecycle {
                 .setPayload(ByteString.copyFrom(ByteBufUtil.toBytes(byteBuf)))
                 .build().toByteArray();
         iceClient.sendNode(localVip, nodeInfo, bytes);
+    }
+
+    private void recv(StunPacket stunPacket) throws Exception {
+        InetSocketAddress sender = stunPacket.sender();
+        StunMessage stunMessage = stunPacket.content();
+        StringAttr transferTypeAttr = stunMessage.getAttr(AttrType.TransferType);
+        BytesAttr dataAttr = stunMessage.getAttr(AttrType.Data);
+        byte[] data = dataAttr.getData();
+        if (!MessageType.Transfer.equals(stunMessage.getMessageType())) {
+            return;
+        }
+        SDWanProtos.IpPacket ipPacket = SDWanProtos.IpPacket.parseFrom(data);
+        if (config.getShowVRouterLog()) {
+            log.info("recvICE: type={}, sender={}, src={}, dst={}",
+                    transferTypeAttr.getData(), SocketAddressUtil.toAddress(sender),
+                    ipPacket.getSrcIP(), ipPacket.getDstIP());
+        }
+        ByteBuf byteBuf = ByteBufUtil.toByteBuf(ipPacket.getPayload().toByteArray());
+        try {
+            IpLayerPacket packet = new IpLayerPacket(byteBuf);
+            packet = routeIn(packet);
+            onData(VirtualRouter.this, packet);
+        } finally {
+            byteBuf.release();
+        }
     }
 
     public IpLayerPacket routeIn(IpLayerPacket packet) {
@@ -274,28 +302,7 @@ public class VirtualRouter implements TransportLifecycle {
                 pipeline.addLast(new SimpleChannelInboundHandler<StunPacket>() {
                     @Override
                     protected void channelRead0(ChannelHandlerContext ctx, StunPacket msg) throws Exception {
-                        InetSocketAddress sender = msg.sender();
-                        StunMessage stunMessage = msg.content();
-                        StringAttr transferTypeAttr = stunMessage.getAttr(AttrType.TransferType);
-                        BytesAttr dataAttr = stunMessage.getAttr(AttrType.Data);
-                        byte[] data = dataAttr.getData();
-                        if (!MessageType.Transfer.equals(stunMessage.getMessageType())) {
-                            return;
-                        }
-                        SDWanProtos.IpPacket ipPacket = SDWanProtos.IpPacket.parseFrom(data);
-                        if (config.getShowVRouterLog()) {
-                            log.info("recvICE: type={}, sender={}, src={}, dst={}",
-                                    transferTypeAttr.getData(), SocketAddressUtil.toAddress(sender),
-                                    ipPacket.getSrcIP(), ipPacket.getDstIP());
-                        }
-                        ByteBuf byteBuf = ByteBufUtil.toByteBuf(ipPacket.getPayload().toByteArray());
-                        try {
-                            IpLayerPacket packet = new IpLayerPacket(byteBuf);
-                            packet = routeIn(packet);
-                            onData(VirtualRouter.this, packet);
-                        } finally {
-                            byteBuf.release();
-                        }
+                        recv(msg);
                     }
                 });
             }
