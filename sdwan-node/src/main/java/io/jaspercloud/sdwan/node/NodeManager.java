@@ -17,7 +17,7 @@ public class NodeManager implements Lifecycle {
         nodeInfoMap.put(vip, node);
     }
 
-    public void delNode(String vip) {
+    public void deleteNode(String vip) {
         nodeInfoMap.remove(vip);
     }
 
