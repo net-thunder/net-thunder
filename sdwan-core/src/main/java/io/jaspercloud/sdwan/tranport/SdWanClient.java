@@ -107,15 +107,14 @@ public class SdWanClient implements TransportLifecycle, Runnable {
         localChannel.writeAndFlush(message);
     }
 
-    public CompletableFuture<SDWanProtos.P2pAnswer> offer(SDWanProtos.P2pOffer req, long timeout) {
-        String id = ShortUUID.gen();
+    public CompletableFuture<SDWanProtos.P2pAnswer> offer(String reqId, SDWanProtos.P2pOffer req, long timeout) {
         SDWanProtos.Message message = SDWanProtos.Message.newBuilder()
-                .setReqId(id)
+                .setReqId(reqId)
                 .setMode(SDWanProtos.MessageMode.ReqResp)
                 .setType(SDWanProtos.MessageTypeCode.P2pOfferType)
                 .setData(req.toByteString())
                 .build();
-        CompletableFuture<SDWanProtos.Message> task = AsyncTask.waitTask(id, timeout);
+        CompletableFuture<SDWanProtos.Message> task = AsyncTask.waitTask(reqId, timeout);
         localChannel.writeAndFlush(message);
         return task.thenApply(result -> {
             try {

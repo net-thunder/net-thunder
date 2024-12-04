@@ -72,7 +72,7 @@ public class IceClient implements TransportLifecycle, Runnable {
 
     public void sendNode(String srcVip, SDWanProtos.NodeInfo nodeInfo, byte[] bytes) {
         AtomicReference<DataTransport> ref = p2pTransportManager.getOrCreate(nodeInfo.getVip(), key -> {
-            electionProtocol.processOffer(nodeInfo)
+            electionProtocol.createOffer(nodeInfo)
                     .whenComplete((transport, ex) -> {
                         if (null != ex) {
                             log.info("electionError: vip={}, error={}", nodeInfo.getVip(), ex.getMessage());
@@ -93,7 +93,7 @@ public class IceClient implements TransportLifecycle, Runnable {
     }
 
     public void processAnswer(String reqId, SDWanProtos.P2pOffer p2pOffer) {
-        electionProtocol.processAnswer(reqId, p2pOffer)
+        electionProtocol.createAnswer(reqId, p2pOffer)
                 .thenAccept(transport -> {
                     p2pTransportManager.addTransport(p2pOffer.getSrcVIP(), transport);
                 });
@@ -171,7 +171,7 @@ public class IceClient implements TransportLifecycle, Runnable {
                 setShowICELog(config.getShowICELog());
             }
         }, () -> createStunPacketHandler("relayClient"));
-        ElectionProtocol.Config electionConfig = new ElectionProtocol.Config() {
+        ICEElectionProtocol.Config electionConfig = new ICEElectionProtocol.Config() {
             {
                 setTenantId(config.getTenantId());
                 setEncryptionKeyPair(encryptionKeyPair);
@@ -180,14 +180,14 @@ public class IceClient implements TransportLifecycle, Runnable {
                 setShowElectionLog(config.getShowElectionLog());
             }
         };
-        electionProtocol = new ElectionProtocol(electionConfig, p2pClient, relayClient) {
+        electionProtocol = new ICEElectionProtocol(electionConfig, p2pClient, relayClient) {
             @Override
-            protected CompletableFuture<SDWanProtos.P2pAnswer> sendOffer(SDWanProtos.P2pOffer p2pOffer, long timeout) {
-                return sdWanClient.offer(p2pOffer, timeout);
+            public CompletableFuture<SDWanProtos.P2pAnswer> sendOffer(String reqId, SDWanProtos.P2pOffer p2pOffer, long timeout) {
+                return sdWanClient.offer(reqId, p2pOffer, timeout);
             }
 
             @Override
-            protected void sendAnswer(String reqId, SDWanProtos.P2pAnswer p2pAnswer) {
+            public void sendAnswer(String reqId, SDWanProtos.P2pAnswer p2pAnswer) {
                 sdWanClient.answer(reqId, p2pAnswer);
             }
 
