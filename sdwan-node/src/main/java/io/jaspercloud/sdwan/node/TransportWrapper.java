@@ -1,6 +1,7 @@
 package io.jaspercloud.sdwan.node;
 
 import io.jaspercloud.sdwan.tranport.DataTransport;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,8 +14,8 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class TransportWrapper {
 
-    private BlockingQueue<byte[]> dataQueue = new LinkedBlockingQueue<>();
-    private DataTransport transport;
+    private BlockingQueue<DataPacket> dataQueue = new LinkedBlockingQueue<>();
+    private volatile DataTransport transport;
 
     public void setTransport(DataTransport transport) {
         this.transport = transport;
@@ -24,13 +25,33 @@ public class TransportWrapper {
         return transport;
     }
 
-    public void appendWaitData(byte[] bytes) {
-        dataQueue.add(bytes);
+    public void transfer(String vip, byte[] bytes) {
+        if (null == transport) {
+            //in the election
+            dataQueue.add(new DataPacket(vip, bytes));
+            return;
+        }
+        sendWaitData();
+        transport.transfer(vip, bytes);
     }
 
-    public List<byte[]> getWaitDataList() {
-        List<byte[]> list = new ArrayList<>();
+    public void sendWaitData() {
+        List<DataPacket> list = new ArrayList<>();
         dataQueue.drainTo(list);
-        return list;
+        list.forEach(packet -> {
+            transport.transfer(packet.getVip(), packet.getBytes());
+        });
+    }
+
+    @Getter
+    public static class DataPacket {
+
+        private String vip;
+        private byte[] bytes;
+
+        public DataPacket(String vip, byte[] bytes) {
+            this.vip = vip;
+            this.bytes = bytes;
+        }
     }
 }

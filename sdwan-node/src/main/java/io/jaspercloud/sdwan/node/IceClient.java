@@ -70,7 +70,7 @@ public class IceClient implements TransportLifecycle, Runnable {
     }
 
     public void sendNode(String srcVip, SDWanProtos.NodeInfo nodeInfo, byte[] bytes) {
-        TransportWrapper ref = p2pTransportManager.getOrCreate(nodeInfo.getVip(), wrapper -> {
+        TransportWrapper wrapper = p2pTransportManager.getOrCreate(nodeInfo.getVip(), ref -> {
             electionProtocol.createOffer(nodeInfo)
                     .whenComplete((transport, ex) -> {
                         if (null != ex) {
@@ -79,20 +79,12 @@ public class IceClient implements TransportLifecycle, Runnable {
                             return;
                         }
                         log.info("electionSuccess: vip={}, addressUri={}", nodeInfo.getVip(), transport.addressUri().toString());
-                        p2pTransportManager.addTransport(nodeInfo.getVip(), transport);
-                        List<byte[]> list = wrapper.getWaitDataList();
-                        list.forEach(data -> {
-                            transport.transfer(srcVip, data);
-                        });
+                        ref.setTransport(transport);
+                        p2pTransportManager.addTransport(nodeInfo.getVip(), ref);
+                        ref.sendWaitData();
                     });
         });
-        DataTransport transport = ref.getTransport();
-        if (null == transport) {
-            //in the election
-            ref.appendWaitData(bytes);
-            return;
-        }
-        transport.transfer(srcVip, bytes);
+        wrapper.transfer(srcVip, bytes);
     }
 
     public void processAnswer(String reqId, SDWanProtos.P2pOffer p2pOffer) {
