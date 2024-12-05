@@ -12,7 +12,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 /**
@@ -25,7 +24,7 @@ public class P2pTransportManager implements TransportLifecycle, Runnable {
     private SdWanNodeConfig config;
     private AtomicBoolean status = new AtomicBoolean();
     private ScheduledExecutorService scheduledExecutorService;
-    private Map<String, AtomicReference<DataTransport>> transportMap = new ConcurrentHashMap<>();
+    private Map<String, TransportWrapper> transportMap = new ConcurrentHashMap<>();
     private Map<String, String> heartMap = new ConcurrentHashMap<>();
 
     public void clear() {
@@ -33,26 +32,28 @@ public class P2pTransportManager implements TransportLifecycle, Runnable {
     }
 
     public DataTransport get(String ip) {
-        AtomicReference<DataTransport> ref = transportMap.get(ip);
+        TransportWrapper ref = transportMap.get(ip);
         if (null == ref) {
             return null;
         }
-        DataTransport transport = ref.get();
+        DataTransport transport = ref.getTransport();
         return transport;
     }
 
-    public AtomicReference<DataTransport> getOrCreate(String vip, Consumer<String> consumer) {
+    public TransportWrapper getOrCreate(String vip, Consumer<TransportWrapper> consumer) {
         return transportMap.computeIfAbsent(vip, key -> {
             log.info("getOrCreateDataTransport ip: {}", vip);
-            AtomicReference<DataTransport> ref = new AtomicReference<>();
-            consumer.accept(key);
+            TransportWrapper ref = new TransportWrapper();
+            consumer.accept(ref);
             return ref;
         });
     }
 
     public void addTransport(String vip, DataTransport transport) {
         log.info("addTransport vip: {}", vip);
-        transportMap.put(vip, new AtomicReference<>(transport));
+        TransportWrapper wrapper = new TransportWrapper();
+        wrapper.setTransport(transport);
+        transportMap.put(vip, wrapper);
     }
 
     public void deleteTransport(String vip) {
@@ -71,11 +72,11 @@ public class P2pTransportManager implements TransportLifecycle, Runnable {
         }
         try {
             for (String vip : transportMap.keySet()) {
-                AtomicReference<DataTransport> reference = transportMap.get(vip);
+                TransportWrapper reference = transportMap.get(vip);
                 if (null == reference) {
                     continue;
                 }
-                DataTransport transport = reference.get();
+                DataTransport transport = reference.getTransport();
                 if (null == transport) {
                     continue;
                 }
