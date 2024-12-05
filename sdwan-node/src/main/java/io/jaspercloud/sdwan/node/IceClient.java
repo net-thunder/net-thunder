@@ -23,6 +23,7 @@ import java.security.KeyPair;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -70,7 +71,7 @@ public class IceClient implements TransportLifecycle, Runnable {
     }
 
     public void sendNode(String srcVip, SDWanProtos.NodeInfo nodeInfo, byte[] bytes) {
-        TransportWrapper wrapper = p2pTransportManager.getOrCreate(nodeInfo.getVip(), ref -> {
+        AtomicReference<DataTransport> ref = p2pTransportManager.getOrCreate(nodeInfo.getVip(), key -> {
             electionProtocol.createOffer(nodeInfo)
                     .whenComplete((transport, ex) -> {
                         if (null != ex) {
@@ -79,12 +80,16 @@ public class IceClient implements TransportLifecycle, Runnable {
                             return;
                         }
                         log.info("electionSuccess: vip={}, addressUri={}", nodeInfo.getVip(), transport.addressUri().toString());
-                        ref.setTransport(transport);
-                        p2pTransportManager.addTransport(nodeInfo.getVip(), ref);
-                        ref.sendWaitData();
+                        p2pTransportManager.addTransport(nodeInfo.getVip(), transport);
+                        transport.transfer(srcVip, bytes);
                     });
         });
-        wrapper.transfer(srcVip, bytes);
+        DataTransport transport = ref.get();
+        if (null == transport) {
+            //in the election
+            return;
+        }
+        transport.transfer(srcVip, bytes);
     }
 
     public void processAnswer(String reqId, SDWanProtos.P2pOffer p2pOffer) {
