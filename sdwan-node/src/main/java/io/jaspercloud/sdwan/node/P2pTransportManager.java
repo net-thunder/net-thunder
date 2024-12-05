@@ -50,9 +50,13 @@ public class P2pTransportManager implements TransportLifecycle, Runnable {
     }
 
     public void addTransport(String vip, DataTransport transport) {
-        log.info("addTransport vip: {}", vip);
         TransportWrapper wrapper = new TransportWrapper();
         wrapper.setTransport(transport);
+        addTransport(vip, wrapper);
+    }
+
+    public void addTransport(String vip, TransportWrapper wrapper) {
+        log.info("addTransport vip: {}", vip);
         transportMap.put(vip, wrapper);
     }
 
