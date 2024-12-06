@@ -57,7 +57,7 @@ public class IpRouteTest {
     }
 
     private void testOutRoute(Cidr vipCidr, NodeDetailResponse detail) {
-        if (vipCidr.contains(detail.getVip())) {
+        if (vipCidr.contains(getDstIp())) {
             testRule(detail, RouteRuleDirectionEnum.Output, getDstIp());
             return;
         }

@@ -188,6 +188,13 @@ public class VirtualRouter implements TransportLifecycle {
     }
 
     private void processVnatIn(IpLayerPacket packet) {
+        String originalIp = vnatMappingCache.getIfPresent(packet.getIdentifier());
+        if (null != originalIp) {
+            packet.setSrcIP(originalIp);
+        }
+    }
+
+    private void processVnatOut(IpLayerPacket packet) {
         SDWanProtos.VNAT vnat = findVNAT(vnatMap, packet, IpLayerPacket::getDstIP);
         if (null != vnat) {
             String dstIP = packet.getDstIP();
@@ -195,13 +202,6 @@ public class VirtualRouter implements TransportLifecycle {
             packet.setDstIP(natIp);
             String identifier = packet.getIdentifier(true);
             vnatMappingCache.put(identifier, dstIP);
-        }
-    }
-
-    private void processVnatOut(IpLayerPacket packet) {
-        String originalIp = vnatMappingCache.getIfPresent(packet.getIdentifier());
-        if (null != originalIp) {
-            packet.setSrcIP(originalIp);
         }
     }
 
