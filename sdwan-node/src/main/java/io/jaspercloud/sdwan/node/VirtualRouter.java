@@ -10,6 +10,7 @@ import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.stun.*;
 import io.jaspercloud.sdwan.support.AsyncTask;
 import io.jaspercloud.sdwan.support.Cidr;
+import io.jaspercloud.sdwan.support.ClientVersion;
 import io.jaspercloud.sdwan.support.Multicast;
 import io.jaspercloud.sdwan.tranport.SdWanClient;
 import io.jaspercloud.sdwan.tranport.SdWanClientConfig;
@@ -39,8 +40,6 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class VirtualRouter implements TransportLifecycle {
-
-    public static final String NodeVersion = "1.0.2";
 
     private SdWanNodeConfig config;
     private volatile boolean showRouteRuleLog = false;
@@ -330,7 +329,7 @@ public class VirtualRouter implements TransportLifecycle {
                 .addAllAddressUri(Collections.emptyList())
                 .setOs(PlatformUtil.normalizedOs())
                 .setOsVersion(System.getProperty("os.name"))
-                .setNodeVersion(NodeVersion);
+                .setNodeVersion(ClientVersion.NodeVersion);
         SDWanProtos.RegistReq registReq = builder.build();
         //1.先regist
         SDWanProtos.RegistResp regResp = sdWanClient.regist(registReq, 3000).get();

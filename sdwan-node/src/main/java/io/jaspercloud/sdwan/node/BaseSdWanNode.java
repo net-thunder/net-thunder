@@ -24,8 +24,6 @@ import java.util.function.Consumer;
 @Slf4j
 public class BaseSdWanNode implements Lifecycle, Runnable {
 
-    public static final String NodeVersion = "1.0.2";
-
     private SdWanNodeConfig config;
 
     private VirtualRouter virtualRouter;
