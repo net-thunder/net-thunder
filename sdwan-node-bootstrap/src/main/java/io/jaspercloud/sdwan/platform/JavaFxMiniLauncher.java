@@ -4,9 +4,9 @@ import cn.hutool.crypto.digest.DigestUtil;
 import cn.hutool.json.JSONObject;
 import io.jaspercloud.sdwan.node.ConfigSystem;
 import io.jaspercloud.sdwan.node.SdWanNodeConfig;
-import io.jaspercloud.sdwan.node.TunSdWanNode;
 import io.jaspercloud.sdwan.node.support.PathApi;
 import io.jaspercloud.sdwan.platform.ui2.MainWindowController;
+import io.jaspercloud.sdwan.support.ClientVersion;
 import io.jaspercloud.sdwan.support.HttpApi;
 import io.jaspercloud.sdwan.util.AppFile;
 import io.jaspercloud.sdwan.util.PlatformUtil;
@@ -98,7 +98,7 @@ public class JavaFxMiniLauncher extends Application {
                 }
             }
         });
-        primaryStage.setTitle("net-thunder " + TunSdWanNode.NodeVersion);
+        primaryStage.setTitle("net-thunder " + ClientVersion.NodeVersion);
         primaryStage.setResizable(false);
         primaryStage.setScene(new Scene(root, 400, 350));
         primaryStage.show();
