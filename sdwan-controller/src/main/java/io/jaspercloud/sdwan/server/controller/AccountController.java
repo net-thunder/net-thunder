@@ -3,7 +3,7 @@ package io.jaspercloud.sdwan.server.controller;
 import cn.dev33.satoken.stp.SaLoginModel;
 import cn.dev33.satoken.stp.StpUtil;
 import io.jaspercloud.sdwan.exception.ProcessException;
-import io.jaspercloud.sdwan.server.controller.request.LoginRequest;
+import io.jaspercloud.sdwan.server.controller.request.AccountRequest;
 import io.jaspercloud.sdwan.server.controller.response.LoginResponse;
 import io.jaspercloud.sdwan.server.controller.response.SessionInfo;
 import io.jaspercloud.sdwan.server.entity.Account;
@@ -25,7 +25,7 @@ public class AccountController {
     private TenantService tenantService;
 
     @PostMapping("/login")
-    public LoginResponse login(@Validated @RequestBody LoginRequest request) {
+    public LoginResponse login(@Validated(AccountRequest.LoginGroup.class) @RequestBody AccountRequest request) {
         Account account = accountService.queryAccount(request.getUsername(), request.getPassword());
         if (null == account) {
             throw new ProcessException("账号密码错误");
@@ -49,6 +49,13 @@ public class AccountController {
             response.setTenantId(tenant.getId());
         }
         return response;
+    }
+
+    @PostMapping("/updatePassword")
+    public void updatePassword(@Validated(AccountRequest.UpdatePasswordGroup.class) @RequestBody AccountRequest request) {
+        String token = StpUtil.getTokenValue();
+        SessionInfo sessionInfo = (SessionInfo) StpUtil.getSession().getTokenSign(token).getTag();
+        accountService.updatePassword(sessionInfo.getAccountId(), request);
     }
 
     @GetMapping("/userInfo")
