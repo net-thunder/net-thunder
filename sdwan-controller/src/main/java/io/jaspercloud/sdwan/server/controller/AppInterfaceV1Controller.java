@@ -55,8 +55,8 @@ public class AppInterfaceV1Controller {
         }
         appResponse.setCode(HttpStatus.OK.value());
         AppCheckResponse appCheckResponse = new AppCheckResponse();
-        appCheckResponse.setPath(String.format("/api/storage/%s", appVersion.getPath()));
-        appCheckResponse.setMd5(appVersion.getMd5());
+        appCheckResponse.setPath(String.format("/api/storage/%s", appVersion.getJarPath()));
+        appCheckResponse.setMd5(appVersion.getJarMd5());
         appResponse.setData(appCheckResponse);
         return appResponse;
     }

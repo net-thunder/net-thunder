@@ -38,7 +38,7 @@ public class AppVersionController {
     @GetMapping("/lastVersion")
     public Map<String, String> lastVersionList() {
         List<AppVersion> list = appVersionService.lastVersionList();
-        Map<String, String> collect = list.stream().collect(Collectors.toMap(e -> e.getPlatform(), e -> e.getPath()));
+        Map<String, String> collect = list.stream().collect(Collectors.toMap(e -> e.getPlatform(), e -> e.getZipPath()));
         return collect;
     }
 }

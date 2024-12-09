@@ -11,8 +11,10 @@ create table biz_app_version
     id          bigint auto_increment primary key,
     name        varchar(128)                        not null,
     description varchar(128) null,
-    path        text                                not null,
-    md5         varchar(64)                         not null,
+    zip_path    text                                not null,
+    zip_md5     varchar(64)                         not null,
+    jar_path    text                                not null,
+    jar_md5     varchar(64)                         not null,
     platform    varchar(64)                         not null,
     create_time timestamp default CURRENT_TIMESTAMP not null
 );
@@ -65,6 +67,7 @@ create table biz_node
     description varchar(128) null,
     mac         varchar(64) not null,
     vip         varchar(16) null,
+    mesh        tinyint     not null default false,
     enable      tinyint     not null,
     tenant_id   bigint      not null
 );

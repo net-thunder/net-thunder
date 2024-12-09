@@ -6,5 +6,7 @@ public interface StorageService {
 
     String saveFile(MultipartFile multipartFile);
 
-    String calcMd5(String path);
+    String unzipFile(String zipFilePath, String platform, String entryFileName);
+
+    String calcFileMd5(String path);
 }
