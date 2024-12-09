@@ -1,6 +1,7 @@
 package io.jaspercloud.sdwan.server.controller.request;
 
 import io.jaspercloud.sdwan.server.controller.common.ValidGroup;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,7 +10,7 @@ import lombok.Setter;
 @Setter
 public class AccountRequest {
 
-    @Pattern(regexp = ValidGroup.UNAME_PWD, groups = {LoginGroup.class})
+    @NotEmpty(groups = {LoginGroup.class})
     private String username;
     @Pattern(regexp = ValidGroup.UNAME_PWD, groups = {LoginGroup.class, UpdatePasswordGroup.class})
     private String password;

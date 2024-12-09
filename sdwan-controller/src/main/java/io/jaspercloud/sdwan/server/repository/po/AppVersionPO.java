@@ -15,8 +15,14 @@ public class AppVersionPO extends BasePO<AppVersionPO> {
 
     private String name;
     private String description;
-    private String path;
-    private String md5;
+    @TableField("zip_path")
+    private String zipPath;
+    @TableField("zip_md5")
+    private String zipMd5;
+    @TableField("jar_path")
+    private String jarPath;
+    @TableField("jar_md5")
+    private String jarMd5;
     private String platform;
     @TableField("create_time")
     private Date createTime;
