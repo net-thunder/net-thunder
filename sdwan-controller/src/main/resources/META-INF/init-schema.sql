@@ -13,7 +13,10 @@ create table biz_app_version
     name        varchar(128)                        not null,
     description varchar(128),
     path        clob                                not null,
-    md5         varchar(64)                         not null,
+    zip_path    clob                                not null,
+    zip_md5     varchar(64)                         not null,
+    jar_path    clob                                not null,
+    jar_md5     varchar(64)                         not null,
     platform    varchar(64)                         not null,
     create_time timestamp default CURRENT_TIMESTAMP not null,
     primary key (id)
