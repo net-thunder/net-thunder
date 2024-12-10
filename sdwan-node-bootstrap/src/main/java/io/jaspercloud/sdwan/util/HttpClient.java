@@ -4,10 +4,13 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.*;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.springframework.util.StreamUtils;
 
 import java.io.*;
+import java.net.SocketException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -20,8 +23,8 @@ public class HttpClient {
         httpClient = new OkHttpClient.Builder()
                 .connectTimeout(30 * 1000, TimeUnit.MILLISECONDS)
                 .callTimeout(30 * 1000, TimeUnit.MILLISECONDS)
-                .writeTimeout(30 * 1000, TimeUnit.MILLISECONDS)
-                .readTimeout(30 * 1000, TimeUnit.MILLISECONDS)
+                .writeTimeout(120 * 1000, TimeUnit.MILLISECONDS)
+                .readTimeout(120 * 1000, TimeUnit.MILLISECONDS)
                 .build();
     }
 
@@ -37,47 +40,53 @@ public class HttpClient {
         }
     }
 
-    public static void download(String url, File file, Consumer<Double> consumer, Runnable finish) throws IOException {
-        httpClient.newCall(new Request.Builder().get().url(url).build()).enqueue(new Callback() {
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                try {
-                    if (200 != response.code()) {
-                        MessageBox.showError("更新下载请求失败");
-                        log.info("http: code={}, url={}", response.code(), url);
-                        System.exit(0);
-                        return;
+    public static void download(String url, File file, Consumer<Double> consumer, Runnable finish) throws Exception {
+        boolean hasError;
+        do {
+            try {
+                downloadRange(url, file, consumer, finish);
+                hasError = false;
+            } catch (InterruptedIOException | SocketException e) {
+                log.error(String.format("download timeout: %s", e.getMessage()), e);
+                hasError = true;
+            }
+        } while (hasError);
+    }
+
+    private static void downloadRange(String url, File file, Consumer<Double> consumer, Runnable finish) throws Exception {
+        long current = getFileLength(file);
+        Request request = new Request.Builder().get()
+                .url(url)
+                .header("Range", String.format("bytes=%s-", current))
+                .build();
+        try (Response response = httpClient.newCall(request).execute()) {
+            if (!(200 == response.code() || 206 == response.code())) {
+                throw new ProcessException("更新下载请求失败");
+            }
+            long total = Long.parseLong(response.headers().get("Content-Length"));
+            try (RandomAccessFile raf = new RandomAccessFile(file, "rw")) {
+                raf.seek(current);
+                try (BufferedInputStream input = new BufferedInputStream(response.body().byteStream())) {
+                    byte[] buf = new byte[StreamUtils.BUFFER_SIZE];
+                    int read;
+                    while (-1 != (read = input.read(buf, 0, buf.length))) {
+                        raf.write(buf, 0, read);
+                        current += read;
+                        double progress = 1.0 * current / total;
+                        consumer.accept(progress);
                     }
-                    try (BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(file))) {
-                        try (BufferedInputStream input = new BufferedInputStream(response.body().byteStream())) {
-                            long total = response.body().contentLength();
-                            byte[] buf = new byte[StreamUtils.BUFFER_SIZE];
-                            int read;
-                            long current = 0;
-                            while (-1 != (read = input.read(buf, 0, buf.length))) {
-                                output.write(buf, 0, read);
-                                current += read;
-                                double progress = 1.0 * current / total;
-                                consumer.accept(progress);
-                            }
-                        }
-                    }
-                    finish.run();
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                    MessageBox.showError("更新下载中断");
-                    System.exit(0);
-                } finally {
-                    response.close();
                 }
             }
+            finish.run();
+        }
+    }
 
-            @Override
-            public void onFailure(Call call, IOException e) {
-                log.error(e.getMessage(), e);
-                MessageBox.showError("更新下载失败");
-                System.exit(0);
-            }
-        });
+    private static long getFileLength(File file) throws Exception {
+        if (!file.exists()) {
+            return 0;
+        }
+        try (RandomAccessFile raf = new RandomAccessFile(file, "rw")) {
+            return raf.length();
+        }
     }
 }

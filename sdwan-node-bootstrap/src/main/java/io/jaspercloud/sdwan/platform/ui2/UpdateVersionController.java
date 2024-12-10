@@ -14,6 +14,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Control;
+import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,9 @@ import java.io.IOException;
 
 @Slf4j
 public class UpdateVersionController implements EventHandler<ActionEvent> {
+
+    @FXML
+    private Label label;
 
     @FXML
     private ProgressBar progress;
@@ -76,25 +80,33 @@ public class UpdateVersionController implements EventHandler<ActionEvent> {
     }
 
     public void download(String downloadUrl, String md5Hex) throws Exception {
-        String name = String.format("sdwan-node-bootstrap-%s.jar", System.currentTimeMillis());
-        File file = new File(PathApi.getAppDir(), name);
-        HttpClient.download(downloadUrl, file, (e) -> {
-            Platform.runLater(() -> {
-                progress.setProgress(e);
-            });
-        }, () -> {
-            String code = DigestUtil.md5Hex(file);
-            if (!StringUtils.equals(code, md5Hex)) {
-                MessageBox.showError("校验文件md5失败");
-                System.exit(0);
-                return;
+        new Thread(() -> {
+            try {
+                String name = String.format("sdwan-node-bootstrap-%s.jar", System.currentTimeMillis());
+                File file = new File(PathApi.getAppDir(), name);
+                HttpClient.download(downloadUrl, file, (e) -> {
+                    Platform.runLater(() -> {
+                        progress.setProgress(e);
+                    });
+                }, () -> {
+                    String code = DigestUtil.md5Hex(file);
+                    if (!StringUtils.equals(code, md5Hex)) {
+                        MessageBox.showError("校验文件md5失败");
+                        System.exit(0);
+                        return;
+                    }
+                    updateCfg(name);
+                    Platform.runLater(() -> {
+                        label.setText("下载完成");
+                        btn.setText("完成");
+                    });
+                    downloadFinish = true;
+                });
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                MessageBox.showError("更新下载请求失败");
             }
-            updateCfg(name);
-            Platform.runLater(() -> {
-                btn.setText("完成");
-            });
-            downloadFinish = true;
-        });
+        }).start();
     }
 
     private void updateCfg(String name) {
