@@ -17,9 +17,10 @@ public class NodeDetailResponse {
     private String os;
     private String osVersion;
     private String nodeVersion;
-    private List<ICEAddress> addressList;
+    private Boolean mesh;
     private String ip;
     private String vip;
+    private List<ICEAddress> addressList;
     private List<Group> groupList;
     private List<Route> routeList;
     private List<RouteRule> routeRuleList;

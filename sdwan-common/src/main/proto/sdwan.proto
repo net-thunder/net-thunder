@@ -71,6 +71,7 @@ message RegistReq {
   optional string os = 5;
   optional string osVersion = 6;
   optional string nodeVersion = 7;
+  optional bool mesh = 8;
 }
 
 message RegistResp {

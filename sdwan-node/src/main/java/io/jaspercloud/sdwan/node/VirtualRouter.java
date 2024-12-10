@@ -329,7 +329,8 @@ public class VirtualRouter implements TransportLifecycle {
                 .addAllAddressUri(Collections.emptyList())
                 .setOs(PlatformUtil.normalizedOs())
                 .setOsVersion(System.getProperty("os.name"))
-                .setNodeVersion(ClientVersion.NodeVersion);
+                .setNodeVersion(ClientVersion.NodeVersion)
+                .setMesh(config.getNetMesh());
         SDWanProtos.RegistReq registReq = builder.build();
         //1.先regist
         SDWanProtos.RegistResp regResp = sdWanClient.regist(registReq, 3000).get();

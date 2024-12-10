@@ -16,6 +16,7 @@ public class NodeResponse {
     private String nodeVersion;
     private String ip;
     private String vip;
+    private Boolean mesh;
     private Boolean enable;
     private Boolean online;
     private Long tenantId;

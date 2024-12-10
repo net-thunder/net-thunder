@@ -1,6 +1,8 @@
 package io.jaspercloud.sdwan.server.service;
 
+import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.server.controller.request.EditNodeRequest;
+import io.jaspercloud.sdwan.server.controller.request.NodeQueryRequest;
 import io.jaspercloud.sdwan.server.controller.response.NodeDetailResponse;
 import io.jaspercloud.sdwan.server.controller.response.NodeResponse;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
@@ -16,7 +18,7 @@ public interface NodeService {
 
     void del(EditNodeRequest request);
 
-    List<NodeResponse> list();
+    List<NodeResponse> list(NodeQueryRequest request);
 
     PageResponse<NodeResponse> page();
 
@@ -28,7 +30,7 @@ public interface NodeService {
 
     List<Node> queryByTenantId(Long tenantId);
 
-    NodeDetailResponse assignNodeInfo(Long tenantId, String macAddress);
+    NodeDetailResponse assignNodeInfo(Long tenantId, SDWanProtos.RegistReq registReq);
 
     boolean existsNode(Long nodeId);
 }

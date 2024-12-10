@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import io.jaspercloud.sdwan.server.config.TenantContextHandler;
 import io.jaspercloud.sdwan.server.controller.common.ValidGroup;
 import io.jaspercloud.sdwan.server.controller.request.EditNodeRequest;
+import io.jaspercloud.sdwan.server.controller.request.NodeQueryRequest;
 import io.jaspercloud.sdwan.server.controller.request.TestIpRequest;
 import io.jaspercloud.sdwan.server.controller.response.ICEAddress;
 import io.jaspercloud.sdwan.server.controller.response.NodeDetailResponse;
@@ -73,9 +74,6 @@ public class NodeController extends BaseController {
                 ChannelAttributes attr = ChannelAttributes.attr(channel);
                 InetSocketAddress remotedAddress = (InetSocketAddress) channel.remoteAddress();
                 nodeResponse.setIp(remotedAddress.getHostString());
-                nodeResponse.setOs(attr.getOs());
-                nodeResponse.setOsVersion(attr.getOsVersion());
-                nodeResponse.setNodeVersion(attr.getNodeVersion());
                 List<String> addressUriList = attr.getAddressUriList();
                 if (CollectionUtil.isNotEmpty(addressUriList)) {
                     List<ICEAddress> collect = addressUriList.stream().map(e -> {
@@ -102,19 +100,15 @@ public class NodeController extends BaseController {
         return nodeResponse;
     }
 
-    @GetMapping("/list")
-    public List<NodeResponse> list() {
-        List<NodeResponse> list = nodeService.list();
+    @PostMapping("/list")
+    public List<NodeResponse> list(@RequestBody NodeQueryRequest request) {
+        List<NodeResponse> list = nodeService.list(request);
         list.forEach(e -> {
             Tenant tenant = tenantService.queryById(e.getTenantId());
             Channel channel = sdWanServer.getChannelSpace(tenant.getCode(), e.getVip());
             if (null != channel) {
-                ChannelAttributes attr = ChannelAttributes.attr(channel);
                 InetSocketAddress remotedAddress = (InetSocketAddress) channel.remoteAddress();
                 e.setIp(remotedAddress.getHostString());
-                e.setOs(attr.getOs());
-                e.setOsVersion(attr.getOsVersion());
-                e.setNodeVersion(attr.getNodeVersion());
             }
             e.setOnline(null != channel);
         });
