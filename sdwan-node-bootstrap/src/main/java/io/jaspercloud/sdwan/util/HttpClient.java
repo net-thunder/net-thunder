@@ -54,16 +54,22 @@ public class HttpClient {
     }
 
     private static void downloadRange(String url, File file, Consumer<Double> consumer, Runnable finish) throws Exception {
+        long total;
+        try (Response response = httpClient.newCall(new Request.Builder().head().url(url).build()).execute()) {
+            if (200 != response.code()) {
+                throw new ProcessException("更新下载请求失败");
+            }
+            total = Long.parseLong(response.headers().get("Content-Length"));
+        }
         long current = getFileLength(file);
         Request request = new Request.Builder().get()
                 .url(url)
                 .header("Range", String.format("bytes=%s-", current))
                 .build();
         try (Response response = httpClient.newCall(request).execute()) {
-            if (!(200 == response.code() || 206 == response.code())) {
+            if (206 != response.code()) {
                 throw new ProcessException("更新下载请求失败");
             }
-            long total = Long.parseLong(response.headers().get("Content-Length"));
             try (RandomAccessFile raf = new RandomAccessFile(file, "rw")) {
                 raf.seek(current);
                 try (BufferedInputStream input = new BufferedInputStream(response.body().byteStream())) {

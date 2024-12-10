@@ -89,6 +89,9 @@ public class UpdateVersionController implements EventHandler<ActionEvent> {
                         progress.setProgress(e);
                     });
                 }, () -> {
+                    Platform.runLater(() -> {
+                        label.setText("校验文件");
+                    });
                     String code = DigestUtil.md5Hex(file);
                     if (!StringUtils.equals(code, md5Hex)) {
                         MessageBox.showError("校验文件md5失败");
