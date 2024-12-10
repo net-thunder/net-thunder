@@ -77,7 +77,7 @@ create table biz_node
     os           varchar(64),
     os_version   varchar(64),
     node_version varchar(64),
-    mesh         smallint    not null default false,
+    mesh         smallint    not null default 0,
     enable       smallint    not null,
     tenant_id    bigint      not null,
     primary key (id)
