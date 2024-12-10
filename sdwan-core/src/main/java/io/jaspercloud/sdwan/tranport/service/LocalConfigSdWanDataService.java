@@ -104,14 +104,14 @@ public class LocalConfigSdWanDataService implements SdWanDataService {
     }
 
     @Override
-    public NodeConfig assignNodeInfo(Channel channel, String tenantCode, String macAddress) {
-        TenantSpace tenantSpace = tenantSpaceMap.get(tenantCode);
+    public NodeConfig assignNodeInfo(Channel channel, SDWanProtos.RegistReq registReq) {
+        TenantSpace tenantSpace = tenantSpaceMap.get(registReq.getTenantId());
         if (null == tenantSpace) {
             throw new ProcessException("not found tenant");
         }
-        String vip = assignVip(channel, tenantSpace, macAddress);
+        String vip = assignVip(channel, tenantSpace, registReq.getMacAddress());
         NodeConfig nodeConfig = new NodeConfig();
-        nodeConfig.setMac(macAddress);
+        nodeConfig.setMac(registReq.getMacAddress());
         nodeConfig.setVip(vip);
         nodeConfig.setRouteConfigList(tenantSpace.getRouteList());
         nodeConfig.setRouteRuleConfigList(tenantSpace.getRouteRuleList());

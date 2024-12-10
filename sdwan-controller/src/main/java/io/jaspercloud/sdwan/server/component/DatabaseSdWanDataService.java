@@ -1,6 +1,7 @@
 package io.jaspercloud.sdwan.server.component;
 
 import cn.hutool.core.collection.CollectionUtil;
+import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.server.config.TenantContextHandler;
 import io.jaspercloud.sdwan.server.controller.response.NodeDetailResponse;
@@ -45,14 +46,14 @@ public class DatabaseSdWanDataService implements SdWanDataService {
     }
 
     @Override
-    public NodeConfig assignNodeInfo(Channel channel, String tenantCode, String macAddress) {
-        TenantResponse tenantResponse = tenantService.queryByTenantCode(tenantCode);
+    public NodeConfig assignNodeInfo(Channel channel, SDWanProtos.RegistReq registReq) {
+        TenantResponse tenantResponse = tenantService.queryByTenantCode(registReq.getTenantId());
         if (null == tenantResponse) {
             throw new ProcessException("not found tenant");
         }
         TenantContextHandler.setTenantId(tenantResponse.getId());
         try {
-            NodeDetailResponse detailResponse = nodeService.assignNodeInfo(tenantResponse.getId(), macAddress);
+            NodeDetailResponse detailResponse = nodeService.assignNodeInfo(tenantResponse.getId(), registReq);
             NodeConfig nodeConfig = new NodeConfig();
             nodeConfig.setMac(detailResponse.getMac());
             nodeConfig.setVip(detailResponse.getVip());

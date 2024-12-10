@@ -9,6 +9,7 @@ import io.jaspercloud.sdwan.exception.ProcessCodeException;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.server.config.TenantContextHandler;
 import io.jaspercloud.sdwan.server.controller.request.EditNodeRequest;
+import io.jaspercloud.sdwan.server.controller.request.NodeQueryRequest;
 import io.jaspercloud.sdwan.server.controller.response.NodeDetailResponse;
 import io.jaspercloud.sdwan.server.controller.response.NodeResponse;
 import io.jaspercloud.sdwan.server.controller.response.PageResponse;
@@ -157,8 +158,10 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
     }
 
     @Override
-    public List<NodeResponse> list() {
-        List<Node> list = nodeRepository.query().list();
+    public List<NodeResponse> list(NodeQueryRequest request) {
+        List<Node> list = nodeRepository.query()
+                .eq(null != request.getMeshOnly(), Node::getMesh, request.getMeshOnly())
+                .list();
         List<NodeResponse> collect = list.stream().map(e -> {
             NodeResponse nodeResponse = BeanUtil.toBean(e, NodeResponse.class);
             return nodeResponse;
@@ -248,17 +251,17 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
     }
 
     @Override
-    public NodeDetailResponse assignNodeInfo(Long tenantId, String macAddress) {
+    public NodeDetailResponse assignNodeInfo(Long tenantId, SDWanProtos.RegistReq registReq) {
         try (LockGroup.Lock lock = lockGroup.getLock(tenantId)) {
             Node node = nodeRepository.query()
-                    .eq(Node::getMac, macAddress)
+                    .eq(Node::getMac, registReq.getMacAddress())
                     .one();
             if (null == node) {
                 Tenant tenant = tenantService.queryById(tenantId);
                 NodePO nodePO = new NodePO();
                 transactionTemplate.executeWithoutResult(s -> {
                     nodePO.setName(ShortUUID.gen());
-                    nodePO.setMac(macAddress);
+                    nodePO.setMac(registReq.getMacAddress());
                     if (tenant.getNodeGrant()) {
                         nodePO.setEnable(false);
                     } else {
@@ -271,15 +274,21 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
                 node = BeanUtil.toBean(nodePO, Node.class);
             }
             if (StringUtils.isEmpty(node.getVip())) {
+                //先判断vip为空，返回未授权
                 Tenant tenant = tenantService.queryById(tenantId);
                 if (tenant.getNodeGrant() && false == node.getEnable()) {
                     throw new ProcessCodeException(SDWanProtos.MessageCode.NotGrant_VALUE);
                 }
                 String vip = assignIp(tenant);
                 node.setVip(vip);
-                nodeRepository.updateById(node);
             }
+            node.setOs(registReq.getOs());
+            node.setOsVersion(registReq.getOsVersion());
+            node.setNodeVersion(registReq.getNodeVersion());
+            node.setMesh(registReq.getMesh());
+            nodeRepository.updateById(node);
             if (!node.getEnable()) {
+                //再判断是否禁用
                 throw new ProcessCodeException(SDWanProtos.MessageCode.Disabled_VALUE);
             }
             NodeDetailResponse nodeDetail = BeanUtil.toBean(node, NodeDetailResponse.class);
