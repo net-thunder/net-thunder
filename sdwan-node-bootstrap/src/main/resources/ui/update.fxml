@@ -9,7 +9,7 @@
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="io.jaspercloud.sdwan.platform.ui2.UpdateVersionController">
     <top>
-        <Label text="更新中" BorderPane.alignment="CENTER" prefWidth="400">
+        <Label fx:id="label" text="更新中" BorderPane.alignment="CENTER" prefWidth="400">
             <BorderPane.margin>
                 <Insets bottom="10.0"/>
             </BorderPane.margin>

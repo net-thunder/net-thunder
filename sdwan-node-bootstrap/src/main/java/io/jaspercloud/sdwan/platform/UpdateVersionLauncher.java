@@ -30,10 +30,10 @@ public class UpdateVersionLauncher extends Application {
                 System.exit(0);
             }
         });
-        controller.download(downloadUrl, md5Hex);
         primaryStage.setTitle("net-thunder");
         primaryStage.setResizable(false);
         primaryStage.setScene(new Scene(root, 400, 150));
         primaryStage.show();
+        controller.download(downloadUrl, md5Hex);
     }
 }
