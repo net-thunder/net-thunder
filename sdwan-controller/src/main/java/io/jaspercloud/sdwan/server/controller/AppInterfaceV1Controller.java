@@ -6,6 +6,7 @@ import io.jaspercloud.sdwan.server.controller.response.AppCheckResponse;
 import io.jaspercloud.sdwan.server.entity.AppVersion;
 import io.jaspercloud.sdwan.server.service.AppVersionService;
 import jakarta.annotation.Resource;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -50,6 +51,10 @@ public class AppInterfaceV1Controller {
         AppVersion appVersion = appVersionService.queryLastVersion(platform);
         AppResponse<AppCheckResponse> appResponse = new AppResponse<>();
         if (null == appVersion) {
+            appResponse.setCode(HttpStatus.NO_CONTENT.value());
+            return appResponse;
+        }
+        if (StringUtils.equals(md5, appVersion.getJarMd5())) {
             appResponse.setCode(HttpStatus.NO_CONTENT.value());
             return appResponse;
         }
