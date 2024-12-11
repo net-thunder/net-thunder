@@ -14,12 +14,18 @@ sa-token:
   # 是否输出操作日志
   is-log: true
 
+server:
+  port: 11805
+
 spring:
   servlet:
     multipart:
       enabled: true
       max-file-size: 1GB
       max-request-size: 1GB
+  datasource:
+    dbType: derby
+    path: ${user.dir}/derby
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
@@ -29,17 +35,17 @@ mybatis-plus:
 
 sdwan:
   httpServer:
-    controllerServer: 127.0.0.1:11800
+    controllerServer: 127.0.0.1:${server.port}
     storage: ${user.dir}/storage
   sdwanServer:
     enable: true
     port: 1800
     heartTimeout: 30000
-  relayServer:
-    enable: true
-    bindPort: 2478
-    heartTimeout: 15000
   stunServer:
     enable: true
     bindHost: 127.0.0.1
     bindPort: 3478
+  relayServer:
+    enable: true
+    bindPort: 2478
+    heartTimeout: 15000
