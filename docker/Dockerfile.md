@@ -1,6 +1,6 @@
 docker镜像打包
 ```shell
-docker build -t net-thunder .
+docker build -t jaspercloud/net-thunder .
 ```
 
 启动服务端
@@ -15,7 +15,7 @@ docker run -d \
 -e sdwan.stunServer.bindHost=127.0.0.1 \
 -e sdwan.stunServer.bindPort=3478 \
 -e sdwan.relayServer.bindPort=2478 \
-net-thunder server
+jaspercloud/net-thunder server
 ```
 
 启动mesh端
@@ -26,8 +26,13 @@ docker run -d \
 --restart=always \
 --mac-address 42:ac:bd:00:00:00 \
 -e tenantId=default \
--e httpServer=127.0.0.1:11805 \
-net-thunder mesh
+-e controllerServer=127.0.0.1:11805 \
+-e netMesh=true \
+-e showVRouterLog=true \
+-e showICELog=true \
+-e showElectionLog=true \
+-e showRouteRuleLog=true \
+jaspercloud/net-thunder mesh
 ```
 
 
