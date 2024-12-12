@@ -35,7 +35,7 @@ mybatis-plus:
 
 sdwan:
   httpServer:
-    controllerAddress: 127.0.0.1:${server.port}
+    controllerAddress: 127.0.0.1:${sdwan.controllerServer.port}
     storage: ${user.dir}/storage
   controllerServer:
     enable: true
