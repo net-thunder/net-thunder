@@ -17,7 +17,7 @@ import io.jaspercloud.sdwan.server.service.NodeService;
 import io.jaspercloud.sdwan.server.service.TenantService;
 import io.jaspercloud.sdwan.support.AddressUri;
 import io.jaspercloud.sdwan.support.ChannelAttributes;
-import io.jaspercloud.sdwan.tranport.SdWanServer;
+import io.jaspercloud.sdwan.tranport.ControllerServer;
 import io.jaspercloud.sdwan.util.AddressType;
 import io.netty.channel.Channel;
 import jakarta.annotation.Resource;
@@ -39,7 +39,7 @@ public class NodeController extends BaseController {
     private TenantService tenantService;
 
     @Resource
-    private SdWanServer sdWanServer;
+    private ControllerServer controllerServer;
 
     @PostMapping("/add")
     public void add(@Validated(ValidGroup.Add.class) @RequestBody EditNodeRequest request) {
@@ -69,7 +69,7 @@ public class NodeController extends BaseController {
         }
         Tenant tenant = tenantService.queryById(nodeResponse.getTenantId());
         {
-            Channel channel = sdWanServer.getChannelSpace(tenant.getCode(), nodeResponse.getVip());
+            Channel channel = controllerServer.getChannelSpace(tenant.getCode(), nodeResponse.getVip());
             if (null != channel) {
                 ChannelAttributes attr = ChannelAttributes.attr(channel);
                 InetSocketAddress remotedAddress = (InetSocketAddress) channel.remoteAddress();
@@ -94,7 +94,7 @@ public class NodeController extends BaseController {
             nodeResponse.setOnline(null != channel);
         }
         nodeResponse.getNodeList().forEach(e -> {
-            Channel channel = sdWanServer.getChannelSpace(tenant.getCode(), e.getVip());
+            Channel channel = controllerServer.getChannelSpace(tenant.getCode(), e.getVip());
             e.setOnline(null != channel);
         });
         return nodeResponse;
@@ -105,7 +105,7 @@ public class NodeController extends BaseController {
         List<NodeResponse> list = nodeService.list(request);
         list.forEach(e -> {
             Tenant tenant = tenantService.queryById(e.getTenantId());
-            Channel channel = sdWanServer.getChannelSpace(tenant.getCode(), e.getVip());
+            Channel channel = controllerServer.getChannelSpace(tenant.getCode(), e.getVip());
             if (null != channel) {
                 InetSocketAddress remotedAddress = (InetSocketAddress) channel.remoteAddress();
                 e.setIp(remotedAddress.getHostString());

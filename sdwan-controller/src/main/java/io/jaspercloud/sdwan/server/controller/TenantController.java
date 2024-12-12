@@ -16,7 +16,7 @@ import io.jaspercloud.sdwan.server.service.NodeService;
 import io.jaspercloud.sdwan.server.service.TenantService;
 import io.jaspercloud.sdwan.tranport.P2pClient;
 import io.jaspercloud.sdwan.tranport.RelayClient;
-import io.jaspercloud.sdwan.tranport.SdWanServer;
+import io.jaspercloud.sdwan.tranport.ControllerServer;
 import io.jaspercloud.sdwan.util.SocketAddressUtil;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +42,7 @@ public class TenantController {
     private NodeService nodeService;
 
     @Resource
-    private SdWanServer sdWanServer;
+    private ControllerServer controllerServer;
 
     @PostMapping("/add")
     public void add(@Validated(ValidGroup.Add.class) @RequestBody EditTenantRequest request) {
@@ -75,7 +75,7 @@ public class TenantController {
         tenantResponse.setUsername(account.getUsername());
         List<Node> nodeList = nodeService.queryByTenantId(tenant.getId());
         tenantResponse.setTotalNode(nodeList.size());
-        int online = sdWanServer.getOnlineChannel(tenant.getCode());
+        int online = controllerServer.getOnlineChannel(tenant.getCode());
         tenantResponse.setOnlineNode(online);
         return tenantResponse;
     }
@@ -100,7 +100,7 @@ public class TenantController {
             TenantContextHandler.setTenantId(e.getId());
             List<Node> nodeList = nodeService.queryByTenantId(e.getId());
             tenantResponse.setTotalNode(nodeList.size());
-            int online = sdWanServer.getOnlineChannel(e.getCode());
+            int online = controllerServer.getOnlineChannel(e.getCode());
             tenantResponse.setOnlineNode(online);
             return tenantResponse;
         }).collect(Collectors.toList());
@@ -116,7 +116,7 @@ public class TenantController {
             TenantContextHandler.setTenantId(e.getId());
             List<Node> nodeList = nodeService.queryByTenantId(e.getId());
             tenantResponse.setTotalNode(nodeList.size());
-            int online = sdWanServer.getOnlineChannel(e.getCode());
+            int online = controllerServer.getOnlineChannel(e.getCode());
             tenantResponse.setOnlineNode(online);
             return tenantResponse;
         }).collect(Collectors.toList());

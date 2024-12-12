@@ -35,9 +35,9 @@ mybatis-plus:
 
 sdwan:
   httpServer:
-    controllerServer: 127.0.0.1:${server.port}
+    controllerAddress: 127.0.0.1:${server.port}
     storage: ${user.dir}/storage
-  sdwanServer:
+  controllerServer:
     enable: true
     port: 1800
     heartTimeout: 30000

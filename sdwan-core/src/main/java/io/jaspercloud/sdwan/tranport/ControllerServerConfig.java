@@ -17,7 +17,7 @@ import java.util.Map;
 @NoArgsConstructor
 @Getter
 @Setter
-public class SdWanServerConfig {
+public class ControllerServerConfig {
 
     private int port = 1800;
     private long heartTimeout = 30 * 1000;

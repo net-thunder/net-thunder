@@ -3,13 +3,13 @@ package io.jaspercloud.sdwan.server.controller;
 import io.jaspercloud.sdwan.server.config.TenantContextHandler;
 import io.jaspercloud.sdwan.server.entity.Tenant;
 import io.jaspercloud.sdwan.server.service.TenantService;
-import io.jaspercloud.sdwan.tranport.SdWanServer;
+import io.jaspercloud.sdwan.tranport.ControllerServer;
 import jakarta.annotation.Resource;
 
 public class BaseController {
 
     @Resource
-    private SdWanServer sdWanServer;
+    private ControllerServer controllerServer;
 
     @Resource
     private TenantService tenantService;
@@ -19,7 +19,7 @@ public class BaseController {
         if (null == tenant) {
             return;
         }
-        sdWanServer.offlineChannel(tenant.getCode(), vip);
+        controllerServer.offlineChannel(tenant.getCode(), vip);
     }
 
     public void reloadClientList() {
@@ -27,6 +27,6 @@ public class BaseController {
         if (null == tenant) {
             return;
         }
-        sdWanServer.offlineChannelList(tenant.getCode());
+        controllerServer.offlineChannelList(tenant.getCode());
     }
 }

@@ -38,14 +38,14 @@ public class NodeInfoTest {
                 put("x2:x:x:x:x:x", "10.5.0.12");
             }
         };
-        List<SdWanServerConfig.FixVip> fixVipList = fixedVipMap.entrySet().stream().map(e -> {
-            return SdWanServerConfig.FixVip.builder().mac(e.getKey()).vip(e.getValue()).build();
+        List<ControllerServerConfig.FixVip> fixVipList = fixedVipMap.entrySet().stream().map(e -> {
+            return ControllerServerConfig.FixVip.builder().mac(e.getKey()).vip(e.getValue()).build();
         }).collect(Collectors.toList());
-        List<SdWanServerConfig.Route> routeList = new ArrayList<>();
-        SdWanServerConfig config = SdWanServerConfig.builder()
+        List<ControllerServerConfig.Route> routeList = new ArrayList<>();
+        ControllerServerConfig config = ControllerServerConfig.builder()
                 .port(1800)
                 .heartTimeout(30 * 1000)
-                .tenantConfig(Collections.singletonMap("default", SdWanServerConfig.TenantConfig.builder()
+                .tenantConfig(Collections.singletonMap("default", ControllerServerConfig.TenantConfig.builder()
                         .stunServerList(stunList)
                         .relayServerList(relayList)
                         .vipCidr("10.5.0.0/24")
@@ -54,8 +54,8 @@ public class NodeInfoTest {
                         .build()))
                 .build();
         LocalConfigSdWanDataService dataService = new LocalConfigSdWanDataService(config);
-        SdWanServer sdWanServer = new SdWanServer(config, dataService, () -> new ChannelInboundHandlerAdapter());
-        sdWanServer.start();
+        ControllerServer controllerServer = new ControllerServer(config, dataService, () -> new ChannelInboundHandlerAdapter());
+        controllerServer.start();
         SdWanNodeConfig nodeConfig = new SdWanNodeConfig();
         nodeConfig.setTunName("tun1");
         TunSdWanNode sdWanNode1 = new TunSdWanNode(nodeConfig) {
