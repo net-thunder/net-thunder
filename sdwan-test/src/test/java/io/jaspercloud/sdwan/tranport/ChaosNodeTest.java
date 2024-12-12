@@ -120,20 +120,20 @@ public class ChaosNodeTest {
                             put("x2:x:x:x:x:x", "10.5.0.12");
                         }
                     };
-                    List<SdWanServerConfig.Route> routeList = new ArrayList<>();
-                    Map<String, SdWanServerConfig.TenantConfig> tenantConfigMap = Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
+                    List<ControllerServerConfig.Route> routeList = new ArrayList<>();
+                    Map<String, ControllerServerConfig.TenantConfig> tenantConfigMap = Collections.singletonMap("tenant1", ControllerServerConfig.TenantConfig.builder()
                             .vipCidr("10.5.0.0/24")
                             .fixedVipList(Collections.emptyList())
                             .routeList(routeList)
                             .build());
-                    SdWanServerConfig config = new SdWanServerConfig();
+                    ControllerServerConfig config = new ControllerServerConfig();
                     config.setTenantConfig(tenantConfigMap);
                     LocalConfigSdWanDataService dataService = new LocalConfigSdWanDataService(config);
-                    SdWanServer sdWanServer = new SdWanServer(config, dataService, () -> new ChannelInboundHandlerAdapter());
-                    sdWanServer.start();
+                    ControllerServer controllerServer = new ControllerServer(config, dataService, () -> new ChannelInboundHandlerAdapter());
+                    controllerServer.start();
                     countDownLatch.countDown();
                     Thread.sleep(RandomUtils.nextLong(min, max));
-                    sdWanServer.stop();
+                    controllerServer.stop();
                     Thread.sleep(interval);
                 } catch (Exception e) {
                     e.printStackTrace();

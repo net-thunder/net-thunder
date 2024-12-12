@@ -1,7 +1,7 @@
 package io.jaspercloud.sdwan.server.component;
 
 import io.jaspercloud.sdwan.tranport.RelayServerConfig;
-import io.jaspercloud.sdwan.tranport.SdWanServerConfig;
+import io.jaspercloud.sdwan.tranport.ControllerServerConfig;
 import io.jaspercloud.sdwan.tranport.StunServerConfig;
 import lombok.*;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -19,7 +19,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class SdWanControllerProperties {
 
     private SdwanHttpServerConfig httpServer;
-    private SdWanServerConfig sdwanServer;
+    private ControllerServerConfig controllerServer;
     private RelayServerConfig relayServer;
     private StunServerConfig stunServer;
 
@@ -27,7 +27,7 @@ public class SdWanControllerProperties {
     @Setter
     public static class SdwanHttpServerConfig {
 
-        private String controllerServer;
+        private String controllerAddress;
         private String storage;
     }
 }

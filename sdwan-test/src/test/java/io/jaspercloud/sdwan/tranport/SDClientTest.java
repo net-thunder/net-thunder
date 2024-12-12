@@ -19,14 +19,14 @@ public class SDClientTest {
 
     @Test
     public void regist() throws Exception {
-        Map<String, SdWanServerConfig.TenantConfig> tenantConfigMap = Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
+        Map<String, ControllerServerConfig.TenantConfig> tenantConfigMap = Collections.singletonMap("tenant1", ControllerServerConfig.TenantConfig.builder()
                 .vipCidr("10.5.0.0/24")
                 .build());
-        SdWanServerConfig config = new SdWanServerConfig();
+        ControllerServerConfig config = new ControllerServerConfig();
         config.setTenantConfig(tenantConfigMap);
         LocalConfigSdWanDataService dataService = new LocalConfigSdWanDataService(config);
-        SdWanServer sdWanServer = new SdWanServer(config, dataService, () -> new ChannelInboundHandlerAdapter());
-        sdWanServer.start();
+        ControllerServer controllerServer = new ControllerServer(config, dataService, () -> new ChannelInboundHandlerAdapter());
+        controllerServer.start();
         SdWanClient sdWanClient = new SdWanClient(SdWanClientConfig.builder()
                 .controllerServer("127.0.0.1:1800")
                 .connectTimeout(3000)
@@ -56,18 +56,18 @@ public class SDClientTest {
                 put("d1:d2:d3:d4:d5:d6", "10.5.0.35");
             }
         };
-        List<SdWanServerConfig.FixVip> fixVipList = fixedVipMap.entrySet().stream().map(e -> {
-            return SdWanServerConfig.FixVip.builder().mac(e.getKey()).vip(e.getValue()).build();
+        List<ControllerServerConfig.FixVip> fixVipList = fixedVipMap.entrySet().stream().map(e -> {
+            return ControllerServerConfig.FixVip.builder().mac(e.getKey()).vip(e.getValue()).build();
         }).collect(Collectors.toList());
-        Map<String, SdWanServerConfig.TenantConfig> tenantConfigMap = Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
+        Map<String, ControllerServerConfig.TenantConfig> tenantConfigMap = Collections.singletonMap("tenant1", ControllerServerConfig.TenantConfig.builder()
                 .vipCidr("10.5.0.0/24")
                 .fixedVipList(Collections.emptyList())
                 .build());
-        SdWanServerConfig config = new SdWanServerConfig();
+        ControllerServerConfig config = new ControllerServerConfig();
         config.setTenantConfig(tenantConfigMap);
         LocalConfigSdWanDataService dataService = new LocalConfigSdWanDataService(config);
-        SdWanServer sdWanServer = new SdWanServer(config, dataService, () -> new ChannelInboundHandlerAdapter());
-        sdWanServer.start();
+        ControllerServer controllerServer = new ControllerServer(config, dataService, () -> new ChannelInboundHandlerAdapter());
+        controllerServer.start();
         SdWanClient sdWanClient = new SdWanClient(SdWanClientConfig.builder()
                 .controllerServer("127.0.0.1:1800")
                 .connectTimeout(3000)
@@ -92,13 +92,13 @@ public class SDClientTest {
 
     @Test
     public void push() throws Exception {
-        Map<String, SdWanServerConfig.TenantConfig> tenantConfigMap = Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
+        Map<String, ControllerServerConfig.TenantConfig> tenantConfigMap = Collections.singletonMap("tenant1", ControllerServerConfig.TenantConfig.builder()
                 .vipCidr("10.5.0.0/24")
                 .build());
-        SdWanServerConfig config = new SdWanServerConfig();
+        ControllerServerConfig config = new ControllerServerConfig();
         config.setTenantConfig(tenantConfigMap);
         LocalConfigSdWanDataService dataService = new LocalConfigSdWanDataService(config);
-        SdWanServer sdWanServer = new SdWanServer(config, dataService, () -> new SimpleChannelInboundHandler<SDWanProtos.Message>() {
+        ControllerServer controllerServer = new ControllerServer(config, dataService, () -> new SimpleChannelInboundHandler<SDWanProtos.Message>() {
             @Override
             public void channelActive(ChannelHandlerContext ctx) throws Exception {
                 {
@@ -108,19 +108,19 @@ public class SDClientTest {
                     SDWanProtos.NodeInfoList nodeInfoList = SDWanProtos.NodeInfoList.newBuilder()
                             .addNodeInfo(nodeInfo)
                             .build();
-                    SdWanServer.push(ctx.channel(), SDWanProtos.MessageTypeCode.NodeInfoListType, nodeInfoList);
+                    ControllerServer.push(ctx.channel(), SDWanProtos.MessageTypeCode.NodeInfoListType, nodeInfoList);
                 }
                 {
                     SDWanProtos.NodeInfo nodeInfo = SDWanProtos.NodeInfo.newBuilder()
                             .setVip("x.x.x.x")
                             .build();
-                    SdWanServer.push(ctx.channel(), SDWanProtos.MessageTypeCode.NodeOnlineType, nodeInfo);
+                    ControllerServer.push(ctx.channel(), SDWanProtos.MessageTypeCode.NodeOnlineType, nodeInfo);
                 }
                 {
                     SDWanProtos.NodeInfo nodeInfo = SDWanProtos.NodeInfo.newBuilder()
                             .setVip("x.x.x.x")
                             .build();
-                    SdWanServer.push(ctx.channel(), SDWanProtos.MessageTypeCode.NodeOfflineType, nodeInfo);
+                    ControllerServer.push(ctx.channel(), SDWanProtos.MessageTypeCode.NodeOfflineType, nodeInfo);
                 }
                 {
                     SDWanProtos.RouteList routeList = SDWanProtos.RouteList.newBuilder()
@@ -129,7 +129,7 @@ public class SDClientTest {
                                     .addAllNexthop(Arrays.asList("10.5.0.254"))
                                     .build())
                             .build();
-                    SdWanServer.push(ctx.channel(), SDWanProtos.MessageTypeCode.RouteListType, routeList);
+                    ControllerServer.push(ctx.channel(), SDWanProtos.MessageTypeCode.RouteListType, routeList);
                 }
             }
 
@@ -137,7 +137,7 @@ public class SDClientTest {
             protected void channelRead0(ChannelHandlerContext ctx, SDWanProtos.Message msg) throws Exception {
             }
         });
-        sdWanServer.start();
+        controllerServer.start();
         CompletableFuture<SDWanProtos.NodeInfoList> nodeInfoListFuture = new CompletableFuture<>();
         CompletableFuture<SDWanProtos.RouteList> routeListFuture = new CompletableFuture<>();
         CompletableFuture<SDWanProtos.NodeInfo> onlineFuture = new CompletableFuture<>();

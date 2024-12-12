@@ -27,26 +27,26 @@ public class TransferRouteTest {
                 put("x2:x:x:x:x:x", "10.5.0.12");
             }
         };
-        List<SdWanServerConfig.FixVip> fixVipList = fixedVipMap.entrySet().stream().map(e -> {
-            return SdWanServerConfig.FixVip.builder().mac(e.getKey()).vip(e.getValue()).build();
+        List<ControllerServerConfig.FixVip> fixVipList = fixedVipMap.entrySet().stream().map(e -> {
+            return ControllerServerConfig.FixVip.builder().mac(e.getKey()).vip(e.getValue()).build();
         }).collect(Collectors.toList());
-        List<SdWanServerConfig.Route> routeList = new ArrayList<>();
-        routeList.add(SdWanServerConfig.Route.builder()
+        List<ControllerServerConfig.Route> routeList = new ArrayList<>();
+        routeList.add(ControllerServerConfig.Route.builder()
                 .destination("172.168.1.0/24")
                 .nexthop(Arrays.asList("10.5.0.12"))
                 .build());
-        SdWanServerConfig config = SdWanServerConfig.builder()
+        ControllerServerConfig config = ControllerServerConfig.builder()
                 .port(1800)
                 .heartTimeout(30 * 1000)
-                .tenantConfig(Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
+                .tenantConfig(Collections.singletonMap("tenant1", ControllerServerConfig.TenantConfig.builder()
                         .vipCidr("10.5.0.0/24")
                         .fixedVipList(fixVipList)
                         .routeList(routeList)
                         .build()))
                 .build();
         LocalConfigSdWanDataService dataService = new LocalConfigSdWanDataService(config);
-        SdWanServer sdWanServer = new SdWanServer(config, dataService, () -> new ChannelInboundHandlerAdapter());
-        sdWanServer.start();
+        ControllerServer controllerServer = new ControllerServer(config, dataService, () -> new ChannelInboundHandlerAdapter());
+        controllerServer.start();
         RelayServer relayServer = new RelayServer(RelayServerConfig.builder()
                 .bindPort(2478)
                 .heartTimeout(15000)
@@ -104,26 +104,26 @@ public class TransferRouteTest {
                 put("x2:x:x:x:x:x", "10.5.0.12");
             }
         };
-        List<SdWanServerConfig.FixVip> fixVipList = fixedVipMap.entrySet().stream().map(e -> {
-            return SdWanServerConfig.FixVip.builder().mac(e.getKey()).vip(e.getValue()).build();
+        List<ControllerServerConfig.FixVip> fixVipList = fixedVipMap.entrySet().stream().map(e -> {
+            return ControllerServerConfig.FixVip.builder().mac(e.getKey()).vip(e.getValue()).build();
         }).collect(Collectors.toList());
-        List<SdWanServerConfig.Route> routeList = new ArrayList<>();
-        routeList.add(SdWanServerConfig.Route.builder()
+        List<ControllerServerConfig.Route> routeList = new ArrayList<>();
+        routeList.add(ControllerServerConfig.Route.builder()
                 .destination("172.168.1.0/24")
                 .nexthop(Arrays.asList("10.5.0.12"))
                 .build());
-        SdWanServerConfig config = SdWanServerConfig.builder()
+        ControllerServerConfig config = ControllerServerConfig.builder()
                 .port(1800)
                 .heartTimeout(30 * 1000)
-                .tenantConfig(Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
+                .tenantConfig(Collections.singletonMap("tenant1", ControllerServerConfig.TenantConfig.builder()
                         .vipCidr("10.5.0.0/24")
                         .fixedVipList(fixVipList)
                         .routeList(routeList)
                         .build()))
                 .build();
         LocalConfigSdWanDataService dataService = new LocalConfigSdWanDataService(config);
-        SdWanServer sdWanServer = new SdWanServer(config, dataService, () -> new ChannelInboundHandlerAdapter());
-        sdWanServer.start();
+        ControllerServer controllerServer = new ControllerServer(config, dataService, () -> new ChannelInboundHandlerAdapter());
+        controllerServer.start();
         RelayServer relayServer = new RelayServer(RelayServerConfig.builder()
                 .bindPort(2478)
                 .heartTimeout(15000)
@@ -188,26 +188,26 @@ public class TransferRouteTest {
                         put("x2:x:x:x:x:x", "10.5.0.12");
                     }
                 };
-                List<SdWanServerConfig.FixVip> fixVipList = fixedVipMap.entrySet().stream().map(e -> {
-                    return SdWanServerConfig.FixVip.builder().mac(e.getKey()).vip(e.getValue()).build();
+                List<ControllerServerConfig.FixVip> fixVipList = fixedVipMap.entrySet().stream().map(e -> {
+                    return ControllerServerConfig.FixVip.builder().mac(e.getKey()).vip(e.getValue()).build();
                 }).collect(Collectors.toList());
-                List<SdWanServerConfig.Route> routeList = new ArrayList<>();
-                routeList.add(SdWanServerConfig.Route.builder()
+                List<ControllerServerConfig.Route> routeList = new ArrayList<>();
+                routeList.add(ControllerServerConfig.Route.builder()
                         .destination("172.168.1.0/24")
                         .nexthop(Arrays.asList("10.5.0.12"))
                         .build());
-                SdWanServerConfig config = SdWanServerConfig.builder()
+                ControllerServerConfig config = ControllerServerConfig.builder()
                         .port(1800)
                         .heartTimeout(30 * 1000)
-                        .tenantConfig(Collections.singletonMap("tenant1", SdWanServerConfig.TenantConfig.builder()
+                        .tenantConfig(Collections.singletonMap("tenant1", ControllerServerConfig.TenantConfig.builder()
                                 .vipCidr("10.5.0.0/24")
                                 .fixedVipList(fixVipList)
                                 .routeList(routeList)
                                 .build()))
                         .build();
                 LocalConfigSdWanDataService dataService = new LocalConfigSdWanDataService(config);
-                SdWanServer sdWanServer = new SdWanServer(config, dataService, () -> new ChannelInboundHandlerAdapter());
-                sdWanServer.start();
+                ControllerServer controllerServer = new ControllerServer(config, dataService, () -> new ChannelInboundHandlerAdapter());
+                controllerServer.start();
                 RelayServer relayServer = new RelayServer(RelayServerConfig.builder()
                         .bindPort(2478)
                         .heartTimeout(15000)

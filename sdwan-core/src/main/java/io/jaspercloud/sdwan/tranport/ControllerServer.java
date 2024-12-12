@@ -36,9 +36,9 @@ import java.util.stream.Collectors;
  * @create 2024/7/2
  */
 @Slf4j
-public class SdWanServer implements Lifecycle, Runnable {
+public class ControllerServer implements Lifecycle, Runnable {
 
-    private SdWanServerConfig config;
+    private ControllerServerConfig config;
     private SdWanDataService sdWanDataService;
     private Supplier<ChannelHandler> handler;
 
@@ -68,7 +68,7 @@ public class SdWanServer implements Lifecycle, Runnable {
         return count;
     }
 
-    public SdWanServer(SdWanServerConfig config, SdWanDataService sdWanDataService, Supplier<ChannelHandler> handler) {
+    public ControllerServer(ControllerServerConfig config, SdWanDataService sdWanDataService, Supplier<ChannelHandler> handler) {
         this.config = config;
         this.sdWanDataService = sdWanDataService;
         this.handler = handler;
@@ -104,7 +104,7 @@ public class SdWanServer implements Lifecycle, Runnable {
                     log.debug("update heart: {}", SocketAddressUtil.toAddress(channel.remoteAddress()));
                 }
                 ChannelAttributes.attr(channel).setLastHeartTime(System.currentTimeMillis());
-                SdWanServer.reply(channel, msg, SDWanProtos.MessageTypeCode.HeartType, null);
+                ControllerServer.reply(channel, msg, SDWanProtos.MessageTypeCode.HeartType, null);
                 break;
             }
             case SDWanProtos.MessageTypeCode.UpdateNodeInfoType_VALUE: {
@@ -146,7 +146,7 @@ public class SdWanServer implements Lifecycle, Runnable {
                     .addAllStunServers(Collections.emptyList())
                     .addAllRelayServers(Collections.emptyList())
                     .build();
-            SdWanServer.reply(ctx.channel(), msg, SDWanProtos.MessageTypeCode.ConfigRespTpe, resp);
+            ControllerServer.reply(ctx.channel(), msg, SDWanProtos.MessageTypeCode.ConfigRespTpe, resp);
         }
     }
 
@@ -163,12 +163,12 @@ public class SdWanServer implements Lifecycle, Runnable {
                     .addAllStunServers(stunServerList)
                     .addAllRelayServers(relayServerList)
                     .build();
-            SdWanServer.reply(ctx.channel(), msg, SDWanProtos.MessageTypeCode.ConfigRespTpe, resp);
+            ControllerServer.reply(ctx.channel(), msg, SDWanProtos.MessageTypeCode.ConfigRespTpe, resp);
         } catch (Exception e) {
             SDWanProtos.ServerConfigResp resp = SDWanProtos.ServerConfigResp.newBuilder()
                     .setCode(SDWanProtos.MessageCode.SysError)
                     .build();
-            SdWanServer.reply(ctx.channel(), msg, SDWanProtos.MessageTypeCode.ConfigRespTpe, resp);
+            ControllerServer.reply(ctx.channel(), msg, SDWanProtos.MessageTypeCode.ConfigRespTpe, resp);
         }
     }
 
@@ -179,13 +179,13 @@ public class SdWanServer implements Lifecycle, Runnable {
             Channel channel = channelSpace.getChannel(p2pOffer.getDstVIP());
             if (null != channel) {
                 log.info("push processP2pOffer: srcVIP={}, dstVIP={}, id={}", p2pOffer.getSrcVIP(), p2pOffer.getDstVIP(), msg.getReqId());
-                SdWanServer.push(channel, msg.getReqId(), SDWanProtos.MessageTypeCode.P2pOfferType, p2pOffer);
+                ControllerServer.push(channel, msg.getReqId(), SDWanProtos.MessageTypeCode.P2pOfferType, p2pOffer);
             }
         } catch (Exception e) {
             SDWanProtos.RegistResp regResp = SDWanProtos.RegistResp.newBuilder()
                     .setCode(SDWanProtos.MessageCode.SysError)
                     .build();
-            SdWanServer.reply(ctx.channel(), msg, SDWanProtos.MessageTypeCode.P2pOfferType, regResp);
+            ControllerServer.reply(ctx.channel(), msg, SDWanProtos.MessageTypeCode.P2pOfferType, regResp);
         }
     }
 
@@ -196,13 +196,13 @@ public class SdWanServer implements Lifecycle, Runnable {
             Channel channel = channelSpace.getChannel(p2pAnswer.getDstVIP());
             if (null != channel) {
                 log.info("push processP2pAnswer: srcVIP={}, dstVIP={}, id={}", p2pAnswer.getSrcVIP(), p2pAnswer.getDstVIP(), msg.getReqId());
-                SdWanServer.push(channel, msg.getReqId(), SDWanProtos.MessageTypeCode.P2pAnswerType, p2pAnswer);
+                ControllerServer.push(channel, msg.getReqId(), SDWanProtos.MessageTypeCode.P2pAnswerType, p2pAnswer);
             }
         } catch (Exception e) {
             SDWanProtos.RegistResp regResp = SDWanProtos.RegistResp.newBuilder()
                     .setCode(SDWanProtos.MessageCode.SysError)
                     .build();
-            SdWanServer.reply(ctx.channel(), msg, SDWanProtos.MessageTypeCode.P2pAnswerType, regResp);
+            ControllerServer.reply(ctx.channel(), msg, SDWanProtos.MessageTypeCode.P2pAnswerType, regResp);
         }
     }
 
@@ -257,7 +257,7 @@ public class SdWanServer implements Lifecycle, Runnable {
                             .addAllRouteRule(buildRouteRuleList(thisNodeConfig.getRouteRuleConfigList()))
                             .build())
                     .build();
-            SdWanServer.reply(channel, msg, SDWanProtos.MessageTypeCode.RegistRespType, regResp);
+            ControllerServer.reply(channel, msg, SDWanProtos.MessageTypeCode.RegistRespType, regResp);
             updateNodeInfoToAllChannel(channel);
             channel.closeFuture().addListener(new ChannelFutureListener() {
                 @Override
@@ -269,13 +269,13 @@ public class SdWanServer implements Lifecycle, Runnable {
             SDWanProtos.RegistResp regResp = SDWanProtos.RegistResp.newBuilder()
                     .setCode(SDWanProtos.MessageCode.forNumber(e.getCode()))
                     .build();
-            SdWanServer.reply(channel, msg, SDWanProtos.MessageTypeCode.RegistRespType, regResp);
+            ControllerServer.reply(channel, msg, SDWanProtos.MessageTypeCode.RegistRespType, regResp);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             SDWanProtos.RegistResp regResp = SDWanProtos.RegistResp.newBuilder()
                     .setCode(SDWanProtos.MessageCode.SysError)
                     .build();
-            SdWanServer.reply(channel, msg, SDWanProtos.MessageTypeCode.RegistRespType, regResp);
+            ControllerServer.reply(channel, msg, SDWanProtos.MessageTypeCode.RegistRespType, regResp);
         }
     }
 
@@ -330,7 +330,7 @@ public class SdWanServer implements Lifecycle, Runnable {
                 .build();
         for (Channel item : registChannelMap.keySet()) {
             try {
-                SdWanServer.push(item, SDWanProtos.MessageTypeCode.NodeOnlineType, nodeInfo);
+                ControllerServer.push(item, SDWanProtos.MessageTypeCode.NodeOnlineType, nodeInfo);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
@@ -345,7 +345,7 @@ public class SdWanServer implements Lifecycle, Runnable {
                 .build();
         for (Channel item : registChannelMap.keySet()) {
             try {
-                SdWanServer.push(item, SDWanProtos.MessageTypeCode.NodeOfflineType, nodeInfo);
+                ControllerServer.push(item, SDWanProtos.MessageTypeCode.NodeOfflineType, nodeInfo);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }

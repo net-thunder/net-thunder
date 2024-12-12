@@ -125,13 +125,13 @@ public class ChaosTest {
                             put("x2:x:x:x:x:x", "10.5.0.12");
                         }
                     };
-                    List<SdWanServerConfig.FixVip> fixVipList = fixedVipMap.entrySet().stream().map(e -> {
-                        SdWanServerConfig.FixVip fixVip = new SdWanServerConfig.FixVip();
+                    List<ControllerServerConfig.FixVip> fixVipList = fixedVipMap.entrySet().stream().map(e -> {
+                        ControllerServerConfig.FixVip fixVip = new ControllerServerConfig.FixVip();
                         fixVip.setMac(e.getKey());
                         fixVip.setVip(e.getValue());
                         return fixVip;
                     }).collect(Collectors.toList());
-                    SdWanServerConfig.TenantConfig tenantConfig = SdWanServerConfig.TenantConfig.builder()
+                    ControllerServerConfig.TenantConfig tenantConfig = ControllerServerConfig.TenantConfig.builder()
                             .vipCidr("10.5.0.0/24")
                             .stunServerList(stunServerList)
                             .relayServerList(relayServerList)
@@ -139,14 +139,14 @@ public class ChaosTest {
                             .routeList(Collections.emptyList())
                             .vnatList(Collections.emptyList())
                             .build();
-                    SdWanServerConfig config = new SdWanServerConfig();
+                    ControllerServerConfig config = new ControllerServerConfig();
                     config.setTenantConfig(Collections.singletonMap("default", tenantConfig));
                     LocalConfigSdWanDataService dataService = new LocalConfigSdWanDataService(config);
-                    SdWanServer sdWanServer = new SdWanServer(config, dataService, () -> new ChannelInboundHandlerAdapter());
-                    sdWanServer.start();
+                    ControllerServer controllerServer = new ControllerServer(config, dataService, () -> new ChannelInboundHandlerAdapter());
+                    controllerServer.start();
                     countDownLatch.countDown();
                     Thread.sleep(RandomUtils.nextLong(min, max));
-                    sdWanServer.stop();
+                    controllerServer.stop();
                     Thread.sleep(interval);
                 } catch (Exception e) {
                     e.printStackTrace();

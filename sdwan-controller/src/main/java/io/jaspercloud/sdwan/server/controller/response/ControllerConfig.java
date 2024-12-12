@@ -7,5 +7,5 @@ import lombok.Setter;
 @Setter
 public class ControllerConfig {
 
-    private String controllerServer;
+    private String controllerAddress;
 }

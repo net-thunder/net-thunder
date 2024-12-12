@@ -33,7 +33,7 @@ public class AppInterfaceV1Controller {
     public AppResponse controllerConfig(@RequestParam("tenantId") String tenantId) {
         AppResponse appResponse = new AppResponse();
         appResponse.setCode(HttpStatus.OK.value());
-        appResponse.setData(properties.getHttpServer().getControllerServer());
+        appResponse.setData(properties.getHttpServer().getControllerAddress());
         return appResponse;
     }
 

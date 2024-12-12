@@ -2,7 +2,7 @@ package io.jaspercloud.sdwan;
 
 import io.jaspercloud.sdwan.config.TestSdWanControllerProperties;
 import io.jaspercloud.sdwan.tranport.RelayServer;
-import io.jaspercloud.sdwan.tranport.SdWanServer;
+import io.jaspercloud.sdwan.tranport.ControllerServer;
 import io.jaspercloud.sdwan.tranport.StunServer;
 import io.jaspercloud.sdwan.tranport.service.LocalConfigSdWanDataService;
 import io.jaspercloud.sdwan.tranport.service.SdWanDataService;
@@ -31,10 +31,10 @@ public class TestServerApplication {
     }
 
     @Bean
-    public SdWanServer sdWanServer(TestSdWanControllerProperties properties) {
+    public ControllerServer sdWanServer(TestSdWanControllerProperties properties) {
         SdWanDataService dataService = new LocalConfigSdWanDataService(properties.getSdwan());
-        SdWanServer sdWanServer = new SdWanServer(properties.getSdwan(), dataService, () -> new ChannelInboundHandlerAdapter());
-        return sdWanServer;
+        ControllerServer controllerServer = new ControllerServer(properties.getSdwan(), dataService, () -> new ChannelInboundHandlerAdapter());
+        return controllerServer;
     }
 
     @Bean

@@ -151,17 +151,17 @@ public class VirtualRouterTest {
                 put("x2:x:x:x:x:x", "10.5.0.12");
             }
         };
-        List<SdWanServerConfig.FixVip> fixVipList = fixedVipMap.entrySet().stream().map(e -> {
-            SdWanServerConfig.FixVip fixVip = new SdWanServerConfig.FixVip();
+        List<ControllerServerConfig.FixVip> fixVipList = fixedVipMap.entrySet().stream().map(e -> {
+            ControllerServerConfig.FixVip fixVip = new ControllerServerConfig.FixVip();
             fixVip.setMac(e.getKey());
             fixVip.setVip(e.getValue());
             return fixVip;
         }).collect(Collectors.toList());
-        SdWanServerConfig.TenantConfig tenantConfig = new SdWanServerConfig.TenantConfig();
+        ControllerServerConfig.TenantConfig tenantConfig = new ControllerServerConfig.TenantConfig();
         tenantConfig.setVipCidr("10.5.0.0/24");
         tenantConfig.setFixedVipList(fixVipList);
         tenantConfig.setRouteList(Arrays.asList(
-                new SdWanServerConfig.Route() {
+                new ControllerServerConfig.Route() {
                     {
                         setDestination("192.168.1.0/24");
                         setNexthop(Arrays.asList("10.5.0.12"));
@@ -169,7 +169,7 @@ public class VirtualRouterTest {
                 }
         ));
         tenantConfig.setVnatList(Arrays.asList(
-                new SdWanServerConfig.VNAT() {
+                new ControllerServerConfig.VNAT() {
                     {
                         setSrc("172.168.1.0/24");
                         setDst("192.168.1.0/24");
@@ -178,7 +178,7 @@ public class VirtualRouterTest {
                 }
         ));
         tenantConfig.setRouteRuleList(Arrays.asList(
-                new SdWanServerConfig.RouteRule() {
+                new ControllerServerConfig.RouteRule() {
                     {
                         setStrategy(RouteRuleStrategyEnum.Allow);
                         setDirection(RouteRuleDirectionEnum.All);
@@ -189,11 +189,11 @@ public class VirtualRouterTest {
         ));
         tenantConfig.setStunServerList(Arrays.asList("localhost:3478"));
         tenantConfig.setRelayServerList(Arrays.asList("localhost:2478"));
-        Map<String, SdWanServerConfig.TenantConfig> tenantConfigMap = Collections.singletonMap("default", tenantConfig);
-        SdWanServerConfig config = new SdWanServerConfig();
+        Map<String, ControllerServerConfig.TenantConfig> tenantConfigMap = Collections.singletonMap("default", tenantConfig);
+        ControllerServerConfig config = new ControllerServerConfig();
         config.setTenantConfig(tenantConfigMap);
         LocalConfigSdWanDataService dataService = new LocalConfigSdWanDataService(config);
-        SdWanServer sdWanServer = new SdWanServer(config, dataService, () -> new ChannelInboundHandlerAdapter());
-        sdWanServer.start();
+        ControllerServer controllerServer = new ControllerServer(config, dataService, () -> new ChannelInboundHandlerAdapter());
+        controllerServer.start();
     }
 }

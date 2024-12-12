@@ -5,7 +5,7 @@ import io.jaspercloud.sdwan.core.proto.SDWanProtos;
 import io.jaspercloud.sdwan.exception.ProcessCodeException;
 import io.jaspercloud.sdwan.exception.ProcessException;
 import io.jaspercloud.sdwan.support.Cidr;
-import io.jaspercloud.sdwan.tranport.SdWanServerConfig;
+import io.jaspercloud.sdwan.tranport.ControllerServerConfig;
 import io.jaspercloud.sdwan.tranport.config.*;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -24,9 +24,9 @@ public class LocalConfigSdWanDataService implements SdWanDataService {
 
     private Map<String, TenantSpace> tenantSpaceMap = new ConcurrentHashMap<>();
 
-    public LocalConfigSdWanDataService(SdWanServerConfig serverConfig) {
+    public LocalConfigSdWanDataService(ControllerServerConfig serverConfig) {
         if (CollectionUtil.isNotEmpty(serverConfig.getTenantConfig())) {
-            Map<String, SdWanServerConfig.TenantConfig> tenantConfig = serverConfig.getTenantConfig();
+            Map<String, ControllerServerConfig.TenantConfig> tenantConfig = serverConfig.getTenantConfig();
             tenantConfig.forEach((key, config) -> {
                 TenantSpace tenantSpace = new TenantSpace();
                 if (CollectionUtil.isNotEmpty(config.getStunServerList())) {
