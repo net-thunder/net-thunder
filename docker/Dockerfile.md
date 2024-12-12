@@ -9,13 +9,17 @@ docker run -d \
 --name net-thunder-server \
 --restart=always \
 --network=host \
+# api/web端口
 -e server.port=11805 \
 # controllerServer外网地址
--e sdwan.httpServer.controllerAddress=127.0.0.1:11805 \
+-e sdwan.httpServer.controllerAddress=127.0.0.1:1800 \
+# controllerServer tcp端口
 -e sdwan.controllerServer.port=1800 \
 # stunServer外网IP
 -e sdwan.stunServer.bindHost=127.0.0.1 \
+# stunServer udp端口
 -e sdwan.stunServer.bindPort=3478 \
+# relayServer udp端口
 -e sdwan.relayServer.bindPort=2478 \
 jaspercloud/net-thunder server
 ```
