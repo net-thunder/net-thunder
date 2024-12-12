@@ -33,7 +33,7 @@ docker run -d \
 --mac-address 42:ac:bd:00:00:00 \
 -e tenantId=default \
 # controllerServer外网地址
--e controllerServer=127.0.0.1:11805 \
+-e controllerServer=127.0.0.1:1800 \
 -e netMesh=true \
 -e showVRouterLog=true \
 -e showICELog=true \
