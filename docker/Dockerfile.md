@@ -1,29 +1,33 @@
-```dockerfile
-FROM centos:7
-
-COPY graalvm-jdk-21_linux-x64_bin.tar.gz /opt/
-RUN tar -xvf /opt/graalvm-jdk-21_linux-x64_bin.tar.gz -C /opt/
-ENV JAVA_HOME=/opt/graalvm-jdk-21.0.4+8.1
-ENV PATH=$PATH:$JAVA_HOME/bin
-
-RUN mkdir -p /app/
-COPY CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo
-RUN yum install net-tools -y
-RUN yum install iproute -y
-RUN yum install tcpdump -y
-
-WORKDIR /app/
+docker镜像打包
+```shell
+docker build -t net-thunder .
 ```
 
+启动服务端
 ```shell
 docker run -d \
---name net-thunder \
+--name net-thunder-server \
 --restart=always \
+--network=host \
+-e server.port=11805 \
+-e sdwan.httpServer.controllerServer=127.0.0.1:11805 \
+-e sdwan.sdwanServer.port=1800 \
+-e sdwan.stunServer.bindHost=127.0.0.1 \
+-e sdwan.stunServer.bindPort=3478 \
+-e sdwan.relayServer.bindPort=2478 \
+net-thunder server
+```
+
+启动mesh端
+```shell
+docker run -d \
 --privileged \
---mac-address 02:42:ac:11:00:02 \
--v $(pwd)/sdwan-node-bootstrap.jar:/app/sdwan-node-bootstrap.jar \
--v $(pwd)/application.yaml:/app/application.yaml \
-net-thunder
+--name net-thunder-mesh \
+--restart=always \
+--mac-address 42:ac:bd:00:00:00 \
+-e tenantId=default \
+-e httpServer=127.0.0.1:11805 \
+net-thunder mesh
 ```
 
 
