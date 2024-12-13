@@ -409,7 +409,7 @@ public class ControllerServer implements Lifecycle, Runnable {
                     @Override
                     protected void initChannel(Channel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
-                        pipeline.addLast(new TcpLogHandler("sdwanServer"));
+                        pipeline.addLast(new TcpLogHandler("controllerServer"));
                         pipeline.addLast(new ProtobufVarint32FrameDecoder());
                         pipeline.addLast(new ProtobufDecoder(SDWanProtos.Message.getDefaultInstance()));
                         pipeline.addLast(new ProtobufVarint32LengthFieldPrepender());
@@ -442,7 +442,7 @@ public class ControllerServer implements Lifecycle, Runnable {
                                 processMsg(ctx, msg);
                             }
                         });
-                        pipeline.addLast("sdwanServer:process", handler.get());
+                        pipeline.addLast("controllerServer:process", handler.get());
                     }
                 });
         try {

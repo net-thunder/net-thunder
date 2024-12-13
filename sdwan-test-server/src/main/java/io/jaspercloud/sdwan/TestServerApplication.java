@@ -31,7 +31,7 @@ public class TestServerApplication {
     }
 
     @Bean
-    public ControllerServer sdWanServer(TestSdWanControllerProperties properties) {
+    public ControllerServer controllerServer(TestSdWanControllerProperties properties) {
         SdWanDataService dataService = new LocalConfigSdWanDataService(properties.getSdwan());
         ControllerServer controllerServer = new ControllerServer(properties.getSdwan(), dataService, () -> new ChannelInboundHandlerAdapter());
         return controllerServer;
