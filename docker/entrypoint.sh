@@ -5,7 +5,6 @@ case $1 in
         java -jar /app/sdwan-controller.jar
         ;;
     mesh)
-        echo "mesh"
         java -jar /app/sdwan-node-bootstrap.jar
         ;;
     *)
