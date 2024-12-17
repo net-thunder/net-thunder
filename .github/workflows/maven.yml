@@ -42,6 +42,7 @@ jobs:
       # Windows
       - name: Package Windows
         run: |
+          mkdir -p $GITHUB_WORKSPACE/distribution
           cd $GITHUB_WORKSPACE/distribution
           wget https://github.com/net-thunder/net-thunder/releases/download/pre/net-thunder-win-base.tar
           tar -xvf net-thunder-win-base.tar
