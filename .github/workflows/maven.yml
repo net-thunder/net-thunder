@@ -39,11 +39,18 @@ jobs:
         run: cp $GITHUB_WORKSPACE/sdwan-node-bootstrap/target/sdwan-node-bootstrap.jar $GITHUB_WORKSPACE/docker/
       - name: Checkfile
         run: ls $GITHUB_WORKSPACE/docker/
-      - name: Upload a Build Artifact
+      # Windows
+      - name: Upload Artifact Windows
         uses: actions/upload-artifact@v4
         with:
-          name: net-thunder
-          path: ${{ github.workspace }}/docker/
+          name: net-thunder-win
+          path: ${{ github.workspace }}/docker/sdwan-node-bootstrap.jar
+      # MacOS
+      - name: Upload Artifact MacOS
+        uses: actions/upload-artifact@v4
+        with:
+          name: net-thunder-mac
+          path: ${{ github.workspace }}/docker/sdwan-node-bootstrap.jar
       - name: Build Docker Image
         uses: docker/build-push-action@v6
         with:
