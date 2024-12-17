@@ -31,14 +31,18 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: maven
-      - name: test
-        run: echo $GITHUB_WORKSPACE
       - name: Build with Maven
         run: mvn package --file $GITHUB_WORKSPACE/pom.xml -DskipTests
       - name: Copy Controller
         run: cp $GITHUB_WORKSPACE/sdwan-controller/target/sdwan-controller.jar $GITHUB_WORKSPACE/docker/
       - name: Copy Bootstrap
         run: cp $GITHUB_WORKSPACE/sdwan-node-bootstrap/target/sdwan-node-bootstrap.jar $GITHUB_WORKSPACE/docker/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdwan
+          path: |
+            $GITHUB_WORKSPACE/docker/sdwan-controller.jar
+            $GITHUB_WORKSPACE/docker/sdwan-node-bootstrap.jar
       - name: Build Docker Image
         uses: docker/build-push-action@v6
         with:
