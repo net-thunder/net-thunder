@@ -16,9 +16,7 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4
     - name: Set up JDK 21
@@ -30,4 +28,4 @@ jobs:
     - name: Build with Maven
       run: mvn package --file pom.xml -DskipTests
     - name: Publish
-      uses: ls $(pwd)
+      run: ls $(pwd)
