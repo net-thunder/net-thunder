@@ -32,11 +32,11 @@ jobs:
           distribution: 'temurin'
           cache: maven
       - name: Build with Maven
-        run: mvn package --file pom.xml -DskipTests
+        run: mvn package --file $GITHUB_WORKSPACE/pom.xml -DskipTests
       - name: Copy Controller
-        run: cp $(pwd)/sdwan-controller/target/sdwan-controller.jar $(pwd)/docker/
+        run: cp $GITHUB_WORKSPACE/sdwan-controller/target/sdwan-controller.jar $GITHUB_WORKSPACE/docker/
       - name: Copy Bootstrap
-        run: cp $(pwd)/sdwan-node-bootstrap/target/sdwan-node-bootstrap.jar $(pwd)/docker/
+        run: cp $GITHUB_WORKSPACE/sdwan-node-bootstrap/target/sdwan-node-bootstrap.jar $GITHUB_WORKSPACE/docker/
       - name: Build Docker Image
         uses: docker/build-push-action@v6
         with:
