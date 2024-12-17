@@ -31,6 +31,7 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: maven
+      # Maven
       - name: Build with Maven
         run: mvn package --file $GITHUB_WORKSPACE/pom.xml -DskipTests
       - name: Copy Controller
@@ -53,17 +54,26 @@ jobs:
         with:
           name: net-thunder-win
           path: ${{ github.workspace }}/distribution/net-thunder-win.tar
-#      # MacOS
-#      - name: Upload Artifact MacOS
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: net-thunder-mac
-#          path: ${{ github.workspace }}/docker/sdwan-node-bootstrap.jar
-#      - name: Build Docker Image
-#        uses: docker/build-push-action@v6
-#        with:
-#          context: docker/
-#          push: true
-#          platforms: linux/amd64
-#          tags: |
-#            jaspercloud/net-thunder:latest
+      # MacOS
+      - name: Package MacOS
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/distribution
+          cd $GITHUB_WORKSPACE/distribution
+          wget https://github.com/net-thunder/net-thunder/releases/download/pre/net-thunder-mac-base.tar
+          tar -xvf net-thunder-mac-base.tar
+          cp $GITHUB_WORKSPACE/docker/sdwan-node-bootstrap.jar $GITHUB_WORKSPACE/distribution/net-thunder.app/Contents/app/
+          tar -cvf net-thunder-mac.tar net-thunder.app
+      - name: Upload Artifact MacOS
+        uses: actions/upload-artifact@v4
+        with:
+          name: net-thunder-mac
+          path: ${{ github.workspace }}/docker/sdwan-node-bootstrap.jar
+      # Docker
+      - name: Build Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: docker/
+          push: true
+          platforms: linux/amd64
+          tags: |
+            jaspercloud/net-thunder:latest
