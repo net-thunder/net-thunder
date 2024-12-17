@@ -43,7 +43,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: net-thunder
-          path: $GITHUB_WORKSPACE/docker/*.jar
+          path: ${{ github.workspace }}/docker/
       - name: Build Docker Image
         uses: docker/build-push-action@v6
         with:
