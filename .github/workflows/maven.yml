@@ -43,6 +43,7 @@ jobs:
       - name: Package Windows
         run: |
           cd $GITHUB_WORKSPACE/distribution
+          wget https://github.com/net-thunder/net-thunder/releases/download/pre/net-thunder-win-base.tar
           tar -xvf net-thunder-win-base.tar
           cp $GITHUB_WORKSPACE/docker/sdwan-node-bootstrap.jar $GITHUB_WORKSPACE/distribution/net-thunder/app/
           tar -cvf net-thunder-win.tar net-thunder
