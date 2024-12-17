@@ -49,8 +49,12 @@ public class JavaFxMiniLauncher extends Application {
 
     private void run(CommandLine cmd) throws Exception {
         logger.info("appDir: {}", PathApi.getAppDir());
-        if (updateVersion()) {
-            return;
+        try {
+            if (updateVersion()) {
+                return;
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
         }
         Application.launch(JavaFxMiniLauncher.class, new String[0]);
     }
