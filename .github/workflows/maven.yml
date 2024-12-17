@@ -40,22 +40,28 @@ jobs:
       - name: Checkfile
         run: ls $GITHUB_WORKSPACE/docker/
       # Windows
+      - name: Package Windows
+        run: |
+          cd $GITHUB_WORKSPACE/distribution
+          tar -xvf net-thunder-win-base.tar
+          cp $GITHUB_WORKSPACE/docker/sdwan-node-bootstrap.jar $GITHUB_WORKSPACE/distribution/net-thunder/app/
+          tar -cvf net-thunder-win.tar net-thunder
       - name: Upload Artifact Windows
         uses: actions/upload-artifact@v4
         with:
           name: net-thunder-win
-          path: ${{ github.workspace }}/docker/sdwan-node-bootstrap.jar
-      # MacOS
-      - name: Upload Artifact MacOS
-        uses: actions/upload-artifact@v4
-        with:
-          name: net-thunder-mac
-          path: ${{ github.workspace }}/docker/sdwan-node-bootstrap.jar
-      - name: Build Docker Image
-        uses: docker/build-push-action@v6
-        with:
-          context: docker/
-          push: true
-          platforms: linux/amd64
-          tags: |
-            jaspercloud/net-thunder:latest
+          path: ${{ github.workspace }}/distribution/net-thunder-win.tar
+#      # MacOS
+#      - name: Upload Artifact MacOS
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: net-thunder-mac
+#          path: ${{ github.workspace }}/docker/sdwan-node-bootstrap.jar
+#      - name: Build Docker Image
+#        uses: docker/build-push-action@v6
+#        with:
+#          context: docker/
+#          push: true
+#          platforms: linux/amd64
+#          tags: |
+#            jaspercloud/net-thunder:latest
