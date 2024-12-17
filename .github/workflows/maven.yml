@@ -31,6 +31,8 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: maven
+      - name: test
+        run: echo $GITHUB_WORKSPACE
       - name: Build with Maven
         run: mvn package --file $GITHUB_WORKSPACE/pom.xml -DskipTests
       - name: Copy Controller
