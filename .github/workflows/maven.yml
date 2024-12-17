@@ -43,29 +43,33 @@ jobs:
       # Windows
       - name: Package Windows
         run: |
+          rm -rf $GITHUB_WORKSPACE/distribution
           mkdir -p $GITHUB_WORKSPACE/distribution
           cd $GITHUB_WORKSPACE/distribution
           wget https://github.com/net-thunder/net-thunder/releases/download/pre/net-thunder-win-base.tar
           tar -xvf net-thunder-win-base.tar
+          rm -rf net-thunder-win-base.tar
           cp $GITHUB_WORKSPACE/docker/sdwan-node-bootstrap.jar $GITHUB_WORKSPACE/distribution/net-thunder/app/
       - name: Upload Artifact Windows
         uses: actions/upload-artifact@v4
         with:
           name: net-thunder-win
-          path: ${{ github.workspace }}/distribution/net-thunder
+          path: ${{ github.workspace }}/distribution
       # MacOS
       - name: Package MacOS
         run: |
+          rm -rf $GITHUB_WORKSPACE/distribution
           mkdir -p $GITHUB_WORKSPACE/distribution
           cd $GITHUB_WORKSPACE/distribution
           wget https://github.com/net-thunder/net-thunder/releases/download/pre/net-thunder-mac-base.tar
           tar -xvf net-thunder-mac-base.tar
+          rm -rf net-thunder-mac-base.tar
           cp $GITHUB_WORKSPACE/docker/sdwan-node-bootstrap.jar $GITHUB_WORKSPACE/distribution/net-thunder.app/Contents/app/
       - name: Upload Artifact MacOS
         uses: actions/upload-artifact@v4
         with:
           name: net-thunder-mac
-          path: ${{ github.workspace }}/distribution/net-thunder.app
+          path: ${{ github.workspace }}/distribution
       # Docker
       - name: Build Docker Image
         uses: docker/build-push-action@v6
