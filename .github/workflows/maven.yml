@@ -37,6 +37,8 @@ jobs:
         run: cp $GITHUB_WORKSPACE/sdwan-controller/target/sdwan-controller.jar $GITHUB_WORKSPACE/docker/
       - name: Copy Bootstrap
         run: cp $GITHUB_WORKSPACE/sdwan-node-bootstrap/target/sdwan-node-bootstrap.jar $GITHUB_WORKSPACE/docker/
+      - name: Checkfile
+        run: ls $GITHUB_WORKSPACE/docker/
       - uses: actions/upload-artifact@v4
         with:
           name: sdwan
