@@ -6,9 +6,10 @@ RUN yum install iproute -y
 RUN yum install tcpdump -y
 RUN yum install wget -y
 
-RUN wget https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_linux-x64_bin.tar.gz -o /opt/graalvm-jdk-21_linux-x64_bin.tar.gz
-RUN tar -xvf /opt/graalvm-jdk-21_linux-x64_bin.tar.gz -C /opt/
-ENV JAVA_HOME=/opt/graalvm-jdk-21.0.4+8.1
+RUN cd /opt \
+    && wget https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_linux-x64_bin.tar.gz \
+    && tar -xvf /opt/graalvm-jdk-21_linux-x64_bin.tar.gz
+ENV JAVA_HOME=/opt/graalvm-jdk-21.0.5+9.1
 ENV PATH=$PATH:$JAVA_HOME/bin
 
 RUN mkdir -p /app/
