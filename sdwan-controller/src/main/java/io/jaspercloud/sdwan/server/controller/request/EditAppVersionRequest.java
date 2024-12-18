@@ -2,6 +2,7 @@ package io.jaspercloud.sdwan.server.controller.request;
 
 import io.jaspercloud.sdwan.server.controller.common.ValidGroup;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,7 +10,7 @@ import lombok.Setter;
 @Setter
 public class EditAppVersionRequest {
 
-    @NotEmpty(groups = {ValidGroup.Update.class, ValidGroup.Delete.class})
+    @NotNull(groups = {ValidGroup.Update.class, ValidGroup.Delete.class})
     private Long id;
     @NotEmpty(groups = {ValidGroup.Add.class, ValidGroup.Update.class})
     private String name;
