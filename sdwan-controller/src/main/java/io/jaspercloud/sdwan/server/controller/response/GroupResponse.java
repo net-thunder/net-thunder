@@ -11,4 +11,8 @@ public class GroupResponse {
     private String name;
     private String description;
     private Boolean defaultGroup;
+    private Long nodeCount;
+    private Long routeCount;
+    private Long vnatCount;
+    private Long ruleCount;
 }

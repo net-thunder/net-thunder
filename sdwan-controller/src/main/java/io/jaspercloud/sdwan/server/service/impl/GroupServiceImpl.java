@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,10 +34,10 @@ public class GroupServiceImpl implements GroupService {
     private GroupRouteRepository groupRouteRepository;
 
     @Resource
-    private GroupRouteRuleRepository groupRouteRuleRepository;
+    private GroupVNATRepository groupVNATRepository;
 
     @Resource
-    private GroupVNATRepository groupVNATRepository;
+    private GroupRouteRuleRepository groupRouteRuleRepository;
 
     @Override
     public Long addDefaultGroup() {
@@ -107,8 +108,20 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public List<GroupResponse> list() {
         List<Group> list = groupRepository.query().list();
+        Map<Long, Long> nodeCountMap = groupMemberRepository.query()
+                .list().stream().collect(Collectors.groupingBy(e -> e.getGroupId(), Collectors.counting()));
+        Map<Long, Long> routeCountMap = groupRouteRepository.query()
+                .list().stream().collect(Collectors.groupingBy(e -> e.getGroupId(), Collectors.counting()));
+        Map<Long, Long> vnatCountMap = groupVNATRepository.query()
+                .list().stream().collect(Collectors.groupingBy(e -> e.getGroupId(), Collectors.counting()));
+        Map<Long, Long> ruleCountMap = groupRouteRuleRepository.query()
+                .list().stream().collect(Collectors.groupingBy(e -> e.getGroupId(), Collectors.counting()));
         List<GroupResponse> collect = list.stream().map(e -> {
             GroupResponse groupResponse = BeanUtil.toBean(e, GroupResponse.class);
+            groupResponse.setNodeCount(nodeCountMap.getOrDefault(e.getId(), 0L));
+            groupResponse.setRouteCount(routeCountMap.getOrDefault(e.getId(), 0L));
+            groupResponse.setVnatCount(vnatCountMap.getOrDefault(e.getId(), 0L));
+            groupResponse.setRuleCount(ruleCountMap.getOrDefault(e.getId(), 0L));
             return groupResponse;
         }).collect(Collectors.toList());
         return collect;
