@@ -1,4 +1,4 @@
-package io.jaspercloud.sdwan.platform.ui2;
+package io.jaspercloud.sdwan.platform.ui;
 
 import io.jaspercloud.sdwan.node.ConfigSystem;
 import io.jaspercloud.sdwan.platform.JavaFxMiniLauncher;

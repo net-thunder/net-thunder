@@ -1,4 +1,4 @@
-package io.jaspercloud.sdwan.platform.ui2;
+package io.jaspercloud.sdwan.platform.ui;
 
 import cn.hutool.crypto.digest.DigestUtil;
 import io.jaspercloud.sdwan.node.support.PathApi;

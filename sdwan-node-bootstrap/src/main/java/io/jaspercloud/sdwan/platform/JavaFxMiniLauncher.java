@@ -5,7 +5,7 @@ import cn.hutool.json.JSONObject;
 import io.jaspercloud.sdwan.node.ConfigSystem;
 import io.jaspercloud.sdwan.node.SdWanNodeConfig;
 import io.jaspercloud.sdwan.node.support.PathApi;
-import io.jaspercloud.sdwan.platform.ui2.MainWindowController;
+import io.jaspercloud.sdwan.platform.ui.MainWindowController;
 import io.jaspercloud.sdwan.support.ClientVersion;
 import io.jaspercloud.sdwan.support.HttpApi;
 import io.jaspercloud.sdwan.util.AppFile;
@@ -87,7 +87,7 @@ public class JavaFxMiniLauncher extends Application {
         //windows
         FXMLLoader loader = new FXMLLoader();
         loader.setClassLoader(JavaFxMiniLauncher.getClassLoader());
-        Parent root = loader.load(JavaFxMiniLauncher.getClassLoader().getResourceAsStream("ui/main2.fxml"));
+        Parent root = loader.load(JavaFxMiniLauncher.getClassLoader().getResourceAsStream("ui/main.fxml"));
         Image icon = new Image(JavaFxMiniLauncher.getClassLoader().getResourceAsStream("ui/favicon.ico"));
         primaryStage.getIcons().add(icon);
         MainWindowController controller = loader.getController();

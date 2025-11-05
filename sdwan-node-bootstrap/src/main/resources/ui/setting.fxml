@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.*?>
 <BorderPane prefWidth="400" prefHeight="300" xmlns="http://javafx.com/javafx/17.0.2-ea"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="io.jaspercloud.sdwan.platform.ui2.SettingWindowController">
+            fx:controller="io.jaspercloud.sdwan.platform.ui.SettingWindowController">
     <top>
         <Label text="接入信息" BorderPane.alignment="CENTER" prefWidth="400">
             <BorderPane.margin>

@@ -1,6 +1,6 @@
 package io.jaspercloud.sdwan.platform;
 
-import io.jaspercloud.sdwan.platform.ui2.UpdateVersionController;
+import io.jaspercloud.sdwan.platform.ui.UpdateVersionController;
 import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;

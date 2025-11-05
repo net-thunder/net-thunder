@@ -4,46 +4,41 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<FlowPane alignment="CENTER" columnHalignment="CENTER" orientation="VERTICAL" xmlns="http://javafx.com/javafx/11.0.1"
+<FlowPane alignment="CENTER" columnHalignment="CENTER" orientation="VERTICAL" xmlns="http://javafx.com/javafx/17.0.2-ea"
           xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.jaspercloud.sdwan.platform.ui.MainWindowController">
     <VBox alignment="CENTER" spacing="20">
-        <Label fx:id="statusLab" text="status: not started"/>
-        <Button fx:id="startBtn" prefHeight="30" prefWidth="120" text="start">
-        </Button>
-        <Button fx:id="stopBtn" prefHeight="30" prefWidth="120" text="stop">
-        </Button>
         <GridPane hgap="10.0" vgap="5.0">
             <columnConstraints>
+                <ColumnConstraints prefWidth="80"/>
                 <ColumnConstraints prefWidth="120"/>
-                <ColumnConstraints prefWidth="120"/>
+                <ColumnConstraints prefWidth="80"/>
             </columnConstraints>
             <rowConstraints>
                 <RowConstraints/>
                 <RowConstraints/>
                 <RowConstraints/>
                 <RowConstraints/>
-                <RowConstraints/>
-                <RowConstraints/>
-                <RowConstraints/>
-                <RowConstraints/>
             </rowConstraints>
-            <Label text="controllerServer:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="0"/>
-            <Label fx:id="controllerServer" text="-" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-            <Label text="stunServer:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="1"/>
-            <Label fx:id="stunServer" text="-" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-            <Label text="relayServer:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="2"/>
-            <Label fx:id="relayServer" text="-" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-            <Label text="vipCidr:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="3"/>
-            <Label fx:id="vipCidr" text="-" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-            <Label text="localVip:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="4"/>
-            <Label fx:id="localVip" text="-" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
-            <Label text="sdwanLocalPort:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="5"/>
-            <Label fx:id="sdwanLocalPort" text="-" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
-            <Label text="p2pLocalPort:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="6"/>
-            <Label fx:id="p2pLocalPort" text="-" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
-            <Label text="relayLocalPort:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="7"/>
-            <Label fx:id="relayLocalPort" text="-" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
+            <Label text="当前状态:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="0"/>
+            <Label fx:id="statusLab" text="已断开" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+            <Label text="本地虚拟IP:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="1"/>
+            <TextField fx:id="vipText" editable="false" style="-fx-background-color: transparent;" text="-"
+                       GridPane.columnIndex="1" GridPane.rowIndex="1" focusTraversable="false"/>
+            <Label text="出口IP:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="2"/>
+            <ChoiceBox fx:id="netSelect" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="2"
+                       focusTraversable="false"/>
+            <Button fx:id="refreshBtn" text="刷新" GridPane.columnIndex="2" GridPane.rowIndex="2"
+                    focusTraversable="false"/>
+            <Label text="MAC地址:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="3"/>
+            <TextField fx:id="macText" editable="false" style="-fx-background-color: transparent;" text="-"
+                       GridPane.columnIndex="1" GridPane.rowIndex="3" focusTraversable="false"/>
         </GridPane>
+        <Button fx:id="startBtn" prefHeight="30" prefWidth="120" text="启动" focusTraversable="false">
+        </Button>
+        <Button fx:id="stopBtn" prefHeight="30" prefWidth="120" text="停止" focusTraversable="false">
+        </Button>
+        <Button fx:id="settingBtn" prefHeight="30" prefWidth="120" text="接入配置" focusTraversable="false">
+        </Button>
         <FlowPane.margin>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
         </FlowPane.margin>
