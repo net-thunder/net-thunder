@@ -25,7 +25,7 @@ spring:
       max-request-size: 1GB
   datasource:
     dbType: derby
-    path: ${user.dir}/derby
+    path: ${user.dir}/data/derby
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
