@@ -36,7 +36,7 @@ public class DatabaseSdWanDataService implements SdWanDataService {
     public TenantConfig getTenantConfig(String tenantCode) {
         TenantResponse tenantResponse = tenantService.queryByTenantCode(tenantCode);
         if (null == tenantResponse) {
-            throw new ProcessException("not found tenant");
+            return null;
         }
         TenantConfig tenantConfig = new TenantConfig();
         tenantConfig.setIpPool(Cidr.parseCidr(tenantResponse.getCidr()));

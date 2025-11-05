@@ -124,7 +124,10 @@ public class TenantServiceImpl implements TenantService {
 
     @Override
     public void del(EditTenantRequest request) {
-        tenantRepository.deleteById(request.getId());
+        Tenant tenant = tenantRepository.selectById(request.getId());
+        Long accountId = tenant.getAccountId();
+        accountRepository.deleteById(accountId);
+        tenantRepository.deleteById(tenant.getId());
     }
 
     @Override

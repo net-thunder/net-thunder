@@ -54,9 +54,7 @@ public class VirtualRouter implements TransportLifecycle {
     private volatile RouteRulePredicateProcessor routeInRuleProcessor = new RouteRulePredicateProcessor();
     private volatile RouteRulePredicateProcessor routeOutRuleProcessor = new RouteRulePredicateProcessor();
     private volatile Map<String, SDWanProtos.VNAT> vnatMap = Collections.emptyMap();
-    private Cache<String, String> vnatMappingCache = Caffeine.newBuilder()
-            .expireAfterWrite(30, TimeUnit.MINUTES)
-            .build();
+    private Cache<String, String> vnatMappingCache = Caffeine.newBuilder().expireAfterWrite(30, TimeUnit.MINUTES).build();
     private AtomicBoolean status = new AtomicBoolean(false);
 
     public String getLocalVip() {
@@ -93,19 +91,13 @@ public class VirtualRouter implements TransportLifecycle {
                 log.info("send: src={}, dst={}", packet.getSrcIP(), packet.getDstIP());
             }
         }
-        if (config.getNetMesh()
-                && PlatformDependent.isWindows()
-                && Ics.IcsIp.equals(packet.getSrcIP())) {
+        if (config.getNetMesh() && PlatformDependent.isWindows() && Ics.IcsIp.equals(packet.getSrcIP())) {
             //fix ics
             packet.setSrcIP(localVip);
         }
         if (Multicast.isMulticastIp(packet.getDstIP()) || Cidr.isBroadcastAddress(vipCidr, packet.getDstIP())) {
             //broadcast
-            byte[] bytes = SDWanProtos.IpPacket.newBuilder()
-                    .setSrcIP(packet.getSrcIP())
-                    .setDstIP(packet.getDstIP())
-                    .setPayload(ByteString.copyFrom(ByteBufUtil.toBytes(packet.rebuild())))
-                    .build().toByteArray();
+            byte[] bytes = SDWanProtos.IpPacket.newBuilder().setSrcIP(packet.getSrcIP()).setDstIP(packet.getDstIP()).setPayload(ByteString.copyFrom(ByteBufUtil.toBytes(packet.rebuild()))).build().toByteArray();
             nodeManager.getNodeList().forEach(nodeInfo -> {
                 if (StringUtils.equals(nodeInfo.getVip(), localVip)) {
                     return;
@@ -124,11 +116,7 @@ public class VirtualRouter implements TransportLifecycle {
             return;
         }
         ByteBuf byteBuf = packet.rebuild();
-        byte[] bytes = SDWanProtos.IpPacket.newBuilder()
-                .setSrcIP(packet.getSrcIP())
-                .setDstIP(packet.getDstIP())
-                .setPayload(ByteString.copyFrom(ByteBufUtil.toBytes(byteBuf)))
-                .build().toByteArray();
+        byte[] bytes = SDWanProtos.IpPacket.newBuilder().setSrcIP(packet.getSrcIP()).setDstIP(packet.getDstIP()).setPayload(ByteString.copyFrom(ByteBufUtil.toBytes(byteBuf))).build().toByteArray();
         iceClient.sendNode(localVip, nodeInfo, bytes);
     }
 
@@ -144,9 +132,7 @@ public class VirtualRouter implements TransportLifecycle {
         SDWanProtos.IpPacket ipPacket = SDWanProtos.IpPacket.parseFrom(data);
         if (config.getShowVRouterLog()) {
             if (!(Multicast.isMulticastIp(ipPacket.getDstIP()) || Cidr.isBroadcastAddress(vipCidr, ipPacket.getDstIP()))) {
-                log.info("recv: type={}, sender={}, src={}, dst={}",
-                        transferTypeAttr.getData(), SocketAddressUtil.toAddress(sender),
-                        ipPacket.getSrcIP(), ipPacket.getDstIP());
+                log.info("recv: type={}, sender={}, src={}, dst={}", transferTypeAttr.getData(), SocketAddressUtil.toAddress(sender), ipPacket.getSrcIP(), ipPacket.getDstIP());
             }
         }
         ByteBuf byteBuf = ByteBufUtil.toByteBuf(ipPacket.getPayload().toByteArray());
@@ -242,32 +228,26 @@ public class VirtualRouter implements TransportLifecycle {
     @Override
     public void start() throws Exception {
         nodeManager = new NodeManager();
-        sdWanClient = new SdWanClient(SdWanClientConfig.builder()
-                .controllerServer(config.getControllerServer())
-                .tenantId(config.getTenantId())
-                .connectTimeout(config.getConnectTimeout())
-                .heartTime(config.getHeartTime())
-                .build(),
-                () -> new SimpleChannelInboundHandler<SDWanProtos.Message>() {
-                    @Override
-                    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-                        onSdWanClientInactive();
-                    }
+        sdWanClient = new SdWanClient(SdWanClientConfig.builder().controllerServer(config.getControllerServer()).tenantId(config.getTenantId()).connectTimeout(config.getConnectTimeout()).heartTime(config.getHeartTime()).build(), () -> new SimpleChannelInboundHandler<SDWanProtos.Message>() {
+            @Override
+            public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+                onSdWanClientInactive();
+            }
 
-                    @Override
-                    protected void channelRead0(ChannelHandlerContext ctx, SDWanProtos.Message msg) throws Exception {
-                        switch (msg.getType().getNumber()) {
-                            case SDWanProtos.MessageTypeCode.P2pOfferType_VALUE: {
-                                SDWanProtos.P2pOffer p2pOffer = SDWanProtos.P2pOffer.parseFrom(msg.getData());
-                                if (iceClient.isRunning()) {
-                                    iceClient.processAnswer(msg.getReqId(), p2pOffer);
-                                }
-                                break;
-                            }
-                            case SDWanProtos.MessageTypeCode.P2pAnswerType_VALUE: {
-                                AsyncTask.completeTask(msg.getReqId(), msg);
-                                break;
-                            }
+            @Override
+            protected void channelRead0(ChannelHandlerContext ctx, SDWanProtos.Message msg) throws Exception {
+                switch (msg.getType().getNumber()) {
+                    case SDWanProtos.MessageTypeCode.P2pOfferType_VALUE: {
+                        SDWanProtos.P2pOffer p2pOffer = SDWanProtos.P2pOffer.parseFrom(msg.getData());
+                        if (iceClient.isRunning()) {
+                            iceClient.processAnswer(msg.getReqId(), p2pOffer);
+                        }
+                        break;
+                    }
+                    case SDWanProtos.MessageTypeCode.P2pAnswerType_VALUE: {
+                        AsyncTask.completeTask(msg.getReqId(), msg);
+                        break;
+                    }
 //                            case SDWanProtos.MessageTypeCode.RouteListType_VALUE: {
 //                                SDWanProtos.RouteList routeList = SDWanProtos.RouteList.parseFrom(msg.getData());
 //                                break;
@@ -280,24 +260,24 @@ public class VirtualRouter implements TransportLifecycle {
 //                                SDWanProtos.VNATList vnatList = SDWanProtos.VNATList.parseFrom(msg.getData());
 //                                break;
 //                            }
-                            case SDWanProtos.MessageTypeCode.NodeOnlineType_VALUE: {
-                                SDWanProtos.NodeInfo nodeInfo = SDWanProtos.NodeInfo.parseFrom(msg.getData());
-                                log.info("onlineNode: vip={}", nodeInfo.getVip());
-                                nodeManager.addNode(nodeInfo.getVip(), nodeInfo);
-                                break;
-                            }
-                            case SDWanProtos.MessageTypeCode.NodeOfflineType_VALUE: {
-                                SDWanProtos.NodeInfo nodeInfo = SDWanProtos.NodeInfo.parseFrom(msg.getData());
-                                log.info("offlineNode: vip={}", nodeInfo.getVip());
-                                nodeManager.deleteNode(nodeInfo.getVip());
-                                if (iceClient.isRunning()) {
-                                    iceClient.offlineTransport(nodeInfo.getVip());
-                                }
-                                break;
-                            }
-                        }
+                    case SDWanProtos.MessageTypeCode.NodeOnlineType_VALUE: {
+                        SDWanProtos.NodeInfo nodeInfo = SDWanProtos.NodeInfo.parseFrom(msg.getData());
+                        log.info("onlineNode: vip={}", nodeInfo.getVip());
+                        nodeManager.addNode(nodeInfo.getVip(), nodeInfo);
+                        break;
                     }
-                });
+                    case SDWanProtos.MessageTypeCode.NodeOfflineType_VALUE: {
+                        SDWanProtos.NodeInfo nodeInfo = SDWanProtos.NodeInfo.parseFrom(msg.getData());
+                        log.info("offlineNode: vip={}", nodeInfo.getVip());
+                        nodeManager.deleteNode(nodeInfo.getVip());
+                        if (iceClient.isRunning()) {
+                            iceClient.offlineTransport(nodeInfo.getVip());
+                        }
+                        break;
+                    }
+                }
+            }
+        });
         iceClient = new IceClient(config, sdWanClient, () -> new ChannelInitializer<Channel>() {
             @Override
             protected void initChannel(Channel ch) throws Exception {
@@ -314,7 +294,9 @@ public class VirtualRouter implements TransportLifecycle {
         sdWanClient.start();
         //getConfig
         SDWanProtos.ServerConfigResp configResp = sdWanClient.getConfig(config.getConnectTimeout()).get();
-        if (!SDWanProtos.MessageCode.Success.equals(configResp.getCode())) {
+        if (SDWanProtos.MessageCode.NotFound.equals(configResp.getCode())) {
+            throw new ProcessException("not found tenant config");
+        } else if (!SDWanProtos.MessageCode.Success.equals(configResp.getCode())) {
             throw new ProcessException("get config error");
         }
         applyLocalAddress();
@@ -322,15 +304,7 @@ public class VirtualRouter implements TransportLifecycle {
         config.setRelayServerList(configResp.getRelayServersList());
         String macAddress = processMacAddress(NetworkInterfaceUtil.getHardwareAddress(config.getLocalAddress()));
         log.info("parseMacAddress: {}", macAddress);
-        SDWanProtos.RegistReq.Builder builder = SDWanProtos.RegistReq.newBuilder()
-                .setTenantId(config.getTenantId())
-                .setNodeType(SDWanProtos.NodeTypeCode.SimpleType)
-                .setMacAddress(macAddress)
-                .addAllAddressUri(Collections.emptyList())
-                .setOs(PlatformUtil.normalizedOs())
-                .setOsVersion(System.getProperty("os.name"))
-                .setNodeVersion(ClientVersion.NodeVersion)
-                .setMesh(config.getNetMesh());
+        SDWanProtos.RegistReq.Builder builder = SDWanProtos.RegistReq.newBuilder().setTenantId(config.getTenantId()).setNodeType(SDWanProtos.NodeTypeCode.SimpleType).setMacAddress(macAddress).addAllAddressUri(Collections.emptyList()).setOs(PlatformUtil.normalizedOs()).setOsVersion(System.getProperty("os.name")).setNodeVersion(ClientVersion.NodeVersion).setMesh(config.getNetMesh());
         SDWanProtos.RegistReq registReq = builder.build();
         //1.先regist
         SDWanProtos.RegistResp regResp = sdWanClient.regist(registReq, 3000).get();
@@ -347,12 +321,8 @@ public class VirtualRouter implements TransportLifecycle {
         routeList = buildMergeRouteList(regResp.getRouteList().getRouteList(), regResp.getVnatList().getVnatList());
         onUpdateRouteList(routeList);
         List<RouteRulePredicateChain> routeRuleList = buildRouteRuleList(regResp.getRouteRuleList().getRouteRuleList());
-        List<RouteRulePredicateChain> routeInRuleList = routeRuleList.stream()
-                .filter(e -> Arrays.asList(RouteRuleDirectionEnum.All, RouteRuleDirectionEnum.Input).contains(e.getDirection()))
-                .collect(Collectors.toList());
-        List<RouteRulePredicateChain> routeOutRuleList = routeRuleList.stream()
-                .filter(e -> Arrays.asList(RouteRuleDirectionEnum.All, RouteRuleDirectionEnum.Output).contains(e.getDirection()))
-                .collect(Collectors.toList());
+        List<RouteRulePredicateChain> routeInRuleList = routeRuleList.stream().filter(e -> Arrays.asList(RouteRuleDirectionEnum.All, RouteRuleDirectionEnum.Input).contains(e.getDirection())).collect(Collectors.toList());
+        List<RouteRulePredicateChain> routeOutRuleList = routeRuleList.stream().filter(e -> Arrays.asList(RouteRuleDirectionEnum.All, RouteRuleDirectionEnum.Output).contains(e.getDirection())).collect(Collectors.toList());
         routeInRuleProcessor = new RouteRulePredicateProcessor(routeInRuleList);
         routeOutRuleProcessor = new RouteRulePredicateProcessor(routeOutRuleList);
         vnatMap = buildVNATMap(regResp.getVnatList().getVnatList());
@@ -378,37 +348,28 @@ public class VirtualRouter implements TransportLifecycle {
         List<SDWanProtos.Route> list = new ArrayList<>();
         list.addAll(routeList);
         List<SDWanProtos.Route> collect = vnatList.stream().map(e -> {
-            SDWanProtos.Route route = SDWanProtos.Route.newBuilder()
-                    .setDestination(e.getSrc())
-                    .addAllNexthop(e.getVipListList())
-                    .build();
+            SDWanProtos.Route route = SDWanProtos.Route.newBuilder().setDestination(e.getSrc()).addAllNexthop(e.getVipListList()).build();
             return route;
         }).collect(Collectors.toList());
         list.addAll(collect);
         list.forEach(e -> {
-            log.info("addRoute: destination={}, nexthop={}",
-                    e.getDestination(), StringUtils.join(e.getNexthopList(), ","));
+            log.info("addRoute: destination={}, nexthop={}", e.getDestination(), StringUtils.join(e.getNexthopList(), ","));
         });
         return list;
     }
 
     private List<RouteRulePredicateChain> buildRouteRuleList(List<SDWanProtos.RouteRule> routeRuleList) {
         routeRuleList.forEach(e -> {
-            log.info("addRouteRule: strategy={}, direction={}, ruleList={}",
-                    e.getStrategy(), e.getDirection(), StringUtils.join(e.getRuleListList(), ","));
+            log.info("addRouteRule: strategy={}, direction={}, ruleList={}", e.getStrategy(), e.getDirection(), StringUtils.join(e.getRuleListList(), ","));
         });
-        List<RouteRulePredicateChain> collect = routeRuleList.stream()
-                .sorted(RouteRulePredicateChain.comparator())
-                .map(e -> RouteRulePredicateChain.build(e))
-                .collect(Collectors.toList());
+        List<RouteRulePredicateChain> collect = routeRuleList.stream().sorted(RouteRulePredicateChain.comparator()).map(e -> RouteRulePredicateChain.build(e)).collect(Collectors.toList());
         return collect;
     }
 
     private Map<String, SDWanProtos.VNAT> buildVNATMap(List<SDWanProtos.VNAT> vnatList) {
         Map<String, SDWanProtos.VNAT> map = new ConcurrentHashMap();
         vnatList.forEach(e -> {
-            log.info("addVNAT: src={}, dst={}, vipList={}",
-                    e.getSrc(), e.getDst(), StringUtils.join(e.getVipListList(), ","));
+            log.info("addVNAT: src={}, dst={}, vipList={}", e.getSrc(), e.getDst(), StringUtils.join(e.getVipListList(), ","));
             map.put(e.getSrc(), e);
         });
         return map;

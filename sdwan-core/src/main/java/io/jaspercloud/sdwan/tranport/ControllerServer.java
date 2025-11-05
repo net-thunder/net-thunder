@@ -154,6 +154,13 @@ public class ControllerServer implements Lifecycle, Runnable {
         try {
             SDWanProtos.ServerConfigReq req = SDWanProtos.ServerConfigReq.parseFrom(msg.getData());
             TenantConfig tenantConfig = sdWanDataService.getTenantConfig(req.getTenantId());
+            if (null == tenantConfig) {
+                SDWanProtos.ServerConfigResp resp = SDWanProtos.ServerConfigResp.newBuilder()
+                        .setCode(SDWanProtos.MessageCode.NotFound)
+                        .build();
+                ControllerServer.reply(ctx.channel(), msg, SDWanProtos.MessageTypeCode.ConfigRespTpe, resp);
+                return;
+            }
             List<String> stunServerList = tenantConfig.getStunServerList();
             List<String> relayServerList = tenantConfig.getRelayServerList();
             SDWanProtos.ServerConfigResp resp = SDWanProtos.ServerConfigResp.newBuilder()

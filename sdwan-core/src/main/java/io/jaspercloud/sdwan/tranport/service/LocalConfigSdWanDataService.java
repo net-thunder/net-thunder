@@ -94,7 +94,7 @@ public class LocalConfigSdWanDataService implements SdWanDataService {
     public TenantConfig getTenantConfig(String tenantCode) {
         TenantSpace tenantSpace = tenantSpaceMap.get(tenantCode);
         if (null == tenantSpace) {
-            throw new ProcessException("not found tenant");
+            return null;
         }
         TenantConfig tenantConfig = new TenantConfig();
         tenantConfig.setIpPool(tenantSpace.getIpPool());
