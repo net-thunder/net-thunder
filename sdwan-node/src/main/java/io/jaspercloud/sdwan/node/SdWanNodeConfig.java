@@ -18,7 +18,7 @@ import java.util.List;
 @Setter
 public class SdWanNodeConfig {
 
-    private String tenantId = "default";
+    private String tenantId;
     private String httpServer = "127.0.0.1:1805";
     private String controllerServer = "127.0.0.1:1800";
     private int connectTimeout = 30 * 1000;
@@ -51,29 +51,15 @@ public class SdWanNodeConfig {
     private Boolean showElectionLog = false;
     private Boolean showRouteRuleLog = false;
 
-    private List<String> ifaceBlackList = Arrays.asList(
-            "wt0",
-            "wt",
-            "utun",
-            "tun0",
-            "zt",
-            "ZeroTier",
-            "wg",
-            "ts",
-            "Tailscale",
-            "tailscale",
-            "docker",
-            "veth",
-            "br-",
-            "lo"
-    );
+    private List<String> ifaceBlackList = Arrays.asList("wt0", "wt", "utun", "tun0", "zt", "ZeroTier", "wg", "ts", "Tailscale", "tailscale", "docker", "veth", "br-", "lo");
+
+    public boolean isInit() {
+        return null != tenantId;
+    }
 
     public String getHostAddress() {
         try {
-            String hostAddress = Arrays.asList(InetAddress.getAllByName(InetAddress.getLocalHost().getHostName()))
-                    .stream().filter(e -> !"127.0.0.1".equals(e.getHostAddress()))
-                    .findAny()
-                    .get().getHostAddress();
+            String hostAddress = Arrays.asList(InetAddress.getAllByName(InetAddress.getLocalHost().getHostName())).stream().filter(e -> !"127.0.0.1".equals(e.getHostAddress())).findAny().get().getHostAddress();
             return hostAddress;
         } catch (Exception e) {
             throw new ProcessException(e.getMessage(), e);

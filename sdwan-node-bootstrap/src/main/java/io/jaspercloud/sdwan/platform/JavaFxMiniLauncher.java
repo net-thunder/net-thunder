@@ -61,6 +61,9 @@ public class JavaFxMiniLauncher extends Application {
 
     private boolean updateVersion() throws Exception {
         SdWanNodeConfig config = new ConfigSystem().initUserDir();
+        if (!config.isInit()) {
+            return false;
+        }
         if (!config.getAutoUpdateVersion()) {
             return false;
         }
@@ -73,10 +76,7 @@ public class JavaFxMiniLauncher extends Application {
             String path = result.getByPath("data.path", String.class);
             String md5 = result.getByPath("data.md5", String.class);
             String url = String.format("http://%s%s", config.getHttpServer(), path);
-            Application.launch(UpdateVersionLauncher.class, new String[]{
-                    String.format("--url=%s", url),
-                    String.format("--md5=%s", md5)
-            });
+            Application.launch(UpdateVersionLauncher.class, new String[]{String.format("--url=%s", url), String.format("--md5=%s", md5)});
             return true;
         }
         return false;

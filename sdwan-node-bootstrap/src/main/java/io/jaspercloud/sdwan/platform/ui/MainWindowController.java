@@ -70,6 +70,11 @@ public class MainWindowController implements EventHandler<ActionEvent> {
         stopBtn.setDisable(true);
         refreshBtn.setOnAction(this);
         settingBtn.setOnAction(this);
+        if (!new ConfigSystem().initUserDir().isInit()) {
+            netSelect.setDisable(true);
+            startBtn.setDisable(true);
+            stopBtn.setDisable(true);
+        }
         netSelect.setConverter(new StringConverter<NetworkInterfaceInfo>() {
             @Override
             public String toString(NetworkInterfaceInfo interfaceInfo) {
@@ -113,10 +118,7 @@ public class MainWindowController implements EventHandler<ActionEvent> {
 
     private void refreshNetList() {
         try {
-            List<NetworkInterfaceInfo> netList = NetworkInterfaceUtil.findIpv4NetworkInterfaceInfo(true)
-                    .stream()
-                    .filter(e -> StringUtils.isNotEmpty(e.getHardwareAddress()))
-                    .collect(Collectors.toList());
+            List<NetworkInterfaceInfo> netList = NetworkInterfaceUtil.findIpv4NetworkInterfaceInfo(true).stream().filter(e -> StringUtils.isNotEmpty(e.getHardwareAddress())).collect(Collectors.toList());
             netList = testNetList(netList);
             netSelect.getItems().clear();
             netSelect.getItems().addAll(netList);
@@ -345,6 +347,15 @@ public class MainWindowController implements EventHandler<ActionEvent> {
                     return;
                 }
                 SettingWindowController.showAndWait(primaryStage);
+                if (new ConfigSystem().initUserDir().isInit()) {
+                    netSelect.setDisable(false);
+                    startBtn.setDisable(false);
+                    netSelect.setDisable(false);
+                } else {
+                    netSelect.setDisable(true);
+                    startBtn.setDisable(true);
+                    netSelect.setDisable(true);
+                }
             }
         } catch (Throwable e) {
             log.error(e.getMessage(), e);

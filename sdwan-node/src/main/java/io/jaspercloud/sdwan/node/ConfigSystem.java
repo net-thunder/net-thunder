@@ -50,6 +50,9 @@ public class ConfigSystem {
             try (InputStream in = new FileInputStream(file)) {
                 config = YamlUtil.load(in, SdWanNodeConfig.class);
             }
+            if (null == config) {
+                config = new SdWanNodeConfig();
+            }
         } else {
             config = new SdWanNodeConfig();
         }
