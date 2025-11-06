@@ -66,6 +66,7 @@ public class DatabaseSdWanDataService implements SdWanDataService {
                                     .filter(e -> null != e)
                                     .collect(Collectors.toList());
                             RouteConfig config = new RouteConfig();
+                            config.setName(route.getName());
                             config.setDestination(route.getDestination());
                             config.setNexthop(vipList);
                             return config;
@@ -78,6 +79,7 @@ public class DatabaseSdWanDataService implements SdWanDataService {
                 List<RouteRuleConfig> collect = detailResponse.getRouteRuleList().stream()
                         .map(rule -> {
                             RouteRuleConfig routeRuleConfig = new RouteRuleConfig();
+                            routeRuleConfig.setName(rule.getName());
                             routeRuleConfig.setStrategy(rule.getStrategy());
                             routeRuleConfig.setDirection(rule.getDirection());
                             routeRuleConfig.setLevel(rule.getLevel());
@@ -92,6 +94,7 @@ public class DatabaseSdWanDataService implements SdWanDataService {
                 List<VNATConfig> collect = detailResponse.getVnatList().stream()
                         .map(vnat -> {
                             VNATConfig config = new VNATConfig();
+                            config.setName(vnat.getName());
                             config.setSrcCidr(vnat.getSrcCidr());
                             config.setDstCidr(vnat.getDstCidr());
                             List<String> vipList = nodeService.queryByIdList(vnat.getNodeIdList())

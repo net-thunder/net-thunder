@@ -11,6 +11,7 @@ import java.util.List;
 @Setter
 public class RouteConfig {
 
+    private String name;
     private String destination;
     private List<String> nexthop;
 }

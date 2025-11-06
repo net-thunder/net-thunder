@@ -146,7 +146,7 @@ public class VirtualRouter implements TransportLifecycle {
     }
 
     public IpLayerPacket routeIn(IpLayerPacket packet) {
-        if (!routeInRuleProcessor.test(packet.getDstIP())) {
+        if (!routeInRuleProcessor.test(packet, packet.getDstIP())) {
             if (showRouteRuleLog) {
                 log.info("reject routeIn: {}", packet);
             }
@@ -158,7 +158,7 @@ public class VirtualRouter implements TransportLifecycle {
 
     public String routeOut(IpLayerPacket packet) {
         processVnatOut(packet);
-        if (!routeOutRuleProcessor.test(packet.getDstIP())) {
+        if (!routeOutRuleProcessor.test(packet, packet.getDstIP())) {
             if (showRouteRuleLog) {
                 log.info("reject routeOut: {}", packet);
             }
@@ -169,6 +169,9 @@ public class VirtualRouter implements TransportLifecycle {
             return dstIP;
         }
         dstIP = findRoute(packet);
+        if (null == dstIP && packet.isIcmpProtocol()) {
+            log.info("not found route: srcIP={}, dstIP={}", packet.getSrcIP(), packet.getDstIP());
+        }
         return dstIP;
     }
 
@@ -187,6 +190,9 @@ public class VirtualRouter implements TransportLifecycle {
             packet.setDstIP(natIp);
             String identifier = packet.getIdentifier(true);
             vnatMappingCache.put(identifier, dstIP);
+            if (packet.isIcmpProtocol()) {
+                log.info("vnat[{}]: srcIP={}, dstIP={}, natIP={}", vnat.getName(), packet.getSrcIP(), packet.getDstIP(), dstIP, natIp);
+            }
         }
     }
 
@@ -219,6 +225,9 @@ public class VirtualRouter implements TransportLifecycle {
                 }
                 int rand = Math.abs(packet.getSrcIP().hashCode()) % nexthopList.size();
                 String nexthop = nexthopList.get(rand);
+                if (packet.isIcmpProtocol()) {
+                    log.info("route[{}]: srcIP={}, dstIP={}, route={}", route.getName(), packet.getSrcIP(), packet.getDstIP(), nexthop);
+                }
                 return nexthop;
             }
         }

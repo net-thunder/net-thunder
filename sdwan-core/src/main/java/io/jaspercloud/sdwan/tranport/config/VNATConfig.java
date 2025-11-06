@@ -11,6 +11,7 @@ import java.util.List;
 @Setter
 public class VNATConfig {
 
+    private String name;
     private String srcCidr;
     private String dstCidr;
     private List<String> vipList;

@@ -13,6 +13,7 @@ import java.util.List;
 @Setter
 public class RouteRuleConfig {
 
+    private String name;
     private RouteRuleStrategyEnum strategy;
     private RouteRuleDirectionEnum direction;
     private List<String> ruleList;

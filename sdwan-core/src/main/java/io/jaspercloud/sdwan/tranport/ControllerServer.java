@@ -289,6 +289,7 @@ public class ControllerServer implements Lifecycle, Runnable {
     private List<SDWanProtos.Route> buildRouteList(List<RouteConfig> list) {
         List<SDWanProtos.Route> collect = list.stream().map(e -> {
             return SDWanProtos.Route.newBuilder()
+                    .setName(e.getName())
                     .setDestination(e.getDestination())
                     .addAllNexthop(e.getNexthop())
                     .build();
@@ -306,6 +307,7 @@ public class ControllerServer implements Lifecycle, Runnable {
                 vip = "";
             }
             return SDWanProtos.VNAT.newBuilder()
+                    .setName(e.getName())
                     .setVip(vip)
                     .setSrc(e.getSrcCidr())
                     .setDst(e.getDstCidr())
@@ -320,6 +322,7 @@ public class ControllerServer implements Lifecycle, Runnable {
         List<SDWanProtos.RouteRule> collect = list.stream()
                 .map(e -> {
                     return SDWanProtos.RouteRule.newBuilder()
+                            .setName(e.getName())
                             .setStrategy(e.getStrategy().name())
                             .setDirection(e.getDirection().name())
                             .setLevel(e.getLevel())

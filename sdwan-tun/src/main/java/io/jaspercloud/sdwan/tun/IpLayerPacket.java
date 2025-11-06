@@ -51,6 +51,10 @@ public class IpLayerPacket implements IpPacket {
         }
     }
 
+    public boolean isIcmpProtocol() {
+        return IpPacket.Icmp == getProtocol();
+    }
+
     @Override
     public String getSrcIP() {
         return readIp(12);
