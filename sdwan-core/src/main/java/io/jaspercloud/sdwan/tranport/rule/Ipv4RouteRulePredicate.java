@@ -15,4 +15,11 @@ public class Ipv4RouteRulePredicate implements RouteRulePredicate {
         boolean equals = StringUtils.equals(ip, ipv4);
         return equals;
     }
+
+    @Override
+    public String toString() {
+        return "Ipv4RouteRulePredicate{" +
+                "ipv4='" + ipv4 + '\'' +
+                '}';
+    }
 }

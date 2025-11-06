@@ -15,4 +15,9 @@ public class CidrRouteRulePredicate implements RouteRulePredicate {
         boolean contains = cidr.contains(ip);
         return contains;
     }
+
+    @Override
+    public String toString() {
+        return "CidrRouteRulePredicate{" + "cidr='" + cidr.toString() + '\'' + '}';
+    }
 }

@@ -20,6 +20,8 @@ public class EditNodeRequest {
     @Pattern(regexp = ValidGroup.MAC_ADDRESS, groups = {ValidGroup.Add.class, ValidGroup.Update.class})
     private String mac;
     @NotNull(groups = {ValidGroup.Add.class, ValidGroup.Update.class})
+    private Boolean mesh;
+    @NotNull(groups = {ValidGroup.Add.class, ValidGroup.Update.class})
     private List<Long> groupIdList;
     @NotNull(groups = {ValidGroup.Add.class, ValidGroup.Update.class})
     private Boolean enable;

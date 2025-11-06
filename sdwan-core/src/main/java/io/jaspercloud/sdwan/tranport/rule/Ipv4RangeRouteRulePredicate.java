@@ -21,4 +21,12 @@ public class Ipv4RangeRouteRulePredicate implements RouteRulePredicate {
             return false;
         }
     }
+
+    @Override
+    public String toString() {
+        return "Ipv4RangeRouteRulePredicate{" +
+                "start=" + IPUtil.int2ip(start) +
+                ", end=" + IPUtil.int2ip(end) +
+                '}';
+    }
 }

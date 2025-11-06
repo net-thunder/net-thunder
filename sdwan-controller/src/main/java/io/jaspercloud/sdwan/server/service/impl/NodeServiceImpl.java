@@ -203,7 +203,8 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
         NodeDetailResponse nodeDetail = BeanUtil.toBean(node, NodeDetailResponse.class);
         List<Group> groupList = groupService.queryDetailList(groupIdList);
         List<Route> routeList = routeService.queryByIdList(groupList.stream()
-                .flatMap(e -> e.getRouteIdList().stream()).distinct().collect(Collectors.toList()));
+                .flatMap(e -> e.getRouteIdList().stream())
+                .distinct().collect(Collectors.toList()));
         List<RouteRule> routeRuleList = routeRuleService.queryByIdList(groupList.stream()
                         .flatMap(e -> e.getRouteRuleIdList().stream()).distinct().collect(Collectors.toList()))
                 .stream()
@@ -222,14 +223,15 @@ public class NodeServiceImpl implements NodeService, InitializingBean {
                     .collect(Collectors.toList());
             nodeList = nodeRepository.query()
                     .in(Node::getId, nodeIdList)
+                    .eq(Node::getEnable, true)
                     .list();
         } else {
             nodeList = Collections.emptyList();
         }
         nodeDetail.setGroupList(groupList);
-        nodeDetail.setRouteList(routeList);
-        nodeDetail.setRouteRuleList(routeRuleList);
-        nodeDetail.setVnatList(vnatList);
+        nodeDetail.setRouteList(routeList.stream().filter(e -> e.getEnable()).collect(Collectors.toList()));
+        nodeDetail.setRouteRuleList(routeRuleList.stream().filter(e -> e.getEnable()).collect(Collectors.toList()));
+        nodeDetail.setVnatList(vnatList.stream().filter(e -> e.getEnable()).collect(Collectors.toList()));
         nodeDetail.setNodeList(nodeList);
         return nodeDetail;
     }

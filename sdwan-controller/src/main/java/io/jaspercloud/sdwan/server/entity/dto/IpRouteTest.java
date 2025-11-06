@@ -85,7 +85,7 @@ public class IpRouteTest {
             String destination = route.getDestination();
             Cidr cidr = Cidr.parseCidr(destination);
             if (cidr.contains(getDstIp())) {
-                appendLog(true, "匹配路由: " + destination);
+                appendLog(true, String.format("匹配路由: [%s] (%s)", route.getName(), destination));
                 testRule(detail, RouteRuleDirectionEnum.Output, getDstIp());
                 return;
             }
@@ -120,7 +120,7 @@ public class IpRouteTest {
             String destination = route.getDestination();
             Cidr cidr = Cidr.parseCidr(destination);
             if (cidr.contains(getSrcIp())) {
-                appendLog(true, "匹配路由: " + destination);
+                appendLog(true, String.format("匹配路由: [%s] (%s)", route.getName(), destination));
                 testRule(detail, RouteRuleDirectionEnum.Input, getSrcIp());
                 return;
             }
