@@ -8,9 +8,14 @@ import java.util.List;
 
 public class RouteRulePredicateChain {
 
+    private String name;
     private RouteRuleStrategyEnum strategy;
     private RouteRuleDirectionEnum direction;
     private List<RouteRulePredicate> predicateList;
+
+    public String getName() {
+        return name;
+    }
 
     public RouteRuleStrategyEnum getStrategy() {
         return strategy;
@@ -20,7 +25,8 @@ public class RouteRulePredicateChain {
         return direction;
     }
 
-    public RouteRulePredicateChain(RouteRuleStrategyEnum strategy, RouteRuleDirectionEnum direction, List<RouteRulePredicate> predicateList) {
+    public RouteRulePredicateChain(String name, RouteRuleStrategyEnum strategy, RouteRuleDirectionEnum direction, List<RouteRulePredicate> predicateList) {
+        this.name = name;
         this.strategy = strategy;
         this.direction = direction;
         this.predicateList = predicateList;
@@ -39,7 +45,7 @@ public class RouteRulePredicateChain {
         }
         RouteRuleStrategyEnum strategy = RouteRuleStrategyEnum.valueOf(routeRule.getStrategy());
         RouteRuleDirectionEnum direction = RouteRuleDirectionEnum.valueOf(routeRule.getDirection());
-        RouteRulePredicateChain chain = new RouteRulePredicateChain(strategy, direction, list);
+        RouteRulePredicateChain chain = new RouteRulePredicateChain(routeRule.getName(), strategy, direction, list);
         return chain;
     }
 

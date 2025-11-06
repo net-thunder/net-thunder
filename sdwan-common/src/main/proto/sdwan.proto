@@ -101,6 +101,7 @@ message NodeInfoList {
 message Route {
   required string destination = 1;
   repeated string nexthop = 3;
+  optional string name = 4;
 }
 
 message RouteList {
@@ -112,6 +113,7 @@ message RouteRule {
   required string direction = 2;
   required int32 level = 3;
   repeated string ruleList = 4;
+  optional string name = 5;
 }
 
 message RouteRuleList {
@@ -123,6 +125,7 @@ message VNAT {
   required string src = 2;
   required string dst = 3;
   repeated string vipList = 4;
+  optional string name = 5;
 }
 
 message VNATList {
